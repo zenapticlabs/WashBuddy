@@ -1,0 +1,39 @@
+---
+import { Image } from 'astro:assets';
+import logo from '../assets/logo.svg';
+import list from '../assets/list.svg';
+import gear from '../assets/gear-fine.svg';
+import handtap from '../assets/hand-tap.svg';
+import heart from '../assets/heart.svg';
+
+---
+
+
+<header class="flex items-center justify-between px-[24px] py-[12px]">
+  <div class="flex items-center gap-[20px]" >
+    <span class="cursor-pointer">
+      <Image src={list} format="svg" alt={''} loading="lazy" />
+    </span>
+    <span class="cursor-pointer">
+      <Image src={logo} format="svg" alt={''} loading="lazy" />
+    </span>
+    <span class="flex items-center border border-[#E5E7E8] px-[12px] py-[8px] rounded-[1000px] text-sm font-semibold gap-[4px] h-[36px] cursor-pointer">
+      <Image src={gear} format="svg" alt={''} loading="lazy" />
+      Automatic
+    </span>
+    <span class="flex items-center border border-[#E5E7E8] px-[12px] py-[8px] rounded-[1000px] text-sm font-semibold gap-[4px] h-[36px] cursor-pointer">
+      <Image src={handtap} format="svg" alt={''} loading="lazy" />
+      Self-Service
+    </span>
+  </div>
+  <div class="flex items-center gap-[12px] cursor-pointer">
+    <span>
+      <Image src={heart} format="svg" alt={''} loading="lazy" />
+    </span>
+    <button class="px-[24px] py-[8px] border border-[#41454B] rounded-[8px] h-[40px] text-sm font-semibold cursor-pointer">
+      Sign in
+    </button>
+  </div>
+</header>
+
+
