@@ -1,8 +1,41 @@
 ---
+import { Image } from "astro:assets";
+import brand1 from "../assets/Brand1.svg";
+import brand2 from "../assets/Brand2.svg";
+import brand3 from "../assets/Brand3.svg";
+import brand4 from "../assets/Brand4.svg";
+import brand5 from "../assets/Brand5.svg";
+
+const slides = [
+  { image: brand1 },
+  { image: brand2 },
+  { image: brand3 },
+  { image: brand4 },
+  { image: brand5 },
+];
 ---
 
+<div
+  class="flex flex-col item-center h-[434px] max-md:h-[634px] justify-center gap-[50px] text-center mx-auto font-bold text-[35px] text-[#27292C] max-md:text-[28px]"
+>
+  <p class="w-[70vw] max-md:w-[80vw] mx-auto">
+    WashBuddy is your friend to help you find, compare, and save on local car
+    washes!
+  </p>
 
-
-<div>
-    Featured Brand
+  <div
+    class="h-[100px] overflow-auto flex justify-around w-full gap-[40px] results-hidden"
+  >
+    {
+      slides.map((slide) => (
+        <Image
+          src={slide.image}
+          format="svg"
+          alt=""
+          loading="lazy"
+          class="aspect-[calc(4*3+1)/3]"
+        />
+      ))
+    }
+  </div>
 </div>
