@@ -20,7 +20,7 @@ const images = [
 ---
 
 <header
-  class="flex items-center justify-between px-[24px] py-[12px] sm:space-x-4 w-full"
+  class="flex items-center justify-between px-[24px] py-[12px] sm:space-x-4 w-full "
 >
   <div class="flex items-center gap-[20px]">
     <span class="block cursor-pointer lg:hidden" id="nav-bar">
@@ -92,10 +92,10 @@ const images = [
   document.getElementById("nav-bar")?.addEventListener("click", () => {
     const icon = document.getElementById("icon");
     if (icon && icon instanceof HTMLImageElement) {
-      if (icon.src.includes("close")) {
-        icon.src = "src/assets/list.svg";
+      if (icon.src.includes('close')) {
+        icon.src = 'src/assets/list.svg';
       } else {
-        icon.src = "src/assets/close.svg";
+        icon.src = 'src/assets/close.svg';
       }
     }
     const navBar = document.getElementById("menu");
