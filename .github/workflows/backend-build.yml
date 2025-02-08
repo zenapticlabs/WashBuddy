@@ -1,0 +1,36 @@
+name: Backend Build and Deploy Workflow
+
+on:
+  workflow_call:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Python (Backend)
+        if: steps.check_backend.outputs.deploy-backend == 'true'
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.9
+
+      - name: Install dependencies (Backend)
+        if: steps.check_backend.outputs.deploy-backend == 'true'
+        run: |
+          cd backend
+          pip install -r requirements.txt
+
+      - name: Collect static files (Backend)
+        if: steps.check_backend.outputs.deploy-backend == 'true'
+        run: |
+          cd backend
+          python manage.py collectstatic --noinput
+
+      - name: Deploy to Vercel (Backend)
+        if: steps.check_backend.outputs.deploy-backend == 'true'
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_BACKEND_PROJECT_ID }}
+        run: |
+          cd backend
+          npx vercel --prod --token $VERCEL_TOKEN

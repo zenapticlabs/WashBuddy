@@ -1,0 +1,33 @@
+name: Landing Build and Deploy Workflow
+
+on:
+  workflow_call:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Node.js
+        if: steps.check_landing.outputs.deploy-landing == 'true'
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: |
+          cd landing
+          npm ci
+
+      - name: Build the project
+        run: |
+          cd landing
+          npm run build
+
+      - name: Deploy to Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_LANDING_PROJECT_ID }}
+        run: |
+          cd landing
+          npx vercel --prod --token $VERCEL_TOKEN

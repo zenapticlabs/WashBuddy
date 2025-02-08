@@ -6,134 +6,57 @@ on:
       - master
 
 jobs:
-  build-and-deploy:
+  check-for-changes:
     runs-on: ubuntu-latest
-
+    outputs:
+      deploy-landing: ${{ steps.check_landing.outputs.deploy-landing }}
+      deploy-frontend: ${{ steps.check_frontend.outputs.deploy-frontend }}
+      deploy-backend: ${{ steps.check_backend.outputs.deploy-backend }}
     steps:
-      # Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Fetch latest from master
-        id: fetch_master
-        run: |
-          git fetch origin master --depth=1
+        run: git fetch origin master --depth=1
 
-      ### Check for changes in "landing" directory
       - name: Check for changes in "landing"
         id: check_landing
         run: |
           if git diff --quiet origin/master HEAD -- landing/; then
-            echo "No changes in 'landing'."
             echo "deploy-landing=false" >> $GITHUB_OUTPUT
           else
-            echo "Changes detected in 'landing'."
             echo "deploy-landing=true" >> $GITHUB_OUTPUT
           fi
 
-      ### Check for changes in "frontend" directory
       - name: Check for changes in "frontend"
         id: check_frontend
         run: |
           if git diff --quiet origin/master HEAD -- frontend/; then
-            echo "No changes in 'frontend'."
             echo "deploy-frontend=false" >> $GITHUB_OUTPUT
           else
-            echo "Changes detected in 'frontend'."
             echo "deploy-frontend=true" >> $GITHUB_OUTPUT
           fi
 
-      ### Check for changes in "backend" directory
       - name: Check for changes in "backend"
         id: check_backend
         run: |
           if git diff --quiet origin/master HEAD -- backend/; then
-            echo "No changes in 'backend'."
             echo "deploy-backend=false" >> $GITHUB_OUTPUT
           else
-            echo "Changes detected in 'backend'."
             echo "deploy-backend=true" >> $GITHUB_OUTPUT
           fi
 
-      ### Landing (AstroJS) - Build and Deploy
-      - name: Setup Node.js (Landing)
-        if: steps.check_landing.outputs.deploy-landing == 'true'
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
+  landing:
+    needs: check-for-changes
+    if: ${{ needs.check-for-changes.outputs.deploy-landing == 'true' }}
+    uses: ./.github/workflows/landing-build.yml
 
-      - name: Install dependencies (Landing)
-        if: steps.check_landing.outputs.deploy-landing == 'true'
-        run: |
-          cd landing
-          npm ci
+  frontend:
+    needs: check-for-changes
+    if: ${{ needs.check-for-changes.outputs.deploy-frontend == 'true' }}
+    uses: ./.github/workflows/frontend-build.yml
 
-      - name: Build the project (Landing)
-        if: steps.check_landing.outputs.deploy-landing == 'true'
-        run: |
-          cd landing
-          npm run build
-
-      - name: Deploy to Vercel (Landing)
-        if: steps.check_landing.outputs.deploy-landing == 'true'
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_LANDING_PROJECT_ID }}
-        run: |
-          cd landing
-          npx vercel --prod --token $VERCEL_TOKEN
-
-      ### Frontend (React) - Build and Deploy
-      - name: Setup Node.js (Frontend)
-        if: steps.check_frontend.outputs.deploy-frontend == 'true'
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-
-      - name: Install dependencies (Frontend)
-        if: steps.check_frontend.outputs.deploy-frontend == 'true'
-        run: |
-          cd frontend
-          npm ci
-
-      - name: Build the project (Frontend)
-        if: steps.check_frontend.outputs.deploy-frontend == 'true'
-        run: |
-          cd frontend
-          npm run build
-
-      - name: Deploy to Vercel (Frontend)
-        if: steps.check_frontend.outputs.deploy-frontend == 'true'
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        run: |
-          cd frontend
-          npx vercel --prod --token $VERCEL_TOKEN
-
-      ### Backend (Django) - Deploy to Vercel Functions
-      - name: Setup Python (Backend)
-        if: steps.check_backend.outputs.deploy-backend == 'true'
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.9
-
-      - name: Install dependencies (Backend)
-        if: steps.check_backend.outputs.deploy-backend == 'true'
-        run: |
-          cd backend
-          pip install -r requirements.txt
-
-      - name: Collect static files (Backend)
-        if: steps.check_backend.outputs.deploy-backend == 'true'
-        run: |
-          cd backend
-          python manage.py collectstatic --noinput
-
-      - name: Deploy to Vercel (Backend)
-        if: steps.check_backend.outputs.deploy-backend == 'true'
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-        run: |
-          cd backend
-          npx vercel --prod --token $VERCEL_TOKEN
+  backend:
+    needs: check-for-changes
+    if: ${{ needs.check-for-changes.outputs.deploy-backend == 'true' }}
+    uses: ./.github/workflows/backend-build.yml

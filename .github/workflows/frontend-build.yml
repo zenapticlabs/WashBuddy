@@ -1,0 +1,36 @@
+name: Frontend Build and Deploy Workflow
+
+on:
+  workflow_call:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Node.js (Frontend)
+        if: steps.check_frontend.outputs.deploy-frontend == 'true'
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies (Frontend)
+        if: steps.check_frontend.outputs.deploy-frontend == 'true'
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Build the project (Frontend)
+        if: steps.check_frontend.outputs.deploy-frontend == 'true'
+        run: |
+          cd frontend
+          npm run build
+
+      - name: Deploy to Vercel (Frontend)
+        if: steps.check_frontend.outputs.deploy-frontend == 'true'
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_FRONTEND_PROJECT_ID }}
+        run: |
+          cd frontend
+          npx vercel --prod --token $VERCEL_TOKEN
