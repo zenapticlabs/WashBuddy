@@ -3,7 +3,7 @@ name: Monorepo CI/CD with Conditional Deploys
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   build-and-deploy:
