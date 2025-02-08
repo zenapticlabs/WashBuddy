@@ -2,6 +2,7 @@ name: Backend Build and Deploy Workflow
 
 on:
   workflow_call:
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
