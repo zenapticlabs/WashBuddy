@@ -14,12 +14,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Fetch latest from master
+        id: fetch_master
+        run: |
+          git fetch origin master --depth=1
+
       ### Check for changes in "landing" directory
       - name: Check for changes in "landing"
         id: check_landing
         run: |
-          git fetch origin ${{ github.base_ref }} --depth=1
-          if git diff --quiet origin/${{ github.base_ref }} HEAD -- landing/; then
+          if git diff --quiet origin/master HEAD -- landing/; then
             echo "No changes in 'landing'."
             echo "deploy-landing=false" >> $GITHUB_OUTPUT
           else
@@ -31,8 +35,7 @@ jobs:
       - name: Check for changes in "frontend"
         id: check_frontend
         run: |
-          git fetch origin ${{ github.base_ref }} --depth=1
-          if git diff --quiet origin/${{ github.base_ref }} HEAD -- frontend/; then
+          if git diff --quiet origin/master HEAD -- frontend/; then
             echo "No changes in 'frontend'."
             echo "deploy-frontend=false" >> $GITHUB_OUTPUT
           else
@@ -44,8 +47,7 @@ jobs:
       - name: Check for changes in "backend"
         id: check_backend
         run: |
-          git fetch origin ${{ github.base_ref }} --depth=1
-          if git diff --quiet origin/${{ github.base_ref }} HEAD -- backend/; then
+          if git diff --quiet origin/master HEAD -- backend/; then
             echo "No changes in 'backend'."
             echo "deploy-backend=false" >> $GITHUB_OUTPUT
           else
