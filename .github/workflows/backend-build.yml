@@ -8,6 +8,9 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
       - name: Setup Python (Backend)
         if: steps.check_backend.outputs.deploy-backend == 'true'
         uses: actions/setup-python@v4
