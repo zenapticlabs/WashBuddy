@@ -11,9 +11,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: List files in current directory
-        run: ls -la
-
       - name: Setup Python (Backend)
         if: steps.check_backend.outputs.deploy-backend == 'true'
         uses: actions/setup-python@v4

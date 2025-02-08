@@ -11,6 +11,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: List files in current directory
+        run: ls -la
+
       - name: Setup Node.js
         if: steps.check_landing.outputs.deploy-landing == 'true'
         uses: actions/setup-node@v3
