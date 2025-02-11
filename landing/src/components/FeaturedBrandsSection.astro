@@ -24,18 +24,37 @@ const slides = [
   </p>
 
   <div
-    class="h-[100px] overflow-auto flex justify-around w-full gap-[40px] results-hidden"
+    class="overflow-hidden relative flex items-center mx-auto bg-white py-2 w-[70vw] max-md:w-full"
   >
-    {
-      slides.map((slide) => (
-        <Image
-          src={slide.image}
-          format="svg"
-          alt=""
-          loading="lazy"
-          class="aspect-[calc(4*3+1)/3]"
-        />
-      ))
-    }
+    <div class="marquee-content flex gap-[140px] w-max">
+      {
+        slides
+          .concat(slides)
+          .map((slide) => (
+            <Image
+              src={slide.image}
+              format="svg"
+              alt="Brand logo"
+              loading="lazy"
+              class="w-auto"
+            />
+          ))
+      }
+    </div>
   </div>
 </div>
+
+<style>
+  .marquee-content {
+    animation: marquee 10s linear infinite;
+  }
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+</style>
