@@ -1,65 +1,78 @@
 ---
 import { Image } from "astro:assets";
-import drop_open from "../assets/drop_open.svg";
 import drop_close from "../assets/drop_close.svg";
+const Accordian_list = [
+  { title: "How can I find the best car wash near me?" },
+  { title: "Can I compare car wash prices on this website?" },
+  { title: "Are the reviews on your site trustworthy?" },
+  { title: "Can I upload photos of car washes I visit?" },
+  {title:"How do I know if a car wash offers specific services, like waxing or detailing?"},
+  { title: "Is this website free to use?" },
+  { title: "How can car wash owners update their listing information?" },
+  { title: "Can I earn rewards by contributing to this site?" },
+  { title: "What makes this platform better than searching on Google Maps?" },
+  { title: "Does your website have a mobile app?" },
+];
 ---
 
-<div class="container mx-auto md:py-20 px-6 max-md:mb-4">
-    <p class="text-4xl font-bold leading-12 text-[#27292C] mb-10">
-        Frequently Asked Questions
-    </p>
-    <div class="py-3.5 border-b border-[#E5E7E8]">
-        <button
-            class="text-xl font-bold cursor-pointer w-full text-left outline-none transition duration-400 flex items-center justify-between"
-        >
-            <span> How can I find the best car wash near me? </span>
-            <Image src={drop_open} format="svg" alt={""} loading="lazy" />
-        </button>
-        <div
-            class="text-base font-normal text-[#41454B] overflow-hidden transition-[max-height] duration-200 ease-out"
-        >
-            <p>
-                Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
-                eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-                enim ad minim veniam, quis nostrud exercitation ullamco laboris
-                nisi ut aliquip ex ea commodo consequat.
+<div class="container mx-auto md:py-20 px-6 max-md:mb-4 max-md:p-6">
+  <p
+    class="text-4xl font-bold leading-12 text-[#27292C] mb-10 max-md:text-[28px] max-md:mb-5"
+  >
+    Frequently Asked Questions
+  </p>
+  <div>
+    {
+      Accordian_list.map((list) => (
+        <div class="py-3.5 border-b border-[#E5E7E8]">
+          <button class="accordion-header flex items-center justify-between w-full text-left text-xl font-bold cursor-pointer max-md:text-[18px]">
+            <span>{list.title}</span>
+            <Image
+              src={drop_close}
+              format="svg"
+              alt="Expand"
+              loading="lazy"
+              class="accordion-icon transition-transform duration-300"
+            />
+          </button>
+          <div class="accordion-content max-h-0 overflow-hidden transition-[max-height] duration-300 ease-out leading-5 text-[#41454B]">
+            <p class="mt-1">
+              Our website uses advanced geolocation technology to display the
+              top-rated car washes near your current location. Simply allow
+              location access or enter your ZIP code to see nearby options with
+              reviews, pricing, and photos.{" "}
             </p>
+          </div>
         </div>
-    </div>
-    <div class="py-3.5 border-b border-[#E5E7E8]">
-        <button
-            class="text-xl font-bold cursor-pointer w-full text-left outline-none transition duration-400 flex items-center justify-between"
-        >
-            <span> How can I find the best car wash near me? </span>
-            <Image src={drop_open} format="svg" alt={""} loading="lazy" />
-        </button>
-        <div
-            class="text-base font-normal text-[#41454B] overflow-hidden transition-[max-height] duration-200 ease-out"
-        >
-            <p>
-                Our website uses advanced geolocation technology to display the
-                top-rated car washes near your current location. Simply allow
-                location access or enter your ZIP code to see nearby options
-                with reviews, pricing, and photos.
-            </p>
-        </div>
-    </div>
-    <div class="py-3.5 border-b border-[#E5E7E8]">
-        <button
-            class="text-xl font-bold cursor-pointer w-full text-left outline-none transition duration-400 flex items-center justify-between"
-        >
-            <span> How can I find the best car wash near me? </span>
-            <Image src={drop_open} format="svg" alt={""} loading="lazy" />
-        </button>
-        <div
-            class="text-base font-normal text-[#41454B] overflow-hidden transition-[max-height] duration-200 ease-out"
-        >
-            <p>
-                Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
-                eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-                enim ad minim veniam, quis nostrud exercitation ullamco laboris
-                nisi ut aliquip ex ea commodo consequat.
-            </p>
-        </div>
-    </div>
+      ))
+    }
+  </div>
 </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const accordions = document.querySelectorAll(".accordion-header");
+    accordions.forEach((accordion: any) => {
+      accordion.addEventListener("click", () => {
+        const content = accordion.nextElementSibling;
+        const icon = accordion.querySelector(".accordion-icon");
+        document.querySelectorAll(".accordion-content").forEach((item: any) => {
+          if (item !== content) {
+            item.style.maxHeight = null;
+            item.previousElementSibling
+              .querySelector(".accordion-icon")
+              .classList.remove("rotate-180");
+          }
+        });
+
+        if (content.style.maxHeight) {
+          content.style.maxHeight = null;
+          icon.classList.remove("rotate-180");
+        } else {
+          content.style.maxHeight = content?.scrollHeight + "px";
+          icon.classList.add("rotate-180");
+        }
+      });
+    });
+  });
+</script>
