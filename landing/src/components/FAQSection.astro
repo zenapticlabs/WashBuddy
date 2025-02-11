@@ -55,12 +55,10 @@ const Accordian_list = [
 <script>
   document.addEventListener("DOMContentLoaded", () => {
     const accordions = document.querySelectorAll(".accordion-header");
-
     accordions.forEach((accordion: any) => {
       accordion.addEventListener("click", () => {
         const content = accordion.nextElementSibling;
         const icon = accordion.querySelector(".accordion-icon");
-
         document.querySelectorAll(".accordion-content").forEach((item: any) => {
           if (item !== content) {
             item.style.maxHeight = null;
@@ -69,7 +67,6 @@ const Accordian_list = [
               .classList.remove("rotate-180");
           }
         });
-
         if (content.style.maxHeight) {
           content.style.maxHeight = null;
           icon.classList.remove("rotate-180");
