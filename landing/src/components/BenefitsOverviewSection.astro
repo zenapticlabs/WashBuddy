@@ -16,24 +16,23 @@ const washBuddyBenefits = [
 
 <div class="container mx-auto px-6 flex flex-col items-center justify-center min-h-[762px]">
     <div
-    class="flex flex-wrap"
   >
     <p class="mx-auto text-[38px] font-bold leading-[47.5px] text-center  decoration-skip-ink-none max-md:text-[28px]">
         Why choose WashBuddy?
     </p>
     <div class="flex flex-wrap justify-center pt-20 align-center max-md:pt-10">
         {
-            washBuddyBenefits.map((image) => (
+            washBuddyBenefits.map((benefit) => (
                 <div class="w-[400px] h-[224px] flex flex-col items-center my-4 mx-4 max-lg:h-[197px] max-lg:w-full">
                     <Image
-                        src={image.image}
+                        src={benefit.image}
                         format="svg"
                         alt=""
                         loading="lazy"
                         class="w-[48px] h-[48px] "
                     />
-                    <h3 class="text-[24px] font-bold leading-[30px] m-4 text-[#27292C] max-md:text-[20px]">{image.title}</h3>
-                    <p class="font-normal text-[16px] leading-[21.6px] text-center w-[352px] text-[#41454B]">{image.description}</p>
+                    <h3 class="text-[24px] font-bold leading-[30px] m-4 text-[#27292C] max-md:text-[20px]">{benefit.title}</h3>
+                    <p class="font-normal text-[16px] leading-[21.6px] text-center w-[352px] text-[#41454B]">{benefit.description}</p>
                 </div>
             ))
         }
