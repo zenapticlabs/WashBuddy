@@ -3,9 +3,8 @@ import { Image } from "astro:assets";
 import logo from "../assets/logo.svg";
 import list from "../assets/list.svg";
 import gear from "../assets/gear-fine.svg";
-import handtap from "../assets/hand-tap.svg";
+import self from "../assets/self.svg";
 import handtapblack from "../assets/hand-tap-black.svg";
-import heart from "../assets/heart.svg";
 import bag from "../assets/shopping-bag.svg";
 import star from "../assets/shooting-star.svg";
 import globe from "../assets/globe.svg";
@@ -13,7 +12,7 @@ import flag from "../assets/usa.svg";
 
 const images = [
   { image: gear, title: "Automatic" },
-  { image: handtapblack, title: "Self-Service" },
+  { image: self, title: "Self-Service" },
   { image: bag, title: "Purchase History" },
   { image: star, title: "Rewards" },
 ];
@@ -39,20 +38,15 @@ const images = [
     <span
       class="hidden items-center border border-[#E5E7E8] px-[12px] py-[8px] rounded-[1000px] text-sm font-semibold gap-[4px] h-[36px] cursor-pointer lg:flex"
     >
-      <Image src={handtap} format="svg" alt={""} loading="lazy" />
+      <Image src={self} format="svg" alt={""} loading="lazy" />
       Self-Service
     </span>
   </div>
-  <div class="flex items-center gap-[12px] cursor-pointer">
-    <span>
-      <Image src={heart} format="svg" alt={""} loading="lazy" />
-    </span>
     <button
       class="px-[24px] py-[8px] border border-[#41454B] rounded-[8px] h-[40px] text-sm font-semibold cursor-pointer"
     >
       Sign in
     </button>
-  </div>
 </header>
 <div
   class="fixed w-full bg-[#fff] hidden z-100 px-[20px] py-[24px] border-t border-[#F4F4F4]"

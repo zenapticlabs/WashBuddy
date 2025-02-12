@@ -1,28 +1,47 @@
 ---
 const researchHighlights = [
-    { title: 'Cycle List of KPIs', description: 'Visibility to 9M car owners' },
-    { title: 'Retail Dive Survey (2018)', description: '67% of consumers prefer checking prices online before shopping in-store' },
-    { title: 'Google Consumer Insights', description: 'Over 80% of smartphone users compare prices online before making a purchase decision, whether in-store or online.' },
-    { title: 'Think With Google Study (2021)', description: '59% of shoppers said they find it very important to have access to pricing information when researching local businesses.' },
-    { title: 'Pew Research Center Study (2021)', description: 'About 82% of adults report reading online customer ratings and reviews before making a purchase decision.' },
-    { title: 'PowerReviews Research (2022)', description: ' 95% of shoppers say they rely on reviews when evaluating products or services. 86% say they specifically avoid businesses with low ratings or negative reviews.' },
-    { title: 'BrightLocal Consumer Review Survey (2023)', description: '93% of consumers say online reviews impact their purchasing decisions.49% say they trust reviews as much as personal recommendations.' }
+    { title: 'Retail Dive Survey (2018)', description: `<span class="text-[#189DEF] font-bold text-lg">67% </span>  of consumers prefer checking prices online before shopping in-store` },
+    { title: 'Google Consumer Insights', description: 'Over <span class="text-[#189DEF] font-bold text-lg">80% </span>  of smartphone users compare prices online before making a purchase decision, whether in-store or online.' },
+    { title: 'Think With Google Study (2021)', description: '<span class="text-[#189DEF] font-bold text-lg">59% </span>  of shoppers said they find it very important to have access to pricing information when researching local businesses.' },
+    { title: 'Pew Research Center Study (2021)', description: 'About <span class="text-[#189DEF] font-bold text-lg">82% </span>  of adults report reading online customer ratings and reviews before making a purchase decision.' },
+    { title: 'PowerReviews Research (2022)', description: ' <span class="text-[#189DEF] font-bold text-lg">95% </span>  of shoppers say they rely on reviews when evaluating products or services.  <span class="text-[#189DEF] font-bold text-lg">86% </span> say they specifically avoid businesses with low ratings or negative reviews.' },
+    { title: 'BrightLocal Consumer Review Survey (2023)', description: '<span class="text-[#189DEF] font-bold text-lg">93% </span>  of consumers say online reviews impact their purchasing decisions.<span class="text-[#189DEF] font-bold text-lg">49% </span> say they trust reviews as much as personal recommendations.' }
 ];
+
 ---
-<div class="bg-[#F8FCFF] bg-[url('../assets/list_bg_left.svg'),url('../assets/list_bg_right.svg')] bg-no-repeat" style="background-position: left,right;">
-    <div class="container  mx-auto px-6 flex flex-col items-center justify-center py-5 mb-8">
-        <h2 class="font-bold text-4xl leading-[47.5px] text-center text-[#27292C] max-lg:text-[28px] max-lg:text-left max-lg:mx-0 max-lg:mt-5 mb-4">Why Data-Driven Car Washes Win More Customers</h2>
-        <div class="flex  items-center justify-center flex-wrap max-lg:gap-4 mb-3.5">
-            {
-                researchHighlights.map((highlight) => (
-                    <div class="w-[310px] h-[212px] max-lg:h-auto flex flex-col items-center border border-[#B5DFFA] p-2.5 border-t-0 border-l-0 
-                    last:border-r-0 nth-4:border-r-0 nth-[1n+5]:border-b-0 max-lg:w-full max-lg:px-0 max-lg:border-0 max-lg:border-b
-                     max-lg:border-[#B5DFFA] max-lg:nth-4:border-r-0 max-lg:nth-[1n+5]:border-b  max-lg:nth-4:border-b max-lg:nth-4:border-[#B5DFFA] max-lg:items-start max-lg:last:border-0">
-                        <h3 class="text-[24px] font-bold leading-[30px] m-4 text-[#27292C] max-lg:mx-0 max-lg:text-[20px]">{highlight.title}</h3>
-                        <p class="font-normal text-[16px] text-center max-lg:text-left max-lg:text-[16px] text-[#41454B]">{highlight.description}</p>
-                    </div>
-                ))
-            }
-    </div>
+<div class="bg-[#F8FCFF] bg-[url('../assets/list_bg_left.svg'),url('../assets/list_bg_right.svg')] bg-no-repeat overflow-hidden" style="background-position: left,right;">
+    <div class="container mx-auto px-6 flex flex-col items-center justify-center md:py-20">
+        <h2 class="font-bold text-4xl leading-[47.5px] text-center text-[#27292C] max-lg:text-[28px] max-lg:mx-0 max-lg:mt-5 mb-4">Why Data-Driven Car Washes Win More Customers</h2>
+         <span class="text-[28px] font-bold border border-[#189DEF] px-4 py-2 rounded-full text-[#189DEF] my-6 bg-white leading-[35px] max-lg:text-[18px]">
+            Visibility to 9M car owners
+        </span>  
+        <div class="w-[100vw] overflow-x-hidden max-lg:px-5  custom-scroll"  onmouseenter="this.style.overflowX='auto'" onmouseleave="this.style.overflowX='hidden'">
+            <div class="flex items-center justify-start gap-5 mb-3.5 max-lg:gap-2 max-lg:flex-col lg:pl-24">
+                {
+                    researchHighlights.map((highlight) => (
+                        <div class="w-[592px] min-w-[592px] h-[212px] max-lg:min-w-full max-lg:h-auto max-lg:w-full flex flex-col items-center justify-center gap-4 bg-[#E2F3FD] rounded-3xl p-12 max-lg:p-6 max-lg:gap-2">
+                            <h3 class="text-[24px] font-bold leading-[30px] text-[#27292C] max-lg:mx-0 max-lg:text-[18px] text-wrap text-center">{highlight.title}</h3>
+                            <p class="font-normal text-[16px] text-center max-lg:text-[16px] text-[#41454B] text-wrap" set:html={highlight.description}></p>
+                        </div>
+                    ))
+                }
+            </div>
+        </div> 
     </div>
 </div>
+<style>
+    .custom-scroll::-webkit-scrollbar {
+      height: 12px;
+    }    
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #E2F3FD; 
+     
+      border-radius: 10px;
+    }     
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #189DEF; 
+      border-radius: 10px;
+    }
+    
+    
+    </style>
