@@ -1,9 +1,8 @@
 ---
 import { Image } from "astro:assets";
-import left_car from "../assets/left_car.svg";
-import right_car from "../assets/right_car.svg";
+import left_car from "../assets/left-car.svg";
+import right_car from "../assets/right-car.svg";
 import search_icon from "../assets/search_icon.svg";
-import location from "../assets/location.svg";
 import crosshair from "../assets/crosshair.svg";
 ---
 
@@ -13,7 +12,7 @@ import crosshair from "../assets/crosshair.svg";
       class="relative md:flex md:items-center md:justify-between w-full h-[480px] md:h-[373px] bg-[url('../assets/bg_dots.svg')] bg-no-repeat bg-cover bg-center"
     >
       <div
-        class="absolute w-[163px] h-[152px] left-0 bottom-[-20px] md:left-auto md:bottom-auto md:relative md:w-[326px] md:h-[305px] before:w-full before:h-full before:bg-[#ffffff30] before:absolute"
+        class="absolute w-[163px]  left-0 bottom-[0px] md:left-auto md:bottom-auto md:relative md:w-[326px] md:h-[305px]"
       >
         <Image
           src={left_car}
@@ -39,7 +38,7 @@ import crosshair from "../assets/crosshair.svg";
         </p>
       </div>
       <div
-        class="absolute w-[221px] h-[131px] right-0 bottom-0 md:right-auto md:bottom-auto md:relative md:w-[442px] md:h-[232px] before:content-[''] before:w-full before:h-full before:bg-[#ffffff30] before:absolute"
+        class="absolute w-[221px]   right-0 bottom-0 md:right-auto md:bottom-auto md:relative md:w-[442px] md:h-[232px] before:content-['']"
       >
         <Image
           src={right_car}
