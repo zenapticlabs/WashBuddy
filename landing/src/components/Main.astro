@@ -5,6 +5,7 @@ import FAQSection from "./FAQSection.astro";
 import FeaturedBrandsSection from "./FeaturedBrandsSection.astro";
 import ResearchHighlightsSection from "./ResearchHighlightsSection.astro";
 import SearchSection from "./SearchSection.astro";
+import OwlCarouselComponent from "./FeaturedBrandSlider.jsx";
 ---
 
 <div id="container">
@@ -14,4 +15,8 @@ import SearchSection from "./SearchSection.astro";
   <ResearchHighlightsSection />
   <BusinessListingSection/>
   <FAQSection/>
+  <OwlCarouselComponent client:load/>
 </div>
+
+
+
