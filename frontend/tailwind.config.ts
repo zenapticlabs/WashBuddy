@@ -49,7 +49,11 @@ export default {
   				'3': 'hsl(var(--chart-3))',
   				'4': 'hsl(var(--chart-4))',
   				'5': 'hsl(var(--chart-5))'
-  			}
+  			},
+			'default-blue': '#189DEF',
+			'badge-green': '#409624',
+			'badge-yellow': '#FFA100',
+			'default-yellow': '#FFA100',
   		},
   		borderRadius: {
   			lg: 'var(--radius)',
