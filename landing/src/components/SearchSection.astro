@@ -2,8 +2,7 @@
 import { Image } from "astro:assets";
 import left_car from "../assets/left-car.svg";
 import right_car from "../assets/right-car.svg";
-import search_icon from "../assets/search_icon.svg";
-import crosshair from "../assets/crosshair.svg";
+import AutoCompleteSearch from "../components/AutoCompleteSearch.jsx";
 ---
 
 <div class="w-full h-[621px] md:h-[520px]">
@@ -12,7 +11,7 @@ import crosshair from "../assets/crosshair.svg";
       class="relative md:flex md:items-center md:justify-between w-full h-[480px] md:h-[373px] bg-[url('../assets/bg_dots.svg')] bg-no-repeat bg-cover bg-center"
     >
       <div
-        class="absolute w-[163px]  left-0 bottom-[0px] md:left-auto md:bottom-auto md:relative md:w-[326px] md:h-[305px]"
+        class="absolute w-[163px] left-0 bottom-[0px] md:left-auto md:bottom-auto md:relative md:w-[326px] md:h-[305px]"
       >
         <Image
           src={left_car}
@@ -38,7 +37,7 @@ import crosshair from "../assets/crosshair.svg";
         </p>
       </div>
       <div
-        class="absolute w-[221px]   right-0 bottom-0 md:right-auto md:bottom-auto md:relative md:w-[442px] md:h-[232px] before:content-['']"
+        class="absolute w-[221px] right-0 bottom-0 md:right-auto md:bottom-auto md:relative md:w-[442px] md:h-[232px] before:content-['']"
       >
         <Image
           src={right_car}
@@ -51,61 +50,8 @@ import crosshair from "../assets/crosshair.svg";
     </div>
   </div>
   <div
-    class="flex justify-center w-full h-[237px] md:h-[243px] p-[16px] md:p-0 "
+    class="flex justify-center w-full h-[237px] md:h-[243px] p-[16px] md:p-0"
   >
-    <div
-      class="w-full md:w-[60vw] h-[139px] max-lg:h-52 md:mt-[-50px] drop-shadow-xl flex flex-col gap-4 bg-white p-[16px] md:p-[24px] rounded-[24px]"
-    >
-    <div class="flex items-center max-lg:flex-col gap-2 ">
-      <div
-        class="flex items-center gap-[8px] rounded-[100px] p-[8px]  border-2 border-[#189DEF80] w-full h-full"
-      >
-        <Image
-          src={search_icon}
-          format="svg"
-          alt={""}
-          loading="lazy"
-          class="w-[16.27px] h-[16.27px]"
-        />
-        <input
-          type="search"
-          placeholder="Search wash prices by city/zip"
-          class="w-full  border-none focus:border-none focus:outline-none text-neutral-900 "
-        />
-      </div>
-      <button class="  pt-2 pb-2 pl-6 pr-6 gap-1 max-lg:gap-1  border-1 max-lg:w-full  border-[#189DEF80] rounded-full flex items-center justify-center cursor-pointer whitespace-nowrap min-h-11 ">
-        <Image
-        src={crosshair}
-        format="svg"
-        alt={""}
-        loading="lazy"
-        class={"w-[16.27px] h-[16.27px]"}
-      />
-      <span class="font-semibold text-[14px] leading-[18.9px] text-blue-500 ">
-        Detect Location
-      </span>
-    </button>
-    </div>
-      <div class="flex items-center gap-[12px] text-neutral-500 text-[14px] relative after:absolute after:top-0 after:right-0 after:h-full after:w-[35px] after:bg-gradient-to-l after:from-white after:to-transparent after:z-10">
-        <span>Recent</span>
-        <div class="results-hidden overflow-auto ">
-          <div class="flex items-center gap-[8px] whitespace-nowrap">
-            <div class="bg-neutral-50 rounded-[1000px] p-[10px]">
-              123 Main St, Downtown, NY
-            </div>
-            <div class="bg-neutral-50 rounded-[1000px] p-[10px]">
-              123 Main St, Downtown, NY
-            </div>
-            <div class="bg-neutral-50 rounded-[1000px] p-[10px]">
-              123 Main St, Downtown, NY
-            </div>
-            <div class="bg-neutral-50 rounded-[1000px] p-[10px]">
-              123 Main St, Downtown, NY
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
+    <AutoCompleteSearch client:load />
   </div>
 </div>

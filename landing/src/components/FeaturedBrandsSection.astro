@@ -29,7 +29,6 @@ const slides = [
     <div class="marquee flex flex-nowrap gap-[140px] w-max animate-marquee">
       {slides.concat(slides).concat(slides).map((slide, index) => (
         <Image
-          key={index}
           src={slide.image}
           format="svg"
           alt="Brand logo"
