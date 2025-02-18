@@ -61,13 +61,26 @@ jobs:
     needs: check-for-changes
     if: needs.check-for-changes.outputs.deploy-landing == 'true'
     uses: ./.github/workflows/landing-build.yml
+    secrets:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_LANDING_PROJECT_ID }}
 
   frontend:
     needs: check-for-changes
     if: needs.check-for-changes.outputs.deploy-frontend == 'true'
     uses: ./.github/workflows/frontend-build.yml
+    secrets:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_FRONTEND_PROJECT_ID }}
+      CHROMATIC_PROJECT_TOKEN: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
 
   backend:
     needs: check-for-changes
     if: needs.check-for-changes.outputs.deploy-backend == 'true'
     uses: ./.github/workflows/backend-build.yml
+    secrets:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_BACKEND_PROJECT_ID }}
