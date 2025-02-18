@@ -15,6 +15,17 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Get base branch reference
+        id: get_base
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "BASE_BRANCH=${{ github.event.pull_request.base.ref }}" >> $GITHUB_ENV
+          else
+            echo "BASE_BRANCH=origin/master" >> $GITHUB_ENV
+          fi
 
       - name: Fetch latest from master
         run: git fetch origin master --depth=1
