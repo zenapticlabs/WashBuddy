@@ -5,6 +5,10 @@ import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
 import { Check } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { TooltipContent } from "./tooltip";
+import { Tooltip, TooltipProvider } from "./tooltip";
+import { TooltipTrigger } from "./tooltip";
+import { Button } from "./button";
 
 const Checkbox = React.forwardRef<
   React.ElementRef<typeof CheckboxPrimitive.Root>,
@@ -13,7 +17,7 @@ const Checkbox = React.forwardRef<
     position?: "left" | "right";
     checked?: boolean;
     onChange?: (checked: boolean) => void;
-    optional?: boolean;
+    description?: string;
   }
 >(
   (
@@ -23,7 +27,7 @@ const Checkbox = React.forwardRef<
       position = "right",
       checked,
       onChange,
-      optional,
+      description,
       ...props
     },
     ref
@@ -55,10 +59,19 @@ const Checkbox = React.forwardRef<
           {label}
         </label>
       )}
-      {optional && (
-        <div className="w-3 h-3 border border-gray-400 rounded-full px-1 py-0.5 text-[8px] text-gray-400 font-semibold flex items-center justify-center">
-          i
-        </div>
+      {description && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="outline" className="w-3 h-3 rounded-full px-1 py-0.5 text-[8px] text-gray-400 font-semibold flex items-center justify-center cursor-pointer">
+                i
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent  side="right" align="center">
+              <p>{description}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       )}
     </div>
   )
