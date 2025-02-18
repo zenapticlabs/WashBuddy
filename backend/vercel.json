@@ -25,7 +25,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "manage.py"
+      "dest": "vercel.py"
     }
   ],
   "env": {
