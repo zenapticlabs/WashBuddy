@@ -4,14 +4,6 @@
     {
       "src": "vercel.py",
       "use": "@vercel/python"
-    },
-    {
-      "src": "static/**/*",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "media/**/*",
-      "use": "@vercel/static"
     }
   ],
   "routes": [
