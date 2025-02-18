@@ -6,70 +6,56 @@ on:
       - master
 
 jobs:
-  check-for-changes:
-    runs-on: ubuntu-latest
-    outputs:
-      deploy-landing: ${{ steps.check_landing.outputs.deploy-landing }}
-      deploy-frontend: ${{ steps.check_frontend.outputs.deploy-frontend }}
-      deploy-backend: ${{ steps.check_backend.outputs.deploy-backend }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
+check-for-changes:
+  runs-on: ubuntu-latest
+  outputs:
+    deploy-landing: ${{ steps.check_landing.outputs.deploy-landing }}
+    deploy-frontend: ${{ steps.check_frontend.outputs.deploy-frontend }}
+    deploy-backend: ${{ steps.check_backend.outputs.deploy-backend }}
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0  # Fetch full history for accurate change detection
 
-      - name: Get base branch reference
-        id: get_base
-        run: |
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
-            echo "BASE_BRANCH=${{ github.event.pull_request.base.ref }}" >> $GITHUB_ENV
-          else
-            echo "BASE_BRANCH=origin/master" >> $GITHUB_ENV
-          fi
+    - name: Get changed directories
+      id: changed-files
+      uses: tj-actions/changed-files@v45
+      with:
+        dir_names: true  # Output only changed directories
 
-      - name: Fetch latest from master
-        run: |
-          git fetch origin master --depth=1
-          git reset --hard origin/master
+    - name: Check for changes in "landing"
+      id: check_landing
+      run: |
+        if [[ "${{ steps.changed-files.outputs.all_changed_files }}" =~ "landing" ]]; then
+          echo "Landing changes detected!"
+          echo "deploy-landing=true" >> $GITHUB_OUTPUT
+        else
+          echo "No changes in landing directory."
+          echo "deploy-landing=false" >> $GITHUB_OUTPUT
+        fi
 
-      - name: Debug Git Diff Output
-        run: |
-          echo "### Checking for changed files ###"
-          git log --oneline -5
-          git diff --name-only $BASE_BRANCH HEAD | tee changed_files.log
+    - name: Check for changes in "frontend"
+      id: check_frontend
+      run: |
+        if [[ "${{ steps.changed-files.outputs.all_changed_files }}" =~ "frontend" ]]; then
+          echo "Frontend changes detected!"
+          echo "deploy-frontend=true" >> $GITHUB_OUTPUT
+        else
+          echo "No changes in frontend directory."
+          echo "deploy-frontend=false" >> $GITHUB_OUTPUT
+        fi
 
-      - name: Check for changes in "landing"
-        id: check_landing
-        run: |
-          if git diff --quiet $BASE_BRANCH HEAD -- landing/; then
-            echo "No changes in landing directory."
-            echo "deploy-landing=false" >> $GITHUB_OUTPUT
-          else
-            echo "Landing changes detected!"
-            echo "deploy-landing=true" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Check for changes in "frontend"
-        id: check_frontend
-        run: |
-          if git diff --quiet $BASE_BRANCH HEAD -- frontend/; then
-            echo "No changes in frontend directory."
-            echo "deploy-frontend=false" >> $GITHUB_OUTPUT
-          else
-            echo "Frontend changes detected!"
-            echo "deploy-frontend=true" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Check for changes in "backend"
-        id: check_backend
-        run: |
-          if git diff --quiet $BASE_BRANCH HEAD -- backend/; then
-            echo "No changes in backend directory."
-            echo "deploy-backend=false" >> $GITHUB_OUTPUT
-          else
-            echo "Backend changes detected!"
-            echo "deploy-backend=true" >> $GITHUB_OUTPUT
-          fi
+    - name: Check for changes in "backend"
+      id: check_backend
+      run: |
+        if [[ "${{ steps.changed-files.outputs.all_changed_files }}" =~ "backend" ]]; then
+          echo "Backend changes detected!"
+          echo "deploy-backend=true" >> $GITHUB_OUTPUT
+        else
+          echo "No changes in backend directory."
+          echo "deploy-backend=false" >> $GITHUB_OUTPUT
+        fi
 
   landing:
     needs: check-for-changes
