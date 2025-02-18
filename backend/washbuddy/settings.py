@@ -39,6 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'admin_dashboard',
+    'rest_framework',
+    'carwash',
 ]
 
 MIDDLEWARE = [
