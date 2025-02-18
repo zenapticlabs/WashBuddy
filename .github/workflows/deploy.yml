@@ -5,13 +5,6 @@ on:
     branches:
       - master
 
-name: Monorepo CI/CD with Conditional Deploys
-
-on:
-  push:
-    branches:
-      - master
-
 jobs:
   check-for-changes:
     runs-on: ubuntu-latest
