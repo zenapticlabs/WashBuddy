@@ -2,6 +2,15 @@ name: Frontend Build and Deploy Workflow
 
 on:
   workflow_call:
+    secrets:
+      CHROMATIC_PROJECT_TOKEN:
+        required: true
+      VERCEL_TOKEN:
+        required: true
+      VERCEL_ORG_ID:
+        required: true
+      VERCEL_FRONTEND_PROJECT_ID:
+        required: true
   workflow_dispatch:
 
 jobs:

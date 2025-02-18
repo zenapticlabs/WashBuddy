@@ -2,6 +2,13 @@ name: Landing Build and Deploy Workflow
 
 on:
   workflow_call:
+    secrets:
+      VERCEL_TOKEN:
+        required: true
+      VERCEL_ORG_ID:
+        required: true
+      VERCEL_LANDING_PROJECT_ID:
+        required: true
   workflow_dispatch:
 
 jobs:
