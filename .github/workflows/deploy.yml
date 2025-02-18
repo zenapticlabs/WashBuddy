@@ -28,7 +28,14 @@ jobs:
           fi
 
       - name: Fetch latest from master
-        run: git fetch origin master --depth=1
+        run: |
+          git fetch origin master --depth=1
+          git reset --hard origin/master
+
+      - name: Debug Git Diff Output
+        run: |
+          echo "### Checking for changed files ###"
+          git diff --name-only $BASE_BRANCH HEAD | tee changed_files.log
 
       - name: Check for changes in "landing"
         id: check_landing
@@ -65,15 +72,15 @@ jobs:
 
   landing:
     needs: check-for-changes
-    if: ${{ needs.check-for-changes.outputs.deploy-landing == 'true' }}
+    if: needs.check-for-changes.outputs.deploy-landing == 'true'
     uses: ./.github/workflows/landing-build.yml
 
   frontend:
     needs: check-for-changes
-    if: ${{ needs.check-for-changes.outputs.deploy-frontend == 'true' }}
+    if: needs.check-for-changes.outputs.deploy-frontend == 'true'
     uses: ./.github/workflows/frontend-build.yml
 
   backend:
     needs: check-for-changes
-    if: ${{ needs.check-for-changes.outputs.deploy-backend == 'true' }}
+    if: needs.check-for-changes.outputs.deploy-backend == 'true'
     uses: ./.github/workflows/backend-build.yml
