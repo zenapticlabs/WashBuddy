@@ -37,12 +37,6 @@ jobs:
         run: python manage.py collectstatic --noinput
         working-directory: backend
 
-      - name: Move Static Files to Vercel Public Directory
-        run: |
-          mkdir -p public/static
-          cp -r staticfiles/* public/static/
-        working-directory: backend
-
       - name: Deploy to Vercel (Backend)
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
