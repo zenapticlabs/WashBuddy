@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'admin_dashboard',
     'rest_framework',
     'carwash',
+    'carwash_filter',
 ]
 
 MIDDLEWARE = [
