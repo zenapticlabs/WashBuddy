@@ -33,27 +33,33 @@ jobs:
       - name: Check for changes in "landing"
         id: check_landing
         run: |
-          if git diff --quiet origin/master HEAD -- landing/; then
+          if git diff --quiet $BASE_BRANCH HEAD -- landing/; then
+            echo "No changes in landing directory."
             echo "deploy-landing=false" >> $GITHUB_OUTPUT
           else
+            echo "Landing changes detected!"
             echo "deploy-landing=true" >> $GITHUB_OUTPUT
           fi
 
       - name: Check for changes in "frontend"
         id: check_frontend
         run: |
-          if git diff --quiet origin/master HEAD -- frontend/; then
+          if git diff --quiet $BASE_BRANCH HEAD -- frontend/; then
+            echo "No changes in frontend directory."
             echo "deploy-frontend=false" >> $GITHUB_OUTPUT
           else
+            echo "Frontend changes detected!"
             echo "deploy-frontend=true" >> $GITHUB_OUTPUT
           fi
 
       - name: Check for changes in "backend"
         id: check_backend
         run: |
-          if git diff --quiet origin/master HEAD -- backend/; then
+          if git diff --quiet $BASE_BRANCH HEAD -- backend/; then
+            echo "No changes in backend directory."
             echo "deploy-backend=false" >> $GITHUB_OUTPUT
           else
+            echo "Backend changes detected!"
             echo "deploy-backend=true" >> $GITHUB_OUTPUT
           fi
 
