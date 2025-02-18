@@ -35,6 +35,7 @@ jobs:
       - name: Debug Git Diff Output
         run: |
           echo "### Checking for changed files ###"
+          git log --oneline -5
           git diff --name-only $BASE_BRANCH HEAD | tee changed_files.log
 
       - name: Check for changes in "landing"
