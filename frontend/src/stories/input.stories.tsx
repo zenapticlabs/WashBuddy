@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react"; // Assuming you're using lucide-react for icons
+import { Mail } from "lucide-react"; // Assuming you're using lucide-react for icons
 
 const meta: Meta<typeof Input> = {
   title: "UI/Input",
@@ -15,31 +15,30 @@ export default meta;
 type Story = StoryObj<typeof Input>;
 
 export const Default: Story = {
-  args: {},
+  args: {
+    placeholder: "Default input",
+  },
 };
 
 export const WithIcon: Story = {
   args: {
-    icon: <Search className="h-4 w-4" />,
-    placeholder: "Search...",
+    placeholder: "Email",
+    icon: (
+      <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+    ),
   },
 };
 
 export const Disabled: Story = {
   args: {
+    placeholder: "Disabled input",
     disabled: true,
   },
 };
 
-export const WithValue: Story = {
-  args: {
-    value: "Sample input text",
-  },
-};
-
-export const Password: Story = {
+export const WithType: Story = {
   args: {
     type: "password",
-    placeholder: "Enter password...",
+    placeholder: "Enter password",
   },
 };
