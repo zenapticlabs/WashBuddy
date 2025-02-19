@@ -5,16 +5,6 @@ const meta: Meta<typeof Checkbox> = {
   title: "UI/Checkbox",
   component: Checkbox,
   tags: ["autodocs"],
-  argTypes: {
-    label: { control: "text" },
-    position: {
-      control: { type: "radio" },
-      options: ["left", "right"],
-    },
-    checked: { control: "boolean" },
-    optional: { control: "boolean" },
-    disabled: { control: "boolean" },
-  },
 };
 
 export default meta;
@@ -22,28 +12,28 @@ type Story = StoryObj<typeof Checkbox>;
 
 export const Default: Story = {
   args: {
-    label: "Remember me",
+    label: "Accept terms and conditions",
+  },
+};
+
+export const WithDescription: Story = {
+  args: {
+    label: "Enable notifications",
+    description: "You will receive notifications for important updates",
+  },
+};
+
+export const LeftPosition: Story = {
+  args: {
+    label: "Left positioned checkbox",
+    position: "left",
   },
 };
 
 export const Checked: Story = {
   args: {
-    label: "Remember me",
+    label: "Pre-checked checkbox",
     checked: true,
-  },
-};
-
-export const LabelLeft: Story = {
-  args: {
-    label: "Remember me",
-    position: "left",
-  },
-};
-
-export const Optional: Story = {
-  args: {
-    label: "Subscribe to newsletter",
-    optional: true,
   },
 };
 

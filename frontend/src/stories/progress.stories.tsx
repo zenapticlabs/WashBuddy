@@ -8,51 +8,85 @@ const meta: Meta<typeof Progress> = {
   parameters: {
     layout: "centered",
   },
+  decorators: [
+    (Story) => (
+      <div style={{ width: '100%', maxWidth: '800px', minWidth: '300px', padding: '1rem' }}>
+        <Story />
+      </div>
+    ),
+  ],
   tags: ["autodocs"],
 };
 
 export default meta;
 type Story = StoryObj<typeof Progress>;
 
-// Static progress bar at 50%
+// Basic progress bar
 export const Default: Story = {
   args: {
     value: 50,
   },
 };
 
-// Progress bar at 75%
-export const ThreeQuarters: Story = {
+// Custom range progress bar
+export const CustomRange: Story = {
   args: {
-    value: 75,
+    value: 25,
+    minValue: -50,
+    maxValue: 50,
   },
 };
 
 // Interactive progress bar with state
+const InteractiveProgressBar = () => {
+  const [value, setValue] = useState(30);
+  
+  return (
+    <div className="w-full max-w-3xl">
+      <Progress 
+        value={value}
+        onValueChange={setValue}
+      />
+    </div>
+  );
+};
+
 export const Interactive: Story = {
-  render: () => {
-    const [value, setValue] = useState(30);
-    return (
-      <div className="w-[300px]">
-        <Progress value={value} />
-        <div className="mt-2 text-sm text-gray-500">
-          Current value: {value}%
-        </div>
+  render: () => <InteractiveProgressBar />,
+};
+
+// Disabled progress bar
+export const Disabled: Story = {
+  args: {
+    value: 70,
+    className: "opacity-50 cursor-not-allowed",
+    style: { pointerEvents: "none" },
+  },
+};
+
+// Different sizes
+export const Small: Story = {
+  decorators: [
+    (Story) => (
+      <div className="w-64">
+        <Story />
       </div>
-    );
+    ),
+  ],
+  args: {
+    value: 60,
   },
 };
 
-// Progress bar at 100%
-export const Complete: Story = {
+export const Large: Story = {
+  decorators: [
+    (Story) => (
+      <div className="w-[800px]">
+        <Story />
+      </div>
+    ),
+  ],
   args: {
-    value: 100,
-  },
-};
-
-// Progress bar at 0%
-export const Empty: Story = {
-  args: {
-    value: 0,
+    value: 40,
   },
 };
