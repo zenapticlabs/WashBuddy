@@ -13,7 +13,7 @@ import { Button } from "./button";
 const Checkbox = React.forwardRef<
   React.ElementRef<typeof CheckboxPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root> & {
-    label?: string;
+    label?: React.ReactNode;
     position?: "left" | "right";
     checked?: boolean;
     onChange?: (checked: boolean) => void;
@@ -55,9 +55,9 @@ const Checkbox = React.forwardRef<
         </CheckboxPrimitive.Indicator>
       </CheckboxPrimitive.Root>
       {label && (
-        <label className="text-sm text-gray-700 cursor-pointer font-figtree">
+        <span className="text-sm text-gray-700 cursor-pointer font-figtree">
           {label}
-        </label>
+        </span>
       )}
       {description && (
         <TooltipProvider>
@@ -68,7 +68,7 @@ const Checkbox = React.forwardRef<
               </Button>
             </TooltipTrigger>
             <TooltipContent  side="right" align="center">
-              <p>{description}</p>
+              {description}
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>

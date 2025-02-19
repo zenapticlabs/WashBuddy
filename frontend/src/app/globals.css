@@ -74,4 +74,16 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+  .text-title-1 {
+    @apply font-figtree font-semibold text-base;
+  }
+  .text-title-2 {
+    @apply font-figtree font-semibold text-sm ;
+  }
+  .text-body-1 {
+    @apply font-figtree font-normal text-base;
+  }
+  .text-body-2 {
+    @apply font-figtree font-normal text-sm;
+  }
 }
