@@ -7,41 +7,66 @@ class CarWashOperatingHoursSerializer(serializers.ModelSerializer):
         model = CarWashOperatingHours
         exclude = ('car_wash',)
 
+    def validate(self, data):
+        if data.get('is_closed'):
+            if data.get('opening_time') is not None or data.get('closing_time') is not None:
+                raise ValidationError("When is_closed is True, opening_time and closing_time must be null")
+        else:
+            if data.get('opening_time') is None or data.get('closing_time') is None:
+                raise ValidationError("When is_closed is False, opening_time and closing_time are required")
+        return data
+
 class CarWashImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = CarWashImage
         exclude = ('car_wash',)
 
-class CarWashSerializer(serializers.ModelSerializer):
+class CarWashCreateSerializer(serializers.ModelSerializer):
     operating_hours = CarWashOperatingHoursSerializer(source='carwashoperatinghours_set', many=True)
     images = CarWashImageSerializer(source='carwashimage_set', many=True)
 
     class Meta:
         model = CarWash
-        fields = '__all__'
-        extra_kwargs = {
-            'verified': {'read_only': True},
-            'reviews_count': {'read_only': True},
-            'reviews_average': {'read_only': True}
-        }
+        exclude = ('verified', 'reviews_count', 'reviews_average')
 
-    def validate_operating_hours(self, value):
-        if len(value) != 7:
+    def validate(self, data):
+        open_24_hours = data.get('open_24_hours')
+        operating_hours = data.get('carwashoperatinghours_set', [])
+
+        if open_24_hours:
+            # Check if all days are 24 hours
+            for hours in operating_hours:
+                if (hours['is_closed'] or 
+                    hours['opening_time'].strftime('%H:%M') != '00:00' or 
+                    hours['closing_time'].strftime('%H:%M') != '24:00'):
+                    raise ValidationError(
+                        "When open_24_hours is True, all days must be open 00:00-24:00"
+                    )
+
+        # Validate operating hours count and sequence
+        if len(operating_hours) != 7:
             raise ValidationError("Must provide exactly 7 days of operating hours")
-        days = sorted(hour['day_of_week'] for hour in value)
+        
+        days = sorted(hour['day_of_week'] for hour in operating_hours)
         if days != list(range(7)):
             raise ValidationError("Must provide operating hours for all days 0-6 without duplicates")
-        
-        return value
+
+        return data
 
     def validate_images(self, value):
         if len(value) != 8:
-            raise ValidationError("Must provide exactly 8 images")
+            raise ValidationError("Must provide exactly 7 images")
+            
         image_types = sorted(image['image_type'] for image in value)
         if image_types != list(range(8)):
             raise ValidationError("Must provide exactly one image for each type 0-7")
         
         return value
+
+class CarWashSerializer(CarWashCreateSerializer):
+    class Meta:
+        model = CarWash
+        fields = '__all__'
 
     def create(self, validated_data):
         operating_hours_data = validated_data.pop('carwashoperatinghours_set', [])
