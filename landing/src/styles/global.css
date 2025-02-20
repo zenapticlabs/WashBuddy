@@ -3,3 +3,21 @@
 .results-hidden::-webkit-scrollbar {
   display: none;
 }
+ .highlight-caraosel ul.splide__list{
+  gap: 20px;
+  align-items: center;
+}
+.highlight-caraosel ul.splide__list li{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.highlight-caraosel li.is-active{
+  height: max-content;
+  transition: all 0.3s;
+}
+.highlight-caraosel li.is-active div {
+  scale: 1.08;
+  transition: all 1s;
+  box-shadow: inset 0 0 10px #189DEF;
+}

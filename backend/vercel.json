@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "vercel.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "vercel.py"
+    }
+  ],
+  "env": {
+    "DJANGO_SETTINGS_MODULE": "washbuddy.settings",
+    "DEBUG": "False"
+  }
+}

@@ -15,48 +15,72 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Fetch full history for accurate change detection
 
-      - name: Fetch latest from master
-        run: git fetch origin master --depth=1
+      - name: Get changed directories
+        id: changed-files
+        uses: tj-actions/changed-files@v45
+        with:
+          dir_names: true  # Output only changed directories
 
       - name: Check for changes in "landing"
         id: check_landing
         run: |
-          if git diff --quiet origin/master HEAD -- landing/; then
-            echo "deploy-landing=false" >> $GITHUB_OUTPUT
-          else
+          if [[ "${{ steps.changed-files.outputs.all_changed_files }}" =~ "landing" ]]; then
+            echo "Landing changes detected!"
             echo "deploy-landing=true" >> $GITHUB_OUTPUT
+          else
+            echo "No changes in landing directory."
+            echo "deploy-landing=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Check for changes in "frontend"
         id: check_frontend
         run: |
-          if git diff --quiet origin/master HEAD -- frontend/; then
-            echo "deploy-frontend=false" >> $GITHUB_OUTPUT
-          else
+          if [[ "${{ steps.changed-files.outputs.all_changed_files }}" =~ "frontend" ]]; then
+            echo "Frontend changes detected!"
             echo "deploy-frontend=true" >> $GITHUB_OUTPUT
+          else
+            echo "No changes in frontend directory."
+            echo "deploy-frontend=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Check for changes in "backend"
         id: check_backend
         run: |
-          if git diff --quiet origin/master HEAD -- backend/; then
-            echo "deploy-backend=false" >> $GITHUB_OUTPUT
-          else
+          if [[ "${{ steps.changed-files.outputs.all_changed_files }}" =~ "backend" ]]; then
+            echo "Backend changes detected!"
             echo "deploy-backend=true" >> $GITHUB_OUTPUT
+          else
+            echo "No changes in backend directory."
+            echo "deploy-backend=false" >> $GITHUB_OUTPUT
           fi
 
   landing:
     needs: check-for-changes
-    if: ${{ needs.check-for-changes.outputs.deploy-landing == 'true' }}
+    if: needs.check-for-changes.outputs.deploy-landing == 'true'
     uses: ./.github/workflows/landing-build.yml
+    secrets:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_LANDING_PROJECT_ID: ${{ secrets.VERCEL_LANDING_PROJECT_ID }}
 
   frontend:
     needs: check-for-changes
-    if: ${{ needs.check-for-changes.outputs.deploy-frontend == 'true' }}
+    if: needs.check-for-changes.outputs.deploy-frontend == 'true'
     uses: ./.github/workflows/frontend-build.yml
+    secrets:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_FRONTEND_PROJECT_ID: ${{ secrets.VERCEL_FRONTEND_PROJECT_ID }}
+      CHROMATIC_PROJECT_TOKEN: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
 
   backend:
     needs: check-for-changes
-    if: ${{ needs.check-for-changes.outputs.deploy-backend == 'true' }}
+    if: needs.check-for-changes.outputs.deploy-backend == 'true'
     uses: ./.github/workflows/backend-build.yml
+    secrets:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_BACKEND_PROJECT_ID: ${{ secrets.VERCEL_BACKEND_PROJECT_ID }}

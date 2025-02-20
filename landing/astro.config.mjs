@@ -5,7 +5,13 @@ import react from '@astrojs/react';
 
 export default defineConfig({
   vite: {
-    plugins: [tailwindcss()]
+    plugins: [tailwindcss()],
+    optimizeDeps: {
+      include: ["@splidejs/react-splide"]
+    },
+    ssr: {
+      noExternal: ["@splidejs/react-splide"]
+    }
   },
 
   integrations: [react()]
