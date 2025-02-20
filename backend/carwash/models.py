@@ -1,11 +1,12 @@
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 class CarWash(models.Model):
     car_wash_name = models.CharField(max_length=255)
     car_wash_address = models.CharField(max_length=255)
     phone = models.CharField(max_length=255)
-    reviews_count = models.IntegerField()
-    reviews_average = models.DecimalField(max_digits=3, decimal_places=2)
+    reviews_count = models.IntegerField(default=0)
+    reviews_average = models.DecimalField(max_digits=3, decimal_places=2, default=0)
     latitude = models.DecimalField(max_digits=10, decimal_places=8)
     longitude = models.DecimalField(max_digits=10, decimal_places=8)
     altitude = models.DecimalField(max_digits=10, decimal_places=8)
@@ -21,7 +22,12 @@ class CarWash(models.Model):
 
 class CarWashOperatingHours(models.Model):
     car_wash = models.ForeignKey(CarWash, on_delete=models.CASCADE)
-    day_of_week = models.SmallIntegerField()
+    day_of_week = models.SmallIntegerField(
+        validators=[
+            MinValueValidator(0, "Day must be at least 0"),
+            MaxValueValidator(6, "Day must be at most 6")
+        ]
+    )
     is_closed = models.BooleanField(default=False)
     opening_time = models.TimeField(null=True, blank=True)
     closing_time = models.TimeField(null=True, blank=True)
@@ -43,7 +49,12 @@ class CarWashOperatingHours(models.Model):
 
 class CarWashImage(models.Model):
     car_wash = models.ForeignKey(CarWash, on_delete=models.CASCADE)
-    image_type = models.CharField(max_length=255)
+    image_type = models.SmallIntegerField(
+        validators=[
+            MinValueValidator(0, "Image type must be at least 0"),
+            MaxValueValidator(7, "Image type must be at most 7")
+        ]
+    )
     image_key = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
