@@ -1,11 +1,9 @@
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
   SheetFooter,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "@/components/ui/sheet";
 import { Separator } from "@radix-ui/react-separator";
 import DistanceRange from "./molecule/DistanceRange";
@@ -15,8 +13,7 @@ import PriceRange from "./molecule/PriceRange";
 import OperatingHours from "./molecule/OperatingHours";
 import { Button } from "./ui/button";
 import AmenitiesCheckboxes from "./molecule/AmenitiesCheckboxes";
-import { useState } from "react";
-import { FilterPanelProps, FilterState } from "@/types/filters";
+import { FilterState } from "@/types/filters";
 
 const initialFilterState: FilterState = {
   distanceRange: 0,
@@ -27,19 +24,25 @@ const initialFilterState: FilterState = {
   operatingHours: [],
 };
 
+export interface FilterPanelProps {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  filters: FilterState;
+  setFilters: React.Dispatch<React.SetStateAction<FilterState>>;
+}
+
 const FilterPanel: React.FC<FilterPanelProps> = ({
   open,
   setOpen,
-  onApplyFilters,
+  filters,
+  setFilters,
 }) => {
-  const [filters, setFilters] = useState<FilterState>(initialFilterState);
-
   const handleReset = () => {
     setFilters(initialFilterState);
   };
 
   const handleApply = () => {
-    onApplyFilters?.(filters);
+    setFilters(filters);
     setOpen(false);
   };
 
