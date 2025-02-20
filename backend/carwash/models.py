@@ -39,7 +39,7 @@ class CarWashOperatingHours(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.car_wash.car_wash_name} - {self.get_day_of_week_display()}"
+        return f"{self.car_wash.car_wash_name} - {self.day_of_week}"
 
 class CarWashImage(models.Model):
     car_wash = models.ForeignKey(CarWash, on_delete=models.CASCADE)

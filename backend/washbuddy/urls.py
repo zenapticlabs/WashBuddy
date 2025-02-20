@@ -18,7 +18,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from carwash.views import CarWashViewSet, CarWashOperatingHoursViewSet, CarWashImageViewSet
+from carwash.views import CarWashViewSet
 from carwash_filter.views import (
     AmenityViewSet,
     WashTypeViewSet,
@@ -28,8 +28,7 @@ from carwash_filter.views import (
 
 router = DefaultRouter()
 router.register(r'carwashes', CarWashViewSet)
-router.register(r'operatinghours', CarWashOperatingHoursViewSet)
-router.register(r'images', CarWashImageViewSet)
+
 router.register(r'amenities', AmenityViewSet)
 router.register(r'wash-types', WashTypeViewSet)
 router.register(r'amenity-mappings', CarWashAmenityMappingViewSet)
