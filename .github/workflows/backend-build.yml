@@ -3,13 +3,7 @@ name: Backend Build and Deploy Workflow
 on:
   workflow_call:
     secrets:
-      VERCEL_TOKEN:
-        required: true
-      VERCEL_ORG_ID:
-        required: true
-      VERCEL_BACKEND_PROJECT_ID:
-        required: true
-      DOPPLER_TOKEN:
+      ALL_SECRETS:
         required: true
   workflow_dispatch:
 
@@ -21,10 +15,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
       
-      - name: Load env
+      - name: Load All Secrets into Environment
         uses: oNaiPs/secrets-to-env-action@v1
         with:
-          secrets: ${{ toJSON(secrets) }}
+          secrets: ${{ secrets.ALL_SECRETS || toJSON(secrets) }}
 
       - name: Debug Environment Variables
         run: env
@@ -54,8 +48,6 @@ jobs:
 
       - name: Deploy to Vercel (Backend)
         env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_BACKEND_PROJECT_ID }}
         run: npx vercel --prod --token $VERCEL_TOKEN
         working-directory: backend
