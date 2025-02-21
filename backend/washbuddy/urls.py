@@ -19,21 +19,14 @@ from django.contrib import admin
 from django.urls import path, include
 from django.http import JsonResponse
 from rest_framework.routers import DefaultRouter
-from carwash.views import CarWashViewSet
-from carwash_filter.views import (
-    AmenityViewSet,
-    WashTypeViewSet,
-    CarWashAmenityMappingViewSet,
-    CarWashWashTypeMappingViewSet
-)
+from carwash.views import CarWashViewSet, AmenityViewSet, WashTypeViewSet
+
 
 router = DefaultRouter()
 router.register(r'carwashes', CarWashViewSet)
 
 router.register(r'amenities', AmenityViewSet)
 router.register(r'wash-types', WashTypeViewSet)
-router.register(r'amenity-mappings', CarWashAmenityMappingViewSet)
-router.register(r'wash-type-mappings', CarWashWashTypeMappingViewSet)
 
 def health_check(request):
     return JsonResponse({"status": "ok"}, status=200)
