@@ -6,35 +6,57 @@ const meta: Meta<typeof Rate> = {
   component: Rate,
   tags: ["autodocs"],
   args: {
-    value: 0,
+    value: 3.5,
     max: 5,
+    size: "md",
+    fullWidth: false,
+    color: "default-yellow",
   },
 };
 
 export default meta;
 type Story = StoryObj<typeof Rate>;
 
-export const Default: Story = {
+export const Default: Story = {};
+
+export const SmallSize: Story = {
   args: {
-    value: 0,
+    size: "xs",
+    value: 4,
   },
 };
 
-export const HalfRating: Story = {
+export const MediumSize: Story = {
   args: {
-    value: 2.5,
+    size: "sm",
+    value: 3,
   },
 };
 
-export const FullRating: Story = {
+export const LargeSize: Story = {
   args: {
+    size: "md",
     value: 5,
+  },
+};
+
+export const FullWidth: Story = {
+  args: {
+    fullWidth: true,
+    value: 4.5,
+  },
+};
+
+export const CustomColor: Story = {
+  args: {
+    color: "blue-500",
+    value: 3.5,
   },
 };
 
 export const CustomMax: Story = {
   args: {
-    value: 3,
     max: 10,
+    value: 7.5,
   },
 };
