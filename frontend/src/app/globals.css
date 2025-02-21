@@ -86,4 +86,7 @@ body {
   .text-body-2 {
     @apply font-figtree font-normal text-sm;
   }
+  .text-headline-4 {
+    @apply font-figtree font-bold text-xl;
+  }
 }

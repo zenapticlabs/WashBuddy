@@ -7,8 +7,3 @@ export interface FilterState {
   operatingHours: string[];
 }
 
-export interface FilterPanelProps {
-  open: boolean;
-  setOpen: (open: boolean) => void;
-  onApplyFilters?: (filters: FilterState) => void;
-}
