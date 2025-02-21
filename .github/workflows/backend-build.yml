@@ -25,6 +25,9 @@ jobs:
         with:
           token: ${{ secrets.DOPPLER_TOKEN }}
 
+      - name: Export Doppler Variables
+        run: doppler run -- env >> $GITHUB_ENV
+
       - name: Setup Python (Backend)
         uses: actions/setup-python@v4
         with:
