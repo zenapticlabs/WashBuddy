@@ -183,7 +183,7 @@ function AutoCompleteSearch() {
      <a href="https://washbuddy-frontend.vercel.app/" class="h-[44px] min-w-[44px] w-[44px] border-2 border-[#189DEF80] rounded-full flex items-center justify-center cursor-pointer" target="blank">
      
      <img
-         src={"src/assets/search_icon.svg"}
+         src="/search_icon.svg"
          format="svg"
          alt={""}
          className="w-[16.27px] h-[16.27px] cursor-pointer"
@@ -205,7 +205,7 @@ function AutoCompleteSearch() {
           }}
         >
           <img
-            src={"src/assets/crosshair.svg"}
+            src="/crosshair.svg"
             format="svg"
             alt={""}
             className={"w-[16.27px] h-[16.27px]"}
