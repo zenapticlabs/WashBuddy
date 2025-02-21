@@ -34,12 +34,12 @@ jobs:
           pip install -r requirements.txt
         working-directory: backend
 
-      - name: Create Admin Superuser (Backend)
-        run: python manage.py create_admin
-        working-directory: backend
-
       - name: Run Migrations (Backend)
         run: python manage.py migrate --noinput
+        working-directory: backend
+
+      - name: Create Admin Superuser (Backend)
+        run: python manage.py create_admin
         working-directory: backend
 
       - name: Collect static files (Backend)
