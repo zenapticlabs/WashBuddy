@@ -26,6 +26,9 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Debug Environment Variables
+        run: env | grep ADMIN_
+
       - name: Install dependencies (Backend)
         run: |
           python -m pip install --upgrade pip
