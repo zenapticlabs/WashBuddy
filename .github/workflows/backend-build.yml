@@ -2,6 +2,15 @@ name: Backend Build and Deploy Workflow
 
 on:
   workflow_call:
+    secrets:
+      VERCEL_TOKEN:
+        required: true
+      VERCEL_ORG_ID:
+        required: true
+      VERCEL_BACKEND_PROJECT_ID:
+        required: true
+      DOPPLER_TOKEN:
+        required: true
   workflow_dispatch:
 
 jobs:
@@ -11,30 +20,41 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
+      - name: Load Doppler Secrets
+        uses: dopplerhq/cli-action@v2
+        with:
+          token: ${{ secrets.DOPPLER_TOKEN }}
+
+      - name: Export Doppler Variables
+        run: doppler run -- env >> $GITHUB_ENV
+
       - name: Setup Python (Backend)
-        if: steps.check_backend.outputs.deploy-backend == 'true'
         uses: actions/setup-python@v4
         with:
-          python-version: 3.9
+          python-version: '3.11'
 
       - name: Install dependencies (Backend)
-        if: steps.check_backend.outputs.deploy-backend == 'true'
         run: |
-          cd backend
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
+        working-directory: backend
+
+      - name: Create Admin Superuser (Backend)
+        run: python manage.py create_admin
+        working-directory: backend
+
+      - name: Run Migrations (Backend)
+        run: python manage.py migrate --noinput
+        working-directory: backend
 
       - name: Collect static files (Backend)
-        if: steps.check_backend.outputs.deploy-backend == 'true'
-        run: |
-          cd backend
-          python manage.py collectstatic --noinput
+        run: python manage.py collectstatic --noinput
+        working-directory: backend
 
       - name: Deploy to Vercel (Backend)
-        if: steps.check_backend.outputs.deploy-backend == 'true'
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_BACKEND_PROJECT_ID }}
-        run: |
-          cd backend
-          npx vercel --prod --token $VERCEL_TOKEN
+        run: npx vercel --prod --token $VERCEL_TOKEN
+        working-directory: backend
