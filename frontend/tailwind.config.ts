@@ -74,8 +74,8 @@ export default {
 			'neutral-700': '#41454B',
 			'neutral-800': '#33353A',
 			'neutral-900': '#27292C',
-			
-			
+			'accent-green': '#409624',
+			'accent-yellow': '#FFA100',
   		},
   		borderRadius: {
   			lg: 'var(--radius)',
