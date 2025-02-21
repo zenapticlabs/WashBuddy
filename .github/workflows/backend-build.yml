@@ -5,6 +5,12 @@ on:
     secrets:
       ALL_SECRETS:
         required: true
+      VERCEL_TOKEN:
+        required: true
+      VERCEL_ORG_ID:
+        required: true
+      VERCEL_FRONTEND_PROJECT_ID:
+        required: true
   workflow_dispatch:
 
 jobs:
