@@ -16,17 +16,10 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    environment: staging
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-
-      - name: Load Doppler Secrets
-        uses: dopplerhq/cli-action@v2
-        with:
-          token: ${{ secrets.DOPPLER_TOKEN }}
-
-      - name: Export Doppler Variables
-        run: doppler run -- env >> $GITHUB_ENV
 
       - name: Setup Python (Backend)
         uses: actions/setup-python@v4
