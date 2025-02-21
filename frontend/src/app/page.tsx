@@ -4,6 +4,7 @@ import type { FilterState } from "@/types";
 import FilterComponent from "@/components/FilterComponent";
 import SearchBar from "@/components/molecule/SearchBar";
 import Topbar from "@/components/Topbar";
+import CarWashDetailPage from "@/components/about/CarWashDetailPage";
 
 const initialFilterState: FilterState = {
   distanceRange: 0,
@@ -24,6 +25,7 @@ export default function Home() {
       <div className="flex gap-2 justify-between">
         <FilterComponent filters={filters} setFilters={setFilters} />
       </div>
+      <CarWashDetailPage />
     </div>
   );
 }
