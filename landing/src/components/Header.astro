@@ -4,24 +4,44 @@ import logo from "../assets/logo.svg";
 import list from "../assets/list.svg";
 import gear from "../assets/gear-fine.svg";
 import self from "../assets/self.svg";
-import handtapblack from "../assets/hand-tap-black.svg";
 import bag from "../assets/shopping-bag.svg";
 import star from "../assets/shooting-star.svg";
 import globe from "../assets/globe.svg";
 import flag from "../assets/usa.svg";
+import notePencil from "../assets/note-pencil.svg";
+import stillStar from "../assets/still-star.svg";
+import headset from "../assets/headset.svg";
 
-const images = [
-  { image: gear, title: "Automatic" },
-  { image: self, title: "Self-Service" },
-  { image: bag, title: "Purchase History" },
-  { image: star, title: "Rewards" },
+const drawerItems = [
+  {
+    heading: "Find a wash",
+    icons: [
+      { image: gear, title: "Automatic" },
+      { image: self, title: "Self-Service" },
+    ],
+  },
+  {
+    heading: "Help others",
+    icons: [
+      { image: stillStar, title: "Share Your Review" },
+      { image: notePencil, title: "Submit New Information" },
+    ],
+  },
+  {
+    heading: "For you",
+    icons: [
+      { image: bag, title: "Purchase History" },
+      { image: star, title: "Rewards" },
+      { image: headset, title: "Contact Support" },
+    ],
+  },
 ];
 ---
 
 <header
-  class="flex items-center justify-between px-[24px] py-[12px] sm:space-x-4 w-full "
+  class="flex items-center justify-between px-[24px] py-[12px] sm:space-x-4 w-full"
 >
-  <div class="flex items-center gap-[20px]">
+  <div class="flex items-center gap-[20px] max-lg:gap-[15px]">
     <span class="block cursor-pointer lg:hidden" id="nav-bar">
       <Image src={list} format="svg" alt={""} loading="lazy" id="icon" />
     </span>
@@ -42,25 +62,32 @@ const images = [
       Self-Service
     </span>
   </div>
-    <button
-      class="px-[24px] py-[8px] border border-[#41454B] rounded-[8px] h-[40px] text-sm font-semibold cursor-pointer"
-    >
-      Sign in
-    </button>
+  <button
+    class="px-[24px] py-[8px] border border-[#41454B] rounded-[8px] h-[40px] text-sm font-semibold cursor-pointer"
+  >
+    Sign in
+  </button>
 </header>
 <div
-  class="fixed w-full bg-[#fff] hidden z-100 px-[20px] py-[24px] border-t border-[#F4F4F4]"
+  class="fixed w-full bg-[#fff] hidden z-100 px-[20px] py-[24px] border-t border-[#F4F4F4] "
   id="menu"
   style="height:calc(100vh - 66px)"
 >
   <div class="h-full w-full flex flex-col justify-between">
     <div>
       {
-        images.map(({ image, title }) => (
-          <span class="items-center px-[12px] py-[8px] rounded-[1000px] text-md font-semibold gap-[10px] h-[40px] cursor-pointer flex mb-2.5 nth-1:bg-[#E2F3FD] nth-2:border-b nth-2:border-[#F4F4F4] nth-2:rounded-b-none">
-            <Image src={image} format="svg" alt={""} loading="lazy" />
-            {title}
-          </span>
+        drawerItems.map(({ heading, icons }) => (
+          <div class="border-b border-[#F4F4F4] last:border-b-0">
+            <span class="font-figtree font-normal text-[12px] leading-[16.2px] text-[#7D8187] block my-2.5 ">
+              {heading}
+            </span>
+            {icons.map(({ image, title }) => (
+                <span class={`items-center px-[12px] py-[8px] rounded-[1000px] text-md text-[#27292C] font-semibold gap-[10px] h-[40px] cursor-pointer flex mb-2.5` }>
+                <Image src={image} format="svg" alt={""} loading="lazy" />
+                {title}
+                </span>
+            ))}
+          </div>
         ))
       }
     </div>
@@ -86,10 +113,10 @@ const images = [
   document.getElementById("nav-bar")?.addEventListener("click", () => {
     const icon = document.getElementById("icon");
     if (icon && icon instanceof HTMLImageElement) {
-      if (icon.src.includes('close')) {
-        icon.src = 'src/assets/list.svg';
+      if (icon.src.includes("close")) {
+        icon.src = "src/assets/list.svg";
       } else {
-        icon.src = 'src/assets/close.svg';
+        icon.src = "src/assets/close.svg";
       }
     }
     const navBar = document.getElementById("menu");
