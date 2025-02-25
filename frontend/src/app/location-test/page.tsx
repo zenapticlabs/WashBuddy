@@ -10,9 +10,6 @@ export default function Home() {
     loading: geoLoading,
   } = useGeolocation();
   const {
-    country,
-    state,
-    zipCode,
     formattedAddress,
     loading: addressLoading,
     error: addressError,

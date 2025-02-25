@@ -1,8 +1,6 @@
-import { ArrowLeft, ArrowRight, Dot, MapPin, Phone, Star } from "lucide-react";
+import { ArrowRight, Dot, MapPin, Phone, Star } from "lucide-react";
 
-export interface CarGeneralInfoProps {}
-
-const CarGeneralInfo: React.FC<CarGeneralInfoProps> = ({}) => {
+const CarGeneralInfo: React.FC = () => {
   return (
     <>
       <div className="flex items-center justify-between">

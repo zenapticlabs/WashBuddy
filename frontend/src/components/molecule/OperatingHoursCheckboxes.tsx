@@ -1,6 +1,4 @@
-import { CarServiceAmenity } from "@/types";
 import { useState } from "react";
-import { useEffect } from "react";
 import { Checkbox } from "../ui/checkbox";
 import {
   Accordion,
@@ -10,28 +8,42 @@ import {
 } from "@/components/ui/accordion";
 import { CircleBadge } from "../ui/circleBadge";
 
-interface OperatingHoursProps {
-  value: string[];
-  onChange: (option: string[]) => void;
+interface OperatingHoursCheckboxesProps {
+  value?: string[];
+  onChange?: (option: string[]) => void;
 }
 
-const OperatingHours: React.FC<OperatingHoursProps> = ({ value, onChange }) => {
-  const options: any = [{ id: "1", value: "open_now", label: "Open now" }];
+interface OperatingOption {
+  id: string;
+  value: string;
+  label: string;
+  description?: string;
+}
+
+const OperatingHoursCheckboxes: React.FC<OperatingHoursCheckboxesProps> = ({
+  value,
+  onChange,
+}) => {
+  const options: OperatingOption[] = [
+    { id: "1", value: "open_now", label: "Open now" }
+  ];
 
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
 
   const handleChange = (optionId: string) => {
-    onChange
-      ? onChange(
-          value.includes(optionId)
-            ? value.filter((id) => id !== optionId)
-            : [...value, optionId]
-        )
-      : setSelectedOptions((prev) =>
-          prev.includes(optionId)
-            ? prev.filter((id) => id !== optionId)
-            : [...prev, optionId]
-        );
+    if (onChange) {
+      onChange(
+        value?.includes(optionId)
+          ? value?.filter((id) => id !== optionId)
+          : [...(value || []), optionId]
+      );
+    } else {
+      setSelectedOptions((prev) =>
+        prev.includes(optionId)
+          ? prev.filter((id) => id !== optionId)
+          : [...prev, optionId]
+      );
+    }
   };
 
   return (
@@ -56,7 +68,7 @@ const OperatingHours: React.FC<OperatingHoursProps> = ({ value, onChange }) => {
         </AccordionTrigger>
         <AccordionContent>
           <div className="flex flex-col gap-4">
-            {options.map((option: any) => (
+            {options.map((option: OperatingOption) => (
               <Checkbox
                 key={option.id}
                 label={option.label}
@@ -76,4 +88,4 @@ const OperatingHours: React.FC<OperatingHoursProps> = ({ value, onChange }) => {
   );
 };
 
-export default OperatingHours;
+export default OperatingHoursCheckboxes;

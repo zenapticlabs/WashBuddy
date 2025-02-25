@@ -1,6 +1,4 @@
-import { CarServiceAmenity } from "@/types";
 import { useState } from "react";
-import { useEffect } from "react";
 import { Checkbox } from "../ui/checkbox";
 import {
   Accordion,
@@ -11,34 +9,30 @@ import {
 import { CircleBadge } from "../ui/circleBadge";
 import { Star } from "lucide-react";
 
-interface RatingsProps {
-  value: number[];
-  onChange: (option: number[]) => void;
+interface RatingCheckboxesProps {
+  value?: number[];
+  onChange?: (option: number[]) => void;
 }
 
-const Ratings: React.FC<RatingsProps> = ({ value, onChange }) => {
-  const options: any = [
-    { id: "1", value: 1, label: "1" },
-    { id: "2", value: 2, label: "2" },
-    { id: "3", value: 3, label: "3" },
-    { id: "4", value: 4, label: "4" },
-    { id: "5", value: 5, label: "5" },
-  ];
-
+const RatingCheckboxes: React.FC<RatingCheckboxesProps> = ({
+  value,
+  onChange,
+}) => {
   const [selectedOptions, setSelectedOptions] = useState<number[]>([]);
 
   const handleChange = (optionId: number) => {
-    onChange
-      ? onChange(
-          value.includes(optionId)
-            ? value.filter((id) => id !== optionId)
-            : [...value, optionId]
-        )
-      : setSelectedOptions((prev) =>
-          prev.includes(optionId)
-            ? prev.filter((id) => id !== optionId)
-            : [...prev, optionId]
-        );
+    if (onChange) {
+      const newValue = value?.includes(optionId)
+        ? value?.filter((id) => id !== optionId)
+        : [...(value || []), optionId];
+      onChange(newValue);
+    } else {
+      setSelectedOptions((prev) =>
+        prev.includes(optionId)
+          ? prev.filter((id) => id !== optionId)
+          : [...prev, optionId]
+      );
+    }
   };
 
   return (
@@ -54,31 +48,28 @@ const Ratings: React.FC<RatingsProps> = ({ value, onChange }) => {
             <span className="text-title-1">Ratings</span>
             <CircleBadge
               text={
-                value
-                  ? value.length.toString()
-                  : selectedOptions.length.toString()
+                value?.length?.toString() || selectedOptions.length.toString()
               }
             />
           </div>
         </AccordionTrigger>
         <AccordionContent>
           <div className="flex flex-col gap-4">
-            {options.map((option: any) => (
+            {Array.from({ length: 5 }, (_, index) => (
               <Checkbox
-                key={option.id}
+                key={index}
                 label={
                   <span className="flex items-center gap-2">
-                    {option.label}
+                    {index + 1}
                     <Star className="w-4 h-4 text-yellow-500 fill-default-yellow" />
                   </span>
                 }
                 checked={
                   value
-                    ? value.includes(option.id)
-                    : selectedOptions.includes(option.id)
+                    ? value.includes(index + 1)
+                    : selectedOptions.includes(index + 1)
                 }
-                onChange={() => handleChange(option.id)}
-                description={option.description}
+                onChange={() => handleChange(index + 1)}
               />
             ))}
           </div>
@@ -88,4 +79,4 @@ const Ratings: React.FC<RatingsProps> = ({ value, onChange }) => {
   );
 };
 
-export default Ratings;
+export default RatingCheckboxes;

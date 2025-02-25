@@ -1,18 +1,12 @@
-import Image, { StaticImageData } from "next/image";
+import Image from "next/image";
 import carlogo from "@/assets/carlogo.jpg";
-import { ArrowLeft, ArrowRight, Dot, MapPin, Phone, Star } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ICarServiceWashPackage } from "@/types/CarServices";
-import { Button } from "@/components/ui/button";
-
 import CarGeneralInfo from "./CarGeneralInfo";
 import CarWashAbout from "./CarWashAbout/CarWashAbout";
 import CarWashReviews from "./CarWashReviews/CarWashReviews";
 
-export interface CarWashDetailPageProps {}
-
-const CarWashDetailPage: React.FC<CarWashDetailPageProps> = ({}) => {
+const CarWashDetail: React.FC = ({}) => {
   return (
     <div className="w-[400px]">
       <div className="w-full h-[240px] overflow-hidden flex items-center justify-center rounded-t-xl">
@@ -42,4 +36,4 @@ const CarWashDetailPage: React.FC<CarWashDetailPageProps> = ({}) => {
   );
 };
 
-export default CarWashDetailPage;
+export default CarWashDetail;

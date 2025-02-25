@@ -45,6 +45,7 @@ export const useReverseGeocode = (latitude: number | null, longitude: number | n
           error: null,
         });
       } catch (error) {
+        console.error('Error fetching address details:', error);
         setLocationDetails({
           loading: false,
           error: 'Failed to fetch address details',

@@ -1,13 +1,20 @@
-import DistanceRange from "./molecule/DistanceRange";
-import WashTypeCheckboxes from "./molecule/WashTypeCheckboxes";
-import Ratings from "./molecule/Ratings";
-import PriceRange from "./molecule/PriceRange";
-import OperatingHours from "./molecule/OperatingHours";
-import AmenitiesCheckboxes from "./molecule/AmenitiesCheckboxes";
+import DistanceRange from "@/components/molecule/DistanceRange";
+import WashTypeCheckboxes from "@/components/molecule/WashTypeCheckboxes";
+import Ratings from "@/components/molecule/RatingCheckboxes";
+import PriceRange from "@/components/molecule/PriceRange";
+import OperatingHours from "@/components/molecule/OperatingHoursCheckboxes";
+import AmenitiesCheckboxes from "@/components/molecule/AmenitiesCheckboxes";
+import { Button } from "@/components/ui/button";
 import { FilterState } from "@/types";
-import { Clock } from "lucide-react";
-import FilterDropdown from "./molecule/FilterDropdown";
+import { ChevronDown, Clock } from "lucide-react";
 import { ArrowUpDown, Droplet, House, Star, WalletCards } from "lucide-react";
+import { MockAmenities, MockWashTypes } from "@/mocks";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
 
 interface FilterBarProps {
   filters: FilterState;
@@ -68,6 +75,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
         <WashTypeCheckboxes
           value={filters.washType}
           onChange={(value) => setFilters({ ...filters, washType: value })}
+          options={MockWashTypes}
         />
       ),
     },
@@ -80,6 +88,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
         <AmenitiesCheckboxes
           value={filters.amenities}
           onChange={(value) => setFilters({ ...filters, amenities: value })}
+          options={MockAmenities}
         />
       ),
     },
@@ -102,14 +111,27 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
   return (
     <>
       {filterConfigs.map((config) => (
-        <FilterDropdown
-          key={config.key}
-          active={config.isActive}
-          label={config.label}
-          icon={config.icon}
-          additionalText={config.additionalText}
-          dropdownContent={config.content}
-        />
+        <DropdownMenu key={config.key}>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="secondary"
+              className={cn(
+                "px-4 py-2 h-auto rounded-full",
+                config.isActive && "bg-blue-100"
+              )}
+            >
+              {config.icon}
+              <div className="text-body-2 text-neutral-900">{config.label}</div>
+              <div className="text-body-2 text-neutral-900">
+                {config.additionalText}
+              </div>
+              <ChevronDown className="text-neutral-500" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="mt-2 shadow-md border-none rounded-xl">
+            {config.content}
+          </DropdownMenuContent>
+        </DropdownMenu>
       ))}
     </>
   );

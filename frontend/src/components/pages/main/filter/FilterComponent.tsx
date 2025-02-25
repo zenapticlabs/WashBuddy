@@ -1,7 +1,7 @@
-import { Button } from "./ui/button";
+import { Button } from "../../../ui/button";
 import { FilterState } from "@/types/filters";
 import { SlidersVertical } from "lucide-react";
-import { CircleBadge } from "./ui/circleBadge";
+import { CircleBadge } from "../../../ui/circleBadge";
 import FilterBar from "./FilterBar";
 import { useState } from "react";
 import FilterPanel from "./FilterPanel";

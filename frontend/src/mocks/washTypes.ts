@@ -1,7 +1,6 @@
 import { CarServiceWashType } from "@/types";
-import { NextResponse } from "next/server";
 
-const filterTypes: CarServiceWashType[] = [
+export const MockWashTypes: CarServiceWashType[] = [
   // Wash Type - Clean
   {
     id: "6",
@@ -75,7 +74,3 @@ const filterTypes: CarServiceWashType[] = [
     updated_at: new Date(),
   },
 ];
-
-export async function GET() {
-  return NextResponse.json(filterTypes);
-}

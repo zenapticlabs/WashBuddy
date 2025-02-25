@@ -1,5 +1,3 @@
-import { cn } from "@/lib/utils";
-
 interface CircleBadgeProps {
   text: string;
   size?: number;

@@ -6,14 +6,16 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Separator } from "@radix-ui/react-separator";
-import DistanceRange from "./molecule/DistanceRange";
-import WashTypeCheckboxes from "./molecule/WashTypeCheckboxes";
-import Ratings from "./molecule/Ratings";
-import PriceRange from "./molecule/PriceRange";
-import OperatingHours from "./molecule/OperatingHours";
-import { Button } from "./ui/button";
-import AmenitiesCheckboxes from "./molecule/AmenitiesCheckboxes";
+import DistanceRange from "../../../molecule/DistanceRange";
+import WashTypeCheckboxes from "../../../molecule/WashTypeCheckboxes";
+import Ratings from "../../../molecule/RatingCheckboxes";
+import PriceRange from "../../../molecule/PriceRange";
+import OperatingHours from "../../../molecule/OperatingHoursCheckboxes";
+import { Button } from "../../../ui/button";
+import AmenitiesCheckboxes from "../../../molecule/AmenitiesCheckboxes";
 import { FilterState } from "@/types/filters";
+import { MockAmenities } from "@/mocks/amenities";
+import { MockWashTypes } from "@/mocks/washTypes";
 
 const initialFilterState: FilterState = {
   distanceRange: 0,
@@ -68,6 +70,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
             onChange={(value) =>
               setFilters((prev) => ({ ...prev, amenities: value }))
             }
+            options={MockAmenities}
           />
           <Separator />
           <WashTypeCheckboxes
@@ -75,6 +78,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
             onChange={(value) =>
               setFilters((prev) => ({ ...prev, washType: value }))
             }
+            options={MockWashTypes}
           />
           <Separator />
           <Ratings
