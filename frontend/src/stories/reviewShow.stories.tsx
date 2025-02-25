@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react';
 import { ReviewShow } from '@/components/organism/reviewShow';
 
 const meta: Meta<typeof ReviewShow> = {
-  title: 'Organisms/ReviewShow',
+  title: 'Organism/ReviewShow',
   component: ReviewShow,
   tags: ['autodocs'],
 };
