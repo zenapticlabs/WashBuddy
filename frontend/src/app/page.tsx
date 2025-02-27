@@ -1,25 +1,31 @@
 "use client";
-import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import FilterPanel from "@/components/FilterPanel";
 import type { FilterState } from "@/types";
+import FilterComponent from "@/components/FilterComponent";
+import SearchBar from "@/components/molecule/SearchBar";
+import Topbar from "@/components/Topbar";
+import CarWashDetailPage from "@/components/about/CarWashDetailPage";
+
+const initialFilterState: FilterState = {
+  distanceRange: 0,
+  amenities: [],
+  washType: [],
+  ratings: [],
+  priceRange: 0,
+  operatingHours: [],
+};
 
 export default function Home() {
-  const [open, setOpen] = useState(false);
-
-  const handleApplyFilters = (filters: FilterState) => {
-    // Handle filter application logic here
-    console.log('Applied filters:', filters);
-  };
-
+  const [filters, setFilters] = useState<FilterState>(initialFilterState);
+  const [search, setSearch] = useState("");
   return (
-    <div className="w-full h-screen flex items-center justify-center">
-      <Button onClick={() => setOpen(true)}>Open Filters</Button>
-      <FilterPanel 
-        open={open} 
-        setOpen={setOpen} 
-        onApplyFilters={handleApplyFilters}
-      />
+    <div className="px-2">
+      <Topbar />
+      <SearchBar onChange={setSearch} />
+      <div className="flex gap-2 justify-between">
+        <FilterComponent filters={filters} setFilters={setFilters} />
+      </div>
+      <CarWashDetailPage />
     </div>
   );
 }

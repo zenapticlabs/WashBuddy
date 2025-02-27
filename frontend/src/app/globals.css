@@ -86,4 +86,13 @@ body {
   .text-body-2 {
     @apply font-figtree font-normal text-sm;
   }
+  .text-body-3 {
+    @apply font-figtree font-normal text-xs;
+  }
+  .text-headline-4 {
+    @apply font-figtree font-bold text-xl;
+  }
+  .text-headline-5 {
+    @apply font-figtree font-bold text-lg;
+  }
 }

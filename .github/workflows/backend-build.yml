@@ -3,6 +3,8 @@ name: Backend Build and Deploy Workflow
 on:
   workflow_call:
     secrets:
+      ALL_SECRETS:
+        required: true
       VERCEL_TOKEN:
         required: true
       VERCEL_ORG_ID:
@@ -14,9 +16,18 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    environment: staging
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+      
+      - name: Load All Secrets into Environment
+        uses: oNaiPs/secrets-to-env-action@v1
+        with:
+          secrets: ${{ secrets.ALL_SECRETS || toJSON(secrets) }}
+
+      - name: Debug Environment Variables
+        run: env
 
       - name: Setup Python (Backend)
         uses: actions/setup-python@v4
@@ -31,6 +42,10 @@ jobs:
 
       - name: Run Migrations (Backend)
         run: python manage.py migrate --noinput
+        working-directory: backend
+
+      - name: Create Admin Superuser (Backend)
+        run: python manage.py create_admin
         working-directory: backend
 
       - name: Collect static files (Backend)
