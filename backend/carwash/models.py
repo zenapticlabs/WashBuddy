@@ -4,6 +4,15 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 class CarWash(models.Model):
     car_wash_name = models.CharField(max_length=255, db_index=True)
     car_wash_address = models.CharField(max_length=255)
+    
+    formatted_address = models.CharField(max_length=255, blank=True, null=True)
+    country = models.CharField(max_length=100, blank=True, null=True)
+    country_code = models.CharField(max_length=10, blank=True, null=True)
+    state = models.CharField(max_length=100, blank=True, null=True)
+    state_code = models.CharField(max_length=10, blank=True, null=True)
+    postal_code = models.CharField(max_length=20, blank=True, null=True)
+    city = models.CharField(max_length=100, blank=True, null=True)
+    
     phone = models.CharField(max_length=255)
     reviews_count = models.IntegerField(default=0)
     reviews_average = models.DecimalField(max_digits=3, decimal_places=2, default=0)

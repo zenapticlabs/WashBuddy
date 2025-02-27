@@ -24,6 +24,14 @@ class CarWashViewSet(viewsets.ModelViewSet):
         amenities = self.request.query_params.get('amenities', '')
         open_now = self.request.query_params.get('open_now', '')
         
+        # Get address filter parameters
+        city = self.request.query_params.get('city', '')
+        state = self.request.query_params.get('state', '')
+        state_code = self.request.query_params.get('state_code', '')
+        postal_code = self.request.query_params.get('postal_code', '')
+        country = self.request.query_params.get('country', '')
+        country_code = self.request.query_params.get('country_code', '')
+        
         # Convert comma-separated strings to lists of integers
         wash_type_ids = [int(id) for id in wash_types.split(',') if id.strip()] if wash_types else []
         amenity_ids = [int(id) for id in amenities.split(',') if id.strip()] if amenities else []
@@ -37,6 +45,20 @@ class CarWashViewSet(viewsets.ModelViewSet):
         if amenity_ids:
             for amenity_id in amenity_ids:
                 queryset = queryset.filter(amenities__id=amenity_id)
+
+        # Filter by address fields
+        if city:
+            queryset = queryset.filter(city__icontains=city)
+        if state:
+            queryset = queryset.filter(state__icontains=state)
+        if state_code:
+            queryset = queryset.filter(state_code__iexact=state_code)
+        if postal_code:
+            queryset = queryset.filter(postal_code__iexact=postal_code)
+        if country:
+            queryset = queryset.filter(country__icontains=country)
+        if country_code:
+            queryset = queryset.filter(country_code__iexact=country_code)
 
         # Filter by open now (includes current time in schedule)
         if open_now == 'true':

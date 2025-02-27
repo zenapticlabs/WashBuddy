@@ -98,8 +98,7 @@ class CarWashSerializer(serializers.ModelSerializer):
         amenities = validated_data.pop('amenities', [])
 
         car_wash = CarWash.objects.create(**validated_data)
-
-        # Create related objects
+        
         for hours_data in operating_hours_data:
             CarWashOperatingHours.objects.create(car_wash=car_wash, **hours_data)
 
@@ -112,3 +111,32 @@ class CarWashSerializer(serializers.ModelSerializer):
             car_wash.amenities.set(amenities)
 
         return car_wash
+        
+    def update(self, instance, validated_data):
+        operating_hours_data = validated_data.pop('carwashoperatinghours_set', [])
+        images_data = validated_data.pop('carwashimage_set', [])
+        wash_types = validated_data.pop('wash_types', None)
+        amenities = validated_data.pop('amenities', None)
+        
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        if operating_hours_data:
+            # Delete existing hours and create new ones
+            instance.carwashoperatinghours_set.all().delete()
+            for hours_data in operating_hours_data:
+                CarWashOperatingHours.objects.create(car_wash=instance, **hours_data)
+                
+        if images_data:
+            instance.carwashimage_set.all().delete()
+            for image_data in images_data:
+                CarWashImage.objects.create(car_wash=instance, **image_data)
+                
+        if wash_types is not None:
+            instance.wash_types.set(wash_types)
+            
+        if amenities is not None:
+            instance.amenities.set(amenities)
+            
+        return instance
