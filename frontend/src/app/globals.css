@@ -126,3 +126,39 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+.marker {
+  background-size: cover;
+  cursor: pointer;
+}
+
+.maplibregl-popup {
+  max-width: 200px;
+}
+
+.maplibregl-popup-content {
+  padding: 0;
+  border-radius: 8px;
+}
+
+/* Add to your global CSS or styled-components */
+.custom-popup {
+  @apply rounded-lg shadow-lg;
+}
+
+.custom-popup .maplibregl-popup-content {
+  @apply p-0 rounded-lg border border-gray-200;
+}
+
+.custom-popup .maplibregl-popup-close-button {
+  @apply right-2 top-2 text-gray-500 hover:text-gray-700;
+}
+
+/* Animation for marker hover */
+.marker-animation {
+  transition: transform 0.2s;
+}
+
+.marker-animation:hover {
+  transform: scale(1.1);
+}

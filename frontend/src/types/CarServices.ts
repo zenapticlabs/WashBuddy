@@ -36,4 +36,8 @@ export interface ICarWashCard {
   washType: string;
   image: string;
   promotion?: string;
+  location: {
+    lat: number;
+    lng: number;
+  };
 }
