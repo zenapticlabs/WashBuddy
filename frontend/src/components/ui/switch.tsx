@@ -11,9 +11,9 @@ const Switch = React.forwardRef<
     label?: string;
     labelPosition?: 'start' | 'end';
     checked?: boolean;
-    onChange?: (checked: boolean) => void;
+    onCheckedChange?: (checked: boolean) => void;
   }
->(({ className, label, labelPosition = 'end', checked, onChange, ...props }, ref) => (
+>(({ className, label, labelPosition = 'end', checked, onCheckedChange, ...props }, ref) => (
   <div className="flex items-center gap-2">
     {label && labelPosition === 'start' && (
       <label className="text-sm text-gray-700 font-figtree">{label}</label>
@@ -26,7 +26,7 @@ const Switch = React.forwardRef<
       {...props}
       ref={ref}
       checked={checked}
-      onCheckedChange={onChange}
+      onCheckedChange={onCheckedChange}
     >
       <SwitchPrimitives.Thumb
         className={cn(

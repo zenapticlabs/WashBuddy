@@ -115,3 +115,14 @@ body {
     @apply font-figtree font-bold text-[48px] leading-[1.25];
   }
 }
+
+
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
