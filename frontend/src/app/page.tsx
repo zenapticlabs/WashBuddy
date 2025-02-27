@@ -9,23 +9,15 @@ import { FilterState } from "@/types/filters";
 import { RadarMap } from "@/components/organism/RadarMap";
 import Image from "next/image";
 import logo from "@/assets/logo.png";
-import { Bell, Crosshair, MapPin, MenuIcon, Plus } from "lucide-react";
+import { Bell, MapPin, MenuIcon, Plus } from "lucide-react";
 import { Car_Wash_Type } from "@/utils/constants";
 import user from "@/assets/user.png";
 import AutomaticIcon from "@/assets/icons/automatic.svg";
 import SelfServiceIcon from "@/assets/icons/self-service.svg";
 import { Button } from "@/components/ui/button";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import CreateCarWash from "@/components/pages/main/CreateCarWashDiaolog";
 import CreateCarWashDiaolog from "@/components/pages/main/CreateCarWashDiaolog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 const FilterButtonConfigs = [
   {
     icon: AutomaticIcon,
@@ -131,16 +123,19 @@ export default function Home() {
       <SearchBar onChange={handleSearch} />
       <FilterComponent filters={filters} setFilters={setFilters} />
       <div className="flex flex-1 overflow-hidden">
-        <div className="w-[550px] flex flex-col gap-2 overflow-y-auto">
-          {mockCarWashes.map((carWash) => (
-            <CarWashCard key={carWash.id} data={carWash} />
-          ))}
-        </div>
+        <ScrollArea className="w-[550px]">
+          <div className="flex flex-col gap-2 pr-4">
+            {mockCarWashes.map((carWash) => (
+              <CarWashCard key={carWash.id} data={carWash} />
+            ))}
+          </div>
+        </ScrollArea>
         <div className="flex-1 flex items-center justify-center">
           <RadarMap
             publishableKey={
               "prj_test_pk_144a114b9cb33385a5595eb5b90c071490484be1"
             }
+            carWashes={mockCarWashes}
           />
         </div>
       </div>
