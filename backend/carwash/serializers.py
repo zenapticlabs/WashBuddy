@@ -54,6 +54,16 @@ class CarWashSerializer(serializers.ModelSerializer):
     images = CarWashImageSerializer(source='carwashimage_set', many=True)
     wash_types = serializers.PrimaryKeyRelatedField(many=True, queryset=WashType.objects.all())
     amenities = serializers.PrimaryKeyRelatedField(many=True, queryset=Amenity.objects.all())
+    distance = serializers.SerializerMethodField(read_only=True)
+    
+    def get_distance(self, obj):
+        """
+        Return the distance in kilometers if it has been annotated.
+        """
+        if hasattr(obj, 'distance'):
+            # Convert from meters to kilometers and round to 2 decimal places
+            return round(obj.distance.m / 1000, 2)
+        return None
 
     class Meta:
         model = CarWash

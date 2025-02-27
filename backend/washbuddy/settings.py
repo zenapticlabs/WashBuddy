@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "whitenoise.runserver_nostatic", 
     'admin_dashboard',
     'rest_framework',
+    'django.contrib.gis',
     'carwash',
 ]
 
@@ -82,10 +83,14 @@ WSGI_APPLICATION = 'washbuddy.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
+        'ENGINE': 'django.contrib.gis.db.backends.spatialite',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+
+SPATIALITE_LIBRARY_PATH = 'mod_spatialite.dll'  # Update this with your actual path
+
 
 
 # Password validation
