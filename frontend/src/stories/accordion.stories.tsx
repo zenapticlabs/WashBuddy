@@ -30,7 +30,7 @@ export const Default: Story = {
       <AccordionItem value="item-3">
         <AccordionTrigger>Is it animated?</AccordionTrigger>
         <AccordionContent>
-          Yes. It's animated by default, but you can disable it if you prefer.
+          Yes. It is animated by default, but you can disable it if you prefer.
         </AccordionContent>
       </AccordionItem>
     </Accordion>
@@ -43,7 +43,7 @@ export const Multiple: Story = {
       <AccordionItem value="item-1">
         <AccordionTrigger>Can I open multiple items?</AccordionTrigger>
         <AccordionContent>
-          Yes. Just set the type prop to "multiple" on the Accordion component.
+          Yes. Just set the type prop to multiple on the Accordion component.
         </AccordionContent>
       </AccordionItem>
 

@@ -38,36 +38,40 @@ const Checkbox = React.forwardRef<
         position === "left" && "flex-row-reverse"
       )}
     >
-      <CheckboxPrimitive.Root
-        ref={ref}
-        className={cn(
-          "peer h-4 w-4 shrink-0 rounded-sm border border-gray-400 shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-default-blue data-[state=checked]:text-primary-foreground data-[state=checked]:border-default-blue",
-          className
-        )}
-        {...props}
-        checked={checked}
-        onCheckedChange={onChange}
-      >
-        <CheckboxPrimitive.Indicator
-          className={cn("flex items-center justify-center text-current")}
+      <div className="flex items-center gap-2" onClick={() => onChange?.(!checked)}>
+        <CheckboxPrimitive.Root
+          ref={ref}
+          className={cn(
+            "peer h-4 w-4 shrink-0 rounded-sm border border-gray-400 shadow focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=checked]:bg-default-blue data-[state=checked]:text-primary-foreground data-[state=checked]:border-default-blue",
+            className
+          )}
+          {...props}
+          checked={checked}
         >
-          <Check className="h-4 w-4" />
-        </CheckboxPrimitive.Indicator>
-      </CheckboxPrimitive.Root>
-      {label && (
-        <span className="text-sm text-gray-700 cursor-pointer font-figtree">
-          {label}
-        </span>
-      )}
+          <CheckboxPrimitive.Indicator
+            className={cn("flex items-center justify-center text-current")}
+          >
+            <Check className="h-4 w-4" />
+          </CheckboxPrimitive.Indicator>
+        </CheckboxPrimitive.Root>
+        {label && (
+          <span className="text-sm text-gray-700 cursor-pointer font-figtree">
+            {label}
+          </span>
+        )}
+      </div>
       {description && (
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="outline" className="w-3 h-3 rounded-full px-1 py-0.5 text-[8px] text-gray-400 font-semibold flex items-center justify-center cursor-pointer">
+              <Button
+                variant="outline"
+                className="w-3 h-3 rounded-full px-1 py-0.5 text-[8px] text-gray-400 font-semibold flex items-center justify-center cursor-pointer"
+              >
                 i
               </Button>
             </TooltipTrigger>
-            <TooltipContent  side="right" align="center">
+            <TooltipContent side="right" align="center">
               {description}
             </TooltipContent>
           </Tooltip>

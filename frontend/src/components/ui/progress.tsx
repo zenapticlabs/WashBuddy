@@ -17,7 +17,7 @@ const Progress = React.forwardRef<
   const [isDragging, setIsDragging] = React.useState(false);
   const [progress, setProgress] = React.useState(value || minValue);
 
-  const updateValue = (clientX: number) => {
+  const updateValue = React.useCallback((clientX: number) => {
     if (!progressBarRef.current || !onValueChange) return;
     
     const rect = progressBarRef.current.getBoundingClientRect();
@@ -28,17 +28,17 @@ const Progress = React.forwardRef<
     const newValue = minValue + (clampedValue / 100) * (maxValue - minValue);
     setProgress(Math.round(newValue));
     onValueChange(Math.round(newValue));
-  };
+  }, [minValue, maxValue, onValueChange]);
 
   const handleMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
     setIsDragging(true);
     updateValue(event.clientX);
   };
 
-  const handleMouseMove = (event: MouseEvent) => {
+  const handleMouseMove = React.useCallback((event: MouseEvent) => {
     if (!isDragging) return;
     updateValue(event.clientX);
-  };
+  }, [isDragging, updateValue]);
 
   const handleMouseUp = () => {
     setIsDragging(false);
@@ -54,11 +54,11 @@ const Progress = React.forwardRef<
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [isDragging]);
+  }, [isDragging, handleMouseMove]);
 
   React.useEffect(() => {
     setProgress(value || minValue);
-  }, [value]);
+  }, [value, minValue]);
 
   return (
     <div className="flex items-center w-full">

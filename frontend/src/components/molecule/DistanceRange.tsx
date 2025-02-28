@@ -15,6 +15,13 @@ const DistanceRange: React.FC<DistanceRangeProps> = ({
   onChange,
 }) => {
   const [progressValue, setProgressValue] = useState(0);
+  const handleChange = (value: number) => {
+    if (onChange) {
+      onChange(value);
+    } else {
+      setProgressValue(value);
+    }
+  };
   return (
     <div className="w-full flex flex-col gap-4 pb-4">
       <div className="flex items-center px-2 text-body-2 text-[#262626]">
@@ -25,7 +32,7 @@ const DistanceRange: React.FC<DistanceRangeProps> = ({
         value={value || progressValue}
         minValue={minValue}
         maxValue={maxValue}
-        onValueChange={onChange || setProgressValue}
+        onValueChange={handleChange}
       />
     </div>
   );

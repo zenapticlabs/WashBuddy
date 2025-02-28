@@ -1,6 +1,6 @@
 import { CarServiceAmenity } from "@/types";
 
-export const mockAmenities: CarServiceAmenity[] = [
+export const MockAmenities: CarServiceAmenity[] = [
   // Amenities
   {
     id: "1",

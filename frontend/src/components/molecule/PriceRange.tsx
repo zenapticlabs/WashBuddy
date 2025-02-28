@@ -20,6 +20,13 @@ const PriceRange: React.FC<PriceRangeProps> = ({
   onChange,
 }) => {
   const [progressValue, setProgressValue] = useState(0);
+  const handleChange = (value: number) => {
+    if (onChange) {
+      onChange(value);
+    } else {
+      setProgressValue(value);
+    }
+  };
   return (
     <Accordion
       type="single"
@@ -40,7 +47,7 @@ const PriceRange: React.FC<PriceRangeProps> = ({
             value={value || progressValue}
             minValue={minValue}
             maxValue={maxValue}
-            onValueChange={onChange || setProgressValue}
+            onValueChange={handleChange}
           />
         </AccordionContent>
       </AccordionItem>
