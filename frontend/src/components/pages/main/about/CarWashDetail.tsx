@@ -2,7 +2,6 @@ import Image from "next/image";
 import carlogo from "@/assets/carlogo.jpg";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import CarGeneralInfo from "./CarGeneralInfo";
 import CarWashAbout from "./CarWashAbout/CarWashAbout";
 import CarWashReviews from "./CarWashReviews/CarWashReviews";
 import { ArrowRight, CrossIcon, Dot, MapPin, Phone, Star, XIcon } from "lucide-react";

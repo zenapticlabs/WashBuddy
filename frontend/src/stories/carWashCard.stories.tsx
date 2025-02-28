@@ -25,11 +25,13 @@ const baseCarWash: ICarWashCard = {
   reviewsCount: 100,
   washType: "Basic Wash",
   promotion: "Special WashBuddy Price",
+  location: { lat: 0, lng: 0 },
 };
 
 export const Default: Story = {
   args: {
     data: baseCarWash,
+    onClick: () => {},
   },
 };
 
@@ -40,6 +42,7 @@ export const HighRating: Story = {
       rating: 5.0,
       reviewsCount: 250,
     },
+    onClick: () => {},
   },
 };
 
@@ -50,6 +53,7 @@ export const LongDistance: Story = {
       howFarAway: 15.7,
       name: "Far Away Car Wash",
     },
+    onClick: () => {},
   },
 };
 
@@ -61,6 +65,7 @@ export const PremiumWash: Story = {
       washType: "Premium Detail Wash",
       promotion: "Premium Service - 20% Off First Visit",
     },
+    onClick: () => {  },
   },
 };
 
@@ -70,5 +75,6 @@ export const NoPromotion: Story = {
       ...baseCarWash,
       promotion: undefined,
     },
+    onClick: () => {},
   },
 }; 
