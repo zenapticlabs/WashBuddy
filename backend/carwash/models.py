@@ -1,15 +1,32 @@
 from django.db import models
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.contrib.gis.db import models as gis_models
+from django.contrib.gis.geos import Point
+from django.contrib.gis.db.models.functions import Distance
 
 class CarWash(models.Model):
     car_wash_name = models.CharField(max_length=255, db_index=True)
     car_wash_address = models.CharField(max_length=255)
+    
+    formatted_address = models.CharField(max_length=255, blank=True, null=True)
+    country = models.CharField(max_length=100, blank=True, null=True)
+    country_code = models.CharField(max_length=10, blank=True, null=True)
+    state = models.CharField(max_length=100, blank=True, null=True)
+    state_code = models.CharField(max_length=10, blank=True, null=True)
+    postal_code = models.CharField(max_length=20, blank=True, null=True)
+    city = models.CharField(max_length=100, blank=True, null=True)
+    
     phone = models.CharField(max_length=255)
     reviews_count = models.IntegerField(default=0)
     reviews_average = models.DecimalField(max_digits=3, decimal_places=2, default=0)
+    
+
+    location = gis_models.PointField(geography=True, null=True, spatial_index=True)
+
     latitude = models.DecimalField(max_digits=10, decimal_places=8, db_index=True)
     longitude = models.DecimalField(max_digits=10, decimal_places=8, db_index=True)
     altitude = models.DecimalField(max_digits=10, decimal_places=8)
+    
     automatic_car_wash = models.BooleanField()
     self_service_car_wash = models.BooleanField()
     open_24_hours = models.BooleanField()
@@ -31,6 +48,34 @@ class CarWash(models.Model):
 
     def __str__(self):
         return self.car_wash_name
+        
+    def save(self, *args, **kwargs):
+        # Update the Point field from latitude and longitude
+        if self.latitude and self.longitude:
+            self.location = Point(float(self.longitude), float(self.latitude))
+        super().save(*args, **kwargs)
+        
+    @classmethod
+    def get_nearest(cls, lat, lng, distance_km=None):
+        """
+        Find car washes nearest to a point.
+        Optional distance_km parameter to limit results within a radius.
+        """
+        user_location = Point(float(lng), float(lat), srid=4326)
+        queryset = cls.objects.all()
+        
+        # Annotate with distance
+        queryset = queryset.annotate(
+            distance=Distance('location', user_location)
+        ).order_by('distance')
+        
+        # Filter by distance if specified
+        if distance_km:
+            queryset = queryset.filter(
+                distance__lte=distance_km * 1000  # Convert km to meters
+            )
+            
+        return queryset
 
     class Meta:
         indexes = [

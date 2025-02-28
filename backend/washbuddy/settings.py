@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "corsheaders",
     'admin_dashboard',
     'rest_framework',
+    'django.contrib.gis',
     'carwash',
 ]
 
@@ -87,10 +88,13 @@ WSGI_APPLICATION = 'washbuddy.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
+
+DATABASES = {
+
 if STAGE == "development":
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
+            'ENGINE': 'django.contrib.gis.db.backends.spatialite',
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
@@ -98,6 +102,10 @@ else:
     DATABASES = {
         "default": env.db("DATABASE_URL")
     }
+
+SPATIALITE_LIBRARY_PATH = 'mod_spatialite.dll'  # Update this with your actual path
+
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
