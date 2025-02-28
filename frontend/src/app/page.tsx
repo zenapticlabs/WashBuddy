@@ -3,7 +3,7 @@
 import { CarWashCard } from "@/components/organism/carWashCard";
 import { mockCarWashes } from "@/mocks/carWashes";
 import SearchBar from "@/components/molecule/SearchBar";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import FilterComponent from "@/components/pages/main/filter/FilterComponent";
 import { FilterState } from "@/types/filters";
 import { RadarMap } from "@/components/organism/RadarMap";
@@ -21,6 +21,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ICarWashCard } from "@/types";
 import CarWashDetail from "@/components/pages/main/about/CarWashDetail";
 import type maplibregl from "maplibre-gl";
+import { getCarwashes } from "@/services/CarwashService";
 
 const FilterButtonConfigs = [
   {
@@ -35,18 +36,28 @@ const FilterButtonConfigs = [
   },
 ];
 
+function getFiltersFromParams(params: URLSearchParams): FilterState {
+  return {
+    carWashType: params.get("carWashType") || Car_Wash_Type.AUTOMATIC,
+    searchKey: params.get("searchKey") || "",
+    washType: params.getAll("washType").map(String),
+    ratings: params.getAll("ratings").map(Number),
+    distanceRange: Number(params.get("distanceRange")) || 0,
+    priceRange: Number(params.get("priceRange")) || 0,
+    amenities: params.getAll("amenities").map(String),
+    operatingHours: params.getAll("operatingHours").map(String),
+  };
+}
+
 export default function Home() {
-  const [searchKey, setSearchKey] = useState("");
+  const RADAR_KEY = process.env.NEXT_PUBLIC_RADAR_API_KEY;
   const [selectedCarWash, setSelectedCarWash] = useState<ICarWashCard | null>(
     null
   );
   const [openCreateModal, setOpenCreateModal] = useState(false);
-  const notiCount = 2;
-  const [carWashType, setCarWashType] = useState<string>(
-    Car_Wash_Type.AUTOMATIC
-  );
-
   const [filters, setFilters] = useState<FilterState>({
+    carWashType: Car_Wash_Type.AUTOMATIC,
+    searchKey: "",
     washType: [],
     ratings: [],
     distanceRange: 0,
@@ -55,25 +66,63 @@ export default function Home() {
     operatingHours: [],
   });
   const mapRef = useRef<maplibregl.Map | null>(null);
+  const notiCount = 2;
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setFilters(getFiltersFromParams(params));
+  }, []);
+
+  useEffect(() => {
+    const fetchCarWashes = async () => {
+      await getCarwashes(filters);
+    };
+    fetchCarWashes();
+  }, [filters]);
+
+  useEffect(() => {
+    const updateUrlWithFilters = () => {
+      const params = new URLSearchParams();
+      Object.entries(filters).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          value.forEach((item) => params.append(key, item.toString()));
+        } else if (value !== undefined && value !== null) {
+          params.append(key, value.toString());
+        }
+      });
+      const queryString = params.toString();
+      const newUrl = `${window.location.pathname}?${queryString}`;
+      window.history.replaceState(null, "", newUrl);
+    };
+    updateUrlWithFilters();
+  }, [filters]);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      setFilters(getFiltersFromParams(params));
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, []);
 
   const handleSearch = (search: string) => {
-    setSearchKey(search);
+    setFilters({
+      ...filters,
+      searchKey: search,
+    });
   };
-
-  const handleOpenCreateModal = () => {
-    setOpenCreateModal(true);
-  };
-
-  const handleMapReady = (map: maplibregl.Map) => {
-    mapRef.current = map;
-  };
+  const handleOpenCreateModal = () => setOpenCreateModal(true);
+  const handleMapReady = (map: maplibregl.Map) => (mapRef.current = map);
 
   const handleNavigateToLocation = (location: { lat: number; lng: number }) => {
     if (mapRef.current) {
       mapRef.current.flyTo({
         center: [location.lng, location.lat],
         zoom: 15,
-        essential: true
+        essential: true,
       });
     }
   };
@@ -91,9 +140,9 @@ export default function Home() {
             <Button
               variant="outline"
               key={config.key}
-              onClick={() => setCarWashType(config.key)}
+              onClick={() => setFilters({ ...filters, carWashType: config.key })}
               className={`rounded-full shadow-none ${
-                carWashType === config.key
+                filters.carWashType === config.key
                   ? "border-blue-500"
                   : "border-neutral-100"
               }`}
@@ -156,7 +205,7 @@ export default function Home() {
                   data={carWash}
                   onClick={() => {
                     console.log("clicked", carWash);
-                    setSelectedCarWash(carWash)
+                    setSelectedCarWash(carWash);
                   }}
                 />
               ))}
@@ -165,9 +214,9 @@ export default function Home() {
           {selectedCarWash && (
             <div className="absolute top-2 left-[560px] text-black z-10 h-full pb-4 ">
               <ScrollArea className="w-full h-full rounded-xl overflow-hidden">
-                <CarWashDetail 
-                  data={selectedCarWash} 
-                  onClose={() => setSelectedCarWash(null)} 
+                <CarWashDetail
+                  data={selectedCarWash}
+                  onClose={() => setSelectedCarWash(null)}
                   onNavigate={handleNavigateToLocation}
                 />
               </ScrollArea>
@@ -176,9 +225,7 @@ export default function Home() {
         </div>
         <div className="flex-1 flex items-center justify-center">
           <RadarMap
-            publishableKey={
-              "prj_test_pk_144a114b9cb33385a5595eb5b90c071490484be1"
-            }
+            publishableKey={RADAR_KEY || ""}
             carWashes={mockCarWashes}
             onMapReady={handleMapReady}
           />

@@ -16,8 +16,16 @@ import AmenitiesCheckboxes from "../../../molecule/AmenitiesCheckboxes";
 import { FilterState } from "@/types/filters";
 import { MockAmenities } from "@/mocks/amenities";
 import { MockWashTypes } from "@/mocks/washTypes";
+import { useEffect } from "react";
+import { useState } from "react";
+import { getAmenities } from "@/services/AmenityService";
+import { Amenity, WashType } from "@/types";
+import { getWashTypes } from "@/services/WashType";
+import { Car_Wash_Type } from "@/utils/constants";
 
 const initialFilterState: FilterState = {
+  carWashType: Car_Wash_Type.AUTOMATIC,
+  searchKey: "",
   distanceRange: 0,
   amenities: [],
   washType: [],
@@ -39,6 +47,25 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   filters,
   setFilters,
 }) => {
+  const [amenities, setAmenities] = useState<Amenity[]>([]);
+  const [washTypes, setWashTypes] = useState<WashType[]>([]);
+
+  useEffect(() => {
+    const fetchAmenities = async () => {
+      const amenities = await getAmenities();
+      setAmenities(amenities);
+    };
+    fetchAmenities();
+  }, []);
+
+  useEffect(() => {
+    const fetchWashTypes = async () => {
+      const washTypes = await getWashTypes();
+      setWashTypes(washTypes);
+    };
+    fetchWashTypes();
+  }, []);
+
   const handleReset = () => {
     setFilters(initialFilterState);
   };

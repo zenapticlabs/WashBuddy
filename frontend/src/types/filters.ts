@@ -1,4 +1,6 @@
 export interface FilterState {
+  carWashType: string;
+  searchKey: string;
   distanceRange: number;
   amenities: string[];
   washType: string[];

@@ -13,6 +13,27 @@ import { DialogContent } from "@/components/ui/dialog";
 import { useState } from "react";
 import { Toaster, toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import useLocationData from "@/hooks/useLocationData";
+import { createCarwash } from "@/services/CarwashService";
+
+const formConfig = [
+  {
+    name: "name",
+    label: "Name",
+    type: "text",
+    required: true,
+  },
+  {
+    name: "email",
+    label: "Email",
+    type: "text",
+  },
+  {
+    name: "website",
+    label: "Website",
+    type: "text",
+  },
+];
 
 interface CreateCarWashDiaologProps {
   open: boolean;
@@ -24,25 +45,32 @@ const CreateCarWashDiaolog: React.FC<CreateCarWashDiaologProps> = ({
   onOpenChange,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    location: "",
-    operatingHours: "",
-    isOpen24Hours: false,
-    phoneNumber: "",
-    photos: [],
+  const { locationData, error, loading, fetchLocationData } = useLocationData();
+  const [formData, setFormData] = useState<any>({
+    name: "",
+    email: "",
+    website: "",
+    phone: "",
   });
+  const [knowPhone, setKnowPhone] = useState(false);
+  const [knowHours, setKnowHours] = useState(false);
+
+  const handleChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prevData: any) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
 
   const handleSubmit = async () => {
     try {
       setIsLoading(true);
 
-      const response = await fetch("/api/carwashes", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      const payload = { ...locationData, ...formData };
+      
+      console.log(payload);
+      const response = await createCarwash(payload);
 
       if (!response.ok) {
         throw new Error("Failed to create car wash");
@@ -63,6 +91,10 @@ const CreateCarWashDiaolog: React.FC<CreateCarWashDiaologProps> = ({
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleDetectLocation = async () => {
+    fetchLocationData();
   };
 
   return (
@@ -87,6 +119,23 @@ const CreateCarWashDiaolog: React.FC<CreateCarWashDiaologProps> = ({
                 number?
               </div>
             </div>
+            <div className="flex flex-col gap-4 px-6 py-4 border-b">
+              {formConfig.map((field) => (
+                <div className="" key={field.name}>
+                  <div className="text-title-1 text-[#262626]">
+                    {field.label}
+                    {field.required && <span className="text-red-500">*</span>}
+                  </div>
+                  <Input
+                    name={field.name}
+                    value={formData[field.name] || ""}
+                    onChange={handleChangeInput}
+                    required={field.required}
+                    className="p-3"
+                  />
+                </div>
+              ))}
+            </div>
             <div className="px-6 py-4 border-b">
               <div className="text-title-1 text-[#262626]">Location</div>
               <Tabs defaultValue="use_gps" className="w-full">
@@ -108,10 +157,37 @@ const CreateCarWashDiaolog: React.FC<CreateCarWashDiaologProps> = ({
                   <Button
                     variant="outline"
                     className="text-blue-500 border-blue-500 rounded-full hover:bg-blue-500 hover:text-white"
+                    onClick={handleDetectLocation}
                   >
                     <Crosshair size={20} className="mr-2" />
                     Detect Location
                   </Button>
+                  {loading && <p>Loading...</p>}
+                  {error && <p>Error: {error}</p>}
+                  {locationData && (
+                    <div className="flex flex-col gap-2 pt-4">
+                      <div className="flex justify-between text-neutral-800">
+                        <div className="text-title-1">Address</div>
+                        <p>{locationData.address}</p>
+                      </div>
+                      <div className="flex justify-between text-neutral-800">
+                        <div className="text-title-1">City</div>
+                        <p>{locationData.city}</p>
+                      </div>
+                      <div className="flex justify-between text-neutral-800">
+                        <div className="text-title-1">State</div>
+                        <p>{locationData.state}</p>
+                      </div>
+                      <div className="flex justify-between text-neutral-800">
+                        <div className="text-title-1">Postal Code</div>
+                        <p>{locationData.postal_code}</p>
+                      </div>
+                      <div className="flex justify-between text-neutral-800">
+                        <div className="text-title-1">Country</div>
+                        <p>{locationData.country}</p>
+                      </div>
+                    </div>
+                  )}
                 </TabsContent>
                 <TabsContent value="enter_address"></TabsContent>
               </Tabs>
@@ -121,27 +197,10 @@ const CreateCarWashDiaolog: React.FC<CreateCarWashDiaologProps> = ({
               <div className="text-title-1 text-[#262626]">
                 Do you know the hours of operation?
               </div>
-              <RadioGroup defaultValue="yes" className="flex gap-10">
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="yes" id="yes" />
-                  <Label htmlFor="yes">Yes</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="no" id="no" />
-                  <Label htmlFor="no">No</Label>
-                </div>
-              </RadioGroup>
-
-              <OperatingHoursRange />
-              <div className="text-title-1 text-[#262626]">
-                Do you know the phone number?
-              </div>
               <RadioGroup
-                defaultValue="yes"
+                value={knowHours ? "yes" : "no"}
                 className="flex gap-10"
-                onValueChange={(value) => {
-                  console.log(value);
-                }}
+                onValueChange={(value) => setKnowHours(value === "yes")}
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="yes" id="yes" />
@@ -152,7 +211,33 @@ const CreateCarWashDiaolog: React.FC<CreateCarWashDiaologProps> = ({
                   <Label htmlFor="no">No</Label>
                 </div>
               </RadioGroup>
-              <Input placeholder="Enter phone number" className="p-3" />
+              {knowHours && <OperatingHoursRange />}
+              <div className="text-title-1 text-[#262626]">
+                Do you know the phone number?
+              </div>
+              <RadioGroup
+                value={knowPhone ? "yes" : "no"}
+                className="flex gap-10"
+                onValueChange={(value) => setKnowPhone(value === "yes")}
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="yes" id="yes" />
+                  <Label htmlFor="yes">Yes</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="no" id="no" />
+                  <Label htmlFor="no">No</Label>
+                </div>
+              </RadioGroup>
+              {knowPhone && (
+                <Input
+                  placeholder="Enter phone number"
+                  className="p-3"
+                  name="phone"
+                  value={formData.phone || ""}
+                  onChange={handleChangeInput}
+                />
+              )}
             </div>
             <PhotoUploads />
           </ScrollArea>

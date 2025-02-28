@@ -57,10 +57,6 @@ const PhotoUploads: React.FC<PhotoUploadsProps> = () => {
       <div className="text-title-1">Photos</div>
       <div className="text-title-2">Site Photo</div>
       <ImageUploadZone title="Exterior photo of wash" required={true} />
-      <div className="text-body-2">
-        Location <span className="text-red-500">*</span>
-      </div>
-      <Input placeholder="Enter Location" className="p-3" />
       <Separator className="my-4" />
       <div className="text-title-2">Automatic wash</div>
       <ImageUploadZone title="Wash menu" required={true} />
