@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Switch } from "../ui/switch";
-import { TimePicker } from "./TimePicker";
+// import { TimePicker } from "./TimePicker";
 import { Plus } from "lucide-react";
 
 const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
@@ -60,7 +60,7 @@ export function OperatingHoursRange() {
           />
           {operatingHours[day].isOpen && (
             <div className="flex items-center gap-2">
-              <TimePicker
+              {/* <TimePicker
                 value={operatingHours[day].start}
                 onChange={(time) => handleTimeChange(day, 'start', time)}
                 endTime={operatingHours[day].end}
@@ -70,7 +70,7 @@ export function OperatingHoursRange() {
                 value={operatingHours[day].end}
                 onChange={(time) => handleTimeChange(day, 'end', time)}
                 startTime={operatingHours[day].start}
-              />
+              /> */}
               <div className="flex items-center justify-center rounded h-5 w-5 border border-neutral-700 p-0.5">
                 <Plus />
               </div>

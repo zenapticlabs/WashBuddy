@@ -17,11 +17,17 @@ export const Default: Story = {
   args: {
     publishableKey: "YOUR_RADAR_PUBLISHABLE_KEY",
   },
+  render: (args) => {
+    return <RadarMap {...args} />;
+  },
 };
 
 export const WithUserId: Story = {
   args: {
     publishableKey: "YOUR_RADAR_PUBLISHABLE_KEY",
     userId: "test-user-123",
+  },
+  render: (args) => {
+    return <RadarMap {...args} />;
   },
 }; 
