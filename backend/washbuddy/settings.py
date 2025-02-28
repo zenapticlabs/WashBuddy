@@ -89,15 +89,7 @@ WSGI_APPLICATION = 'washbuddy.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-if STAGE == "development":
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.contrib.gis.db.backends.spatialite',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
-else:
-    DATABASES = {
+DATABASES = {
         "default": env.db("DATABASE_URL")
     }
 
