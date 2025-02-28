@@ -7,9 +7,10 @@ import { DotIcon, MapPinIcon, StarIcon } from "lucide-react";
 import { Badge } from "../ui/badge";
 interface CarWashCardProps {
   data: ICarWashCard;
+  onClick: () => void;
 }
 
-export function CarWashCard({ data }: CarWashCardProps) {
+export function CarWashCard({ data, onClick }: CarWashCardProps) {
 
   return (
     <div className="flex gap-2 border p-3 border-neutral-50 rounded-lg w-full">
@@ -48,7 +49,7 @@ export function CarWashCard({ data }: CarWashCardProps) {
         <div className="flex-1 text-body-3 text-neutral-900 text-right">
           {data.washType}
         </div>
-        <button className="text-title-2 text-blue-600 p-0">View Details</button>
+        <button className="text-title-2 text-blue-600 p-0" onClick={onClick}>View Details</button>
       </div>
     </div>
   );

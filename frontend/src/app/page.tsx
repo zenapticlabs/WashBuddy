@@ -3,7 +3,7 @@
 import { CarWashCard } from "@/components/organism/carWashCard";
 import { mockCarWashes } from "@/mocks/carWashes";
 import SearchBar from "@/components/molecule/SearchBar";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import FilterComponent from "@/components/pages/main/filter/FilterComponent";
 import { FilterState } from "@/types/filters";
 import { RadarMap } from "@/components/organism/RadarMap";
@@ -18,6 +18,10 @@ import { Button } from "@/components/ui/button";
 
 import CreateCarWashDiaolog from "@/components/pages/main/CreateCarWashDiaolog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { ICarWashCard } from "@/types";
+import CarWashDetail from "@/components/pages/main/about/CarWashDetail";
+import type maplibregl from "maplibre-gl";
+
 const FilterButtonConfigs = [
   {
     icon: AutomaticIcon,
@@ -33,6 +37,9 @@ const FilterButtonConfigs = [
 
 export default function Home() {
   const [searchKey, setSearchKey] = useState("");
+  const [selectedCarWash, setSelectedCarWash] = useState<ICarWashCard | null>(
+    null
+  );
   const [openCreateModal, setOpenCreateModal] = useState(false);
   const notiCount = 2;
   const [carWashType, setCarWashType] = useState<string>(
@@ -47,6 +54,8 @@ export default function Home() {
     amenities: [],
     operatingHours: [],
   });
+  const mapRef = useRef<maplibregl.Map | null>(null);
+
   const handleSearch = (search: string) => {
     setSearchKey(search);
   };
@@ -54,6 +63,21 @@ export default function Home() {
   const handleOpenCreateModal = () => {
     setOpenCreateModal(true);
   };
+
+  const handleMapReady = (map: maplibregl.Map) => {
+    mapRef.current = map;
+  };
+
+  const handleNavigateToLocation = (location: { lat: number; lng: number }) => {
+    if (mapRef.current) {
+      mapRef.current.flyTo({
+        center: [location.lng, location.lat],
+        zoom: 15,
+        essential: true
+      });
+    }
+  };
+
   return (
     <div className="flex flex-col p-4 h-screen">
       <div className="flex gap-2 py-4 items-center justify-between">
@@ -122,20 +146,41 @@ export default function Home() {
       </div>
       <SearchBar onChange={handleSearch} />
       <FilterComponent filters={filters} setFilters={setFilters} />
-      <div className="flex flex-1 overflow-hidden">
-        <ScrollArea className="w-[550px]">
-          <div className="flex flex-col gap-2 pr-4">
-            {mockCarWashes.map((carWash) => (
-              <CarWashCard key={carWash.id} data={carWash} />
-            ))}
-          </div>
-        </ScrollArea>
+      <div className="flex flex-1 overflow-hidden bg-neutral-100">
+        <div className="w-[550px] relative bg-white">
+          <ScrollArea className="w-full h-full">
+            <div className="flex flex-col gap-2 pr-4">
+              {mockCarWashes.map((carWash) => (
+                <CarWashCard
+                  key={carWash.id}
+                  data={carWash}
+                  onClick={() => {
+                    console.log("clicked", carWash);
+                    setSelectedCarWash(carWash)
+                  }}
+                />
+              ))}
+            </div>
+          </ScrollArea>
+          {selectedCarWash && (
+            <div className="absolute top-2 left-[560px] text-black z-10 h-full pb-4 ">
+              <ScrollArea className="w-full h-full rounded-xl overflow-hidden">
+                <CarWashDetail 
+                  data={selectedCarWash} 
+                  onClose={() => setSelectedCarWash(null)} 
+                  onNavigate={handleNavigateToLocation}
+                />
+              </ScrollArea>
+            </div>
+          )}
+        </div>
         <div className="flex-1 flex items-center justify-center">
           <RadarMap
             publishableKey={
               "prj_test_pk_144a114b9cb33385a5595eb5b90c071490484be1"
             }
             carWashes={mockCarWashes}
+            onMapReady={handleMapReady}
           />
         </div>
       </div>
