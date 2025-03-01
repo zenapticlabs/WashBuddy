@@ -83,11 +83,11 @@ export function RadarMap({ publishableKey, userId, carWashes, onMapReady }: Rada
     if (!mapRef.current) return;
 
     // Clear existing markers
-    markersRef.current.forEach(marker => marker.remove());
+    markersRef.current?.forEach(marker => marker.remove());
     markersRef.current = [];
 
     // Add new markers
-    carWashes.forEach((carWash) => {
+    carWashes?.forEach((carWash) => {
       const customMarker = document.createElement("div");
       customMarker.innerHTML = `
         <div class="relative flex items-center justify-center ">
