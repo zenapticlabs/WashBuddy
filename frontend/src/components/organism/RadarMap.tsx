@@ -6,7 +6,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 interface RadarMapProps {
   publishableKey: string;
   userId?: string;
-  carWashes: Array<{
+  carWashes?: Array<{
     id: string;
     name: string;
     location: {
