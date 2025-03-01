@@ -83,9 +83,9 @@ export default function Home() {
   useEffect(() => {
     const updateUrlWithFilters = () => {
       const params = new URLSearchParams();
-      Object.entries(filters).forEach(([key, value]) => {
+      Object.entries(filters)?.forEach(([key, value]) => {
         if (Array.isArray(value)) {
-          value.forEach((item) => params.append(key, item.toString()));
+          value?.forEach((item) => params.append(key, item.toString()));
         } else if (value !== undefined && value !== null) {
           params.append(key, value.toString());
         }
