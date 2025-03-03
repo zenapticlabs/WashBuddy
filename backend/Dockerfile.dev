@@ -1,0 +1,28 @@
+# Use an official Python image
+FROM python:3.11-slim
+
+# Install required system packages
+RUN apt-get update && apt-get install -y \
+    gdal-bin \
+    libgdal-dev \
+    libgeos-dev \
+    libproj-dev \
+    postgresql-client
+    
+# Set the working directory
+WORKDIR /app
+
+# Install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the Django application
+COPY . .
+
+# **Set the startup command inside the Dockerfile**
+ENTRYPOINT ["/bin/sh", "-c", \
+    "until pg_isready -h db -p 5432; do echo 'Waiting for database...'; sleep 2; done; \
+    echo 'Database is ready. Running migrations...'; \
+    python manage.py migrate && \
+    watchfiles --filter python 'python manage.py runserver 0.0.0.0:8000'"]
+

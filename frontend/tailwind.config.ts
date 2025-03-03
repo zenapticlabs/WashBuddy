@@ -76,6 +76,12 @@ export default {
 			'neutral-900': '#27292C',
 			'accent-green': '#409624',
 			'accent-yellow': '#FFA100',
+			'accent-red': '#F93927',
+			'accent-blue': '#0286E2',
+			'accent-light-green': '#FFF3CC',
+			'accent-light-yellow': '#E7F9D3',
+			'accent-light-red': '#CBF4FD',
+			'accent-light-blue': '#FFF3EA',
   		},
   		borderRadius: {
   			lg: 'var(--radius)',
