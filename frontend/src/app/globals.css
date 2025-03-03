@@ -75,24 +75,90 @@ body {
     @apply bg-background text-foreground;
   }
   .text-title-1 {
-    @apply font-figtree font-semibold text-base;
+    @apply font-figtree font-semibold text-base leading-[1.35];
   }
   .text-title-2 {
-    @apply font-figtree font-semibold text-sm ;
+    @apply font-figtree font-semibold text-sm leading-[1.35];
+  }
+  .text-title-3 {
+    @apply font-figtree font-semibold text-xs leading-[1.35];
   }
   .text-body-1 {
-    @apply font-figtree font-normal text-base;
+    @apply font-figtree font-normal text-base leading-[1.35];
   }
   .text-body-2 {
-    @apply font-figtree font-normal text-sm;
+    @apply font-figtree font-normal text-sm leading-[1.35];
   }
   .text-body-3 {
-    @apply font-figtree font-normal text-xs;
+    @apply font-figtree font-normal text-xs leading-[1.35];
+  }
+  .text-headline-1 {
+    @apply font-figtree font-bold text-[32px] leading-[1.25];
+  }
+  .text-headline-2 {
+    @apply font-figtree font-bold text-[28px] leading-[1.25];
+  }
+  .text-headline-3 {
+    @apply font-figtree font-bold text-2xl leading-[1.25];
   }
   .text-headline-4 {
-    @apply font-figtree font-bold text-xl;
+    @apply font-figtree font-bold text-xl leading-[1.25];
   }
   .text-headline-5 {
-    @apply font-figtree font-bold text-lg;
+    @apply font-figtree font-bold text-lg leading-[1.25];
   }
+
+  .text-display-5 {
+    @apply font-figtree font-bold text-[40px] leading-[1.25];
+  }
+  .text-display-4 { 
+    @apply font-figtree font-bold text-[48px] leading-[1.25];
+  }
+}
+
+
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+.marker {
+  background-size: cover;
+  cursor: pointer;
+}
+
+.maplibregl-popup {
+  max-width: 200px;
+}
+
+.maplibregl-popup-content {
+  padding: 0;
+  border-radius: 8px;
+}
+
+/* Add to your global CSS or styled-components */
+.custom-popup {
+  @apply rounded-lg shadow-lg;
+}
+
+.custom-popup .maplibregl-popup-content {
+  @apply p-0 rounded-lg border border-gray-200;
+}
+
+.custom-popup .maplibregl-popup-close-button {
+  @apply right-2 top-2 text-gray-500 hover:text-gray-700;
+}
+
+/* Animation for marker hover */
+.marker-animation {
+  transition: transform 0.2s;
+}
+
+.marker-animation:hover {
+  transform: scale(1.1);
 }
