@@ -3,6 +3,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.contrib.gis.db import models as gis_models
 from django.contrib.gis.geos import Point
 from django.contrib.gis.db.models.functions import Distance
+from django.contrib.auth.models import User
 
 class CarWash(models.Model):
     car_wash_name = models.CharField(max_length=255, db_index=True)
@@ -201,3 +202,10 @@ class AmenityCarWashMapping(models.Model):
 
     def __str__(self):
         return f"{self.car_wash.car_wash_name} - {self.amenity.name}"
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    location = gis_models.PointField(geography=True, null=True, blank=True)
+    
+    def __str__(self):
+        return f"{self.user.username}'s profile"

@@ -1,0 +1,292 @@
+{
+  "info": {
+    "name": "WashBuddy API",
+    "description": "API collection for WashBuddy car wash application",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Car Washes",
+      "item": [
+        {
+          "name": "Get All Car Washes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/carwashes/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "carwashes"]
+            }
+          }
+        },
+        {
+          "name": "Get Car Wash by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/carwashes/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "carwashes", "1"]
+            }
+          }
+        },
+        {
+          "name": "Create Car Wash",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"car_wash_name\": \"SparkleShine Auto Wash\",\n    \"formatted_address\": \"123 Main Street, Seattle, WA 98101\",\n    \"country\": \"United States\",\n    \"country_code\": \"US\",\n    \"state\": \"Washington\",\n    \"state_code\": \"WA\",\n    \"postal_code\": \"98101\",\n    \"city\": \"Seattle\",\n    \"phone\": \"+1-206-555-0100\",\n    \"location\": {\n        \"type\": \"Point\",\n        \"coordinates\": [-122.3321, 47.6062]\n    },\n    \"automatic_car_wash\": true,\n    \"self_service_car_wash\": false,\n    \"open_24_hours\": true,\n    \"operating_hours\": [\n        {\n            \"day_of_week\": 0,\n            \"is_closed\": false,\n            \"opening_time\": \"00:00\",\n            \"closing_time\": \"23:59\"\n        },\n        {\n            \"day_of_week\": 1,\n            \"is_closed\": false,\n            \"opening_time\": \"00:00\",\n            \"closing_time\": \"23:59\"\n        },\n        {\n            \"day_of_week\": 2,\n            \"is_closed\": false,\n            \"opening_time\": \"00:00\",\n            \"closing_time\": \"23:59\"\n        },\n        {\n            \"day_of_week\": 3,\n            \"is_closed\": false,\n            \"opening_time\": \"00:00\",\n            \"closing_time\": \"23:59\"\n        },\n        {\n            \"day_of_week\": 4,\n            \"is_closed\": false,\n            \"opening_time\": \"00:00\",\n            \"closing_time\": \"23:59\"\n        },\n        {\n            \"day_of_week\": 5,\n            \"is_closed\": false,\n            \"opening_time\": \"00:00\",\n            \"closing_time\": \"23:59\"\n        },\n        {\n            \"day_of_week\": 6,\n            \"is_closed\": false,\n            \"opening_time\": \"00:00\",\n            \"closing_time\": \"23:59\"\n        }\n    ],\n    \"images\": [\n        {\n            \"image_type\": 0,\n            \"image_key\": \"sparkle-exterior-main.jpg\"\n        },\n        {\n            \"image_type\": 1,\n            \"image_key\": \"sparkle-exterior-alt.jpg\"\n        },\n        {\n            \"image_type\": 2,\n            \"image_key\": \"sparkle-interior-main.jpg\"\n        },\n        {\n            \"image_type\": 3,\n            \"image_key\": \"sparkle-interior-alt.jpg\"\n        },\n        {\n            \"image_type\": 4,\n            \"image_key\": \"sparkle-equipment-1.jpg\"\n        },\n        {\n            \"image_type\": 5,\n            \"image_key\": \"sparkle-equipment-2.jpg\"\n        },\n        {\n            \"image_type\": 6,\n            \"image_key\": \"sparkle-aerial-view.jpg\"\n        },\n        {\n            \"image_type\": 7,\n            \"image_key\": \"sparkle-street-view.jpg\"\n        }\n    ],\n    \"wash_types\": [1, 2, 3],\n    \"amenities\": [1, 2]\n}"
+            }
+          },
+          "url": {
+            "raw": "{{base_url}}/api/carwashes/",
+            "host": ["{{base_url}}"],
+            "path": ["api", "carwashes"]
+          }
+        },
+        {
+          "name": "Update Car Wash",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"car_wash_name\": \"Updated Car Wash Name\",\n    \"phone\": \"+1-206-555-0200\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/carwashes/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "carwashes", "1"]
+            }
+          }
+        },
+        {
+          "name": "Delete Car Wash",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/carwashes/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "carwashes", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Filters",
+      "item": [
+        {
+          "name": "Filter by Wash Types",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/carwashes/?wash_types=1,2,3",
+              "host": ["{{base_url}}"],
+              "path": ["api", "carwashes"],
+              "query": [
+                {
+                  "key": "wash_types",
+                  "value": "1,2,3"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Filter by Amenities",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/carwashes/?amenities=1,2,4",
+              "host": ["{{base_url}}"],
+              "path": ["api", "carwashes"],
+              "query": [
+                {
+                  "key": "amenities",
+                  "value": "1,2,4"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Filter by Car Wash Type",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/carwashes/?carWashType=automatic",
+              "host": ["{{base_url}}"],
+              "path": ["api", "carwashes"],
+              "query": [
+                {
+                  "key": "carWashType",
+                  "value": "automatic"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Filter by Address",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/carwashes/?address=Seattle",
+              "host": ["{{base_url}}"],
+              "path": ["api", "carwashes"],
+              "query": [
+                {
+                  "key": "address",
+                  "value": "Seattle"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Filter by Distance",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/carwashes/?distance=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "carwashes"],
+              "query": [
+                {
+                  "key": "distance",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Nearest Car Washes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/carwashes/nearest/?distance=10&limit=5",
+              "host": ["{{base_url}}"],
+              "path": ["api", "carwashes", "nearest"],
+              "query": [
+                {
+                  "key": "distance",
+                  "value": "10"
+                },
+                {
+                  "key": "limit",
+                  "value": "5"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Wash Types",
+      "item": [
+        {
+          "name": "Get All Wash Types",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/wash-types/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "wash-types"]
+            }
+          }
+        },
+        {
+          "name": "Create Wash Type",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Basic Wash\",\n    \"description\": \"Standard exterior wash\",\n    \"subclass\": \"Clean\",\n    \"category\": \"automatic\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/wash-types/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "wash-types"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Amenities",
+      "item": [
+        {
+          "name": "Get All Amenities",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/amenities/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "amenities"]
+            }
+          }
+        },
+        {
+          "name": "Create Amenity",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Vacuum Station\",\n    \"description\": \"Industrial-grade vacuum cleaners\",\n    \"category\": \"selfservice\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/amenities/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "amenities"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8001",
+      "type": "string"
+    }
+  ]
+}

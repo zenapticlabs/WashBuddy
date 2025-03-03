@@ -25,17 +25,23 @@ class CarWashViewSet(viewsets.ModelViewSet):
         wash_types = self.request.query_params.get('wash_types', '')
         amenities = self.request.query_params.get('amenities', '')
         address = self.request.query_params.get('address', '')
-        lat = self.request.query_params.get('lat')
-        lng = self.request.query_params.get('lng')
-        radius = self.request.query_params.get('radius')  # in kilometers
-        
+        car_wash_type = self.request.query_params.get('carWashType', '')
+        distance = self.request.query_params.get('distance')
+
+        # Filter by car wash type
+        if car_wash_type:
+            if car_wash_type.lower() == 'automatic':
+                queryset = queryset.filter(automatic_car_wash=True)
+            elif car_wash_type.lower() == 'selfservice':
+                queryset = queryset.filter(self_service_car_wash=True)
+
         # Filter by wash types (AND logic)
         wash_type_ids = [int(id) for id in wash_types.split(',') if id.strip()]
         if wash_type_ids:
             for wash_type_id in wash_type_ids:
                 queryset = queryset.filter(wash_types__id=wash_type_id)
 
-        # Filter by amenities (AND logic)
+        # Filter by amenities 
         amenity_ids = [int(id) for id in amenities.split(',') if id.strip()]
         if amenity_ids:
             for amenity_id in amenity_ids:
@@ -45,19 +51,18 @@ class CarWashViewSet(viewsets.ModelViewSet):
         if address:
             queryset = queryset.filter(formatted_address__icontains=address)
 
-        # Filter by distance if coordinates and radius provided
-        if lat and lng and radius:
+        # Filter by distance if provided
+        if distance:
             try:
-                lat = float(lat)
-                lng = float(lng)
-                radius_km = float(radius)
-                user_location = Point(lng, lat, srid=4326)
-                
-                queryset = queryset.filter(
-                    location__distance_lte=(user_location, D(km=radius_km))
-                ).annotate(
-                    distance=Distance('location', user_location)
-                ).order_by('distance')
+                distance_km = float(distance)
+                # Get the user's location from the request
+                user_location = self.request.user.location if hasattr(self.request.user, 'location') else None
+                if user_location:
+                    queryset = queryset.filter(
+                        location__distance_lte=(user_location, D(km=distance_km))
+                    ).annotate(
+                        distance=Distance('location', user_location)
+                    ).order_by('distance')
             except (ValueError, TypeError):
                 pass
 
@@ -67,7 +72,6 @@ class CarWashViewSet(viewsets.ModelViewSet):
         # Validate required fields
         required_fields = [
             'car_wash_name', 
-            'car_wash_address',
             'phone',
             'location',
             'operating_hours',
@@ -116,32 +120,29 @@ class CarWashViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def nearest(self, request):
-        """Find nearest car washes to a given location."""
-        lat = request.query_params.get('lat')
-        lng = request.query_params.get('lng')
-        radius = request.query_params.get('radius', 10)  # Default 10km
+        """Find nearest car washes within a specified distance."""
+        distance = request.query_params.get('distance', 10)  # Default 10km
         limit = request.query_params.get('limit', 10)    # Default 10 results
         
         try:
-            lat = float(lat)
-            lng = float(lng)
-            radius = float(radius)
+            distance_km = float(distance)
             limit = int(limit)
         except (ValueError, TypeError):
             return Response(
-                {"error": "Invalid parameters. lat and lng must be valid coordinates."},
+                {"error": "Invalid parameters. distance must be a valid number."},
                 status=status.HTTP_400_BAD_REQUEST
             )
             
-        if not lat or not lng:
+        # Get the user's location from the request
+        user_location = request.user.location if hasattr(request.user, 'location') else None
+        if not user_location:
             return Response(
-                {"error": "Both lat and lng parameters are required."},
+                {"error": "User location not available."},
                 status=status.HTTP_400_BAD_REQUEST
             )
             
-        user_location = Point(lng, lat, srid=4326)
         queryset = CarWash.objects.filter(
-            location__distance_lte=(user_location, D(km=radius))
+            location__distance_lte=(user_location, D(km=distance_km))
         ).annotate(
             distance=Distance('location', user_location)
         ).order_by('distance')[:limit]
