@@ -16,9 +16,7 @@ class CarWashViewSet(viewsets.ModelViewSet):
         'wash_types',
         'amenities'
     ).all()
-
-    def get_serializer_class(self):
-        return CarWashSerializer
+    serializer_class = CarWashSerializer
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -26,109 +24,109 @@ class CarWashViewSet(viewsets.ModelViewSet):
         # Get filter parameters
         wash_types = self.request.query_params.get('wash_types', '')
         amenities = self.request.query_params.get('amenities', '')
-        open_now = self.request.query_params.get('open_now', '')
+        address = self.request.query_params.get('address', '')
+        lat = self.request.query_params.get('lat')
+        lng = self.request.query_params.get('lng')
+        radius = self.request.query_params.get('radius')  # in kilometers
         
-        # Get address filter parameters
-        city = self.request.query_params.get('city', '')
-        state = self.request.query_params.get('state', '')
-        state_code = self.request.query_params.get('state_code', '')
-        postal_code = self.request.query_params.get('postal_code', '')
-        country = self.request.query_params.get('country', '')
-        country_code = self.request.query_params.get('country_code', '')
-        
-        # Get spatial filter parameters
-        lat = self.request.query_params.get('lat', None)
-        lng = self.request.query_params.get('lng', None)
-        radius = self.request.query_params.get('radius', None)  # in kilometers
-        
-        # Convert comma-separated strings to lists of integers
-        wash_type_ids = [int(id) for id in wash_types.split(',') if id.strip()] if wash_types else []
-        amenity_ids = [int(id) for id in amenities.split(',') if id.strip()] if amenities else []
-
-        # Filter by wash types using AND logic
+        # Filter by wash types (AND logic)
+        wash_type_ids = [int(id) for id in wash_types.split(',') if id.strip()]
         if wash_type_ids:
             for wash_type_id in wash_type_ids:
                 queryset = queryset.filter(wash_types__id=wash_type_id)
 
-        # Filter by amenities using AND logic
+        # Filter by amenities (AND logic)
+        amenity_ids = [int(id) for id in amenities.split(',') if id.strip()]
         if amenity_ids:
             for amenity_id in amenity_ids:
                 queryset = queryset.filter(amenities__id=amenity_id)
 
-        # Filter by address fields
-        if city:
-            queryset = queryset.filter(city__icontains=city)
-        if state:
-            queryset = queryset.filter(state__icontains=state)
-        if state_code:
-            queryset = queryset.filter(state_code__iexact=state_code)
-        if postal_code:
-            queryset = queryset.filter(postal_code__iexact=postal_code)
-        if country:
-            queryset = queryset.filter(country__icontains=country)
-        if country_code:
-            queryset = queryset.filter(country_code__iexact=country_code)
+        # Filter by formatted address
+        if address:
+            queryset = queryset.filter(formatted_address__icontains=address)
 
-        # Filter by open now (includes current time in schedule)
-        if open_now == 'true':
-            now = datetime.now()
-            current_day = now.weekday()  # 0 = Monday, 6 = Sunday
-            current_time = now.time()
-
-            queryset = queryset.filter(
-                Q(open_24_hours=True) |
-                Q(
-                    carwashoperatinghours__day_of_week=current_day,
-                    carwashoperatinghours__is_closed=False,
-                    carwashoperatinghours__opening_time__lte=current_time,
-                    carwashoperatinghours__closing_time__gte=current_time
-                )
-            )
-            
-        # Filter by location and distance if coordinates are provided
-        if lat and lng:
+        # Filter by distance if coordinates and radius provided
+        if lat and lng and radius:
             try:
                 lat = float(lat)
                 lng = float(lng)
+                radius_km = float(radius)
                 user_location = Point(lng, lat, srid=4326)
                 
-                # Annotate with distance
-                queryset = queryset.annotate(
+                queryset = queryset.filter(
+                    location__distance_lte=(user_location, D(km=radius_km))
+                ).annotate(
                     distance=Distance('location', user_location)
                 ).order_by('distance')
-                
-                # Filter by radius if provided
-                if radius:
-                    radius_km = float(radius)
-                    queryset = queryset.filter(
-                        location__distance_lte=(user_location, D(km=radius_km))
-                    )
             except (ValueError, TypeError):
-                # Handle invalid coordinate values
                 pass
 
         return queryset.distinct()
+
+    def create(self, request, *args, **kwargs):
+        # Validate required fields
+        required_fields = [
+            'car_wash_name', 
+            'car_wash_address',
+            'phone',
+            'location',
+            'operating_hours',
+            'images'
+        ]
         
+        for field in required_fields:
+            if field not in request.data:
+                return Response(
+                    {f"error": f"Missing required field: {field}"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        # Validate operating hours
+        operating_hours = request.data.get('operating_hours', [])
+        if len(operating_hours) != 7:
+            return Response(
+                {"error": "Must provide operating hours for all 7 days"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Validate images
+        images = request.data.get('images', [])
+        if len(images) != 8:
+            return Response(
+                {"error": "Must provide exactly 8 images (types 0-7)"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        image_types = sorted(image['image_type'] for image in images)
+        if image_types != list(range(8)):
+            return Response(
+                {"error": "Must provide exactly one image for each type 0-7"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Validate location
+        location = request.data.get('location', {})
+        if not location or 'coordinates' not in location:
+            return Response(
+                {"error": "Invalid location format"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        return super().create(request, *args, **kwargs)
+
     @action(detail=False, methods=['get'])
     def nearest(self, request):
-        """
-        Find car washes nearest to a given location.
-        
-        Query parameters:
-        - lat: Latitude (required)
-        - lng: Longitude (required)
-        - limit: Maximum number of results (optional, default 10)
-        - radius: Maximum distance in kilometers (optional)
-        """
+        """Find nearest car washes to a given location."""
         lat = request.query_params.get('lat')
         lng = request.query_params.get('lng')
-        limit = request.query_params.get('limit', 10)
-        radius = request.query_params.get('radius')
+        radius = request.query_params.get('radius', 10)  # Default 10km
+        limit = request.query_params.get('limit', 10)    # Default 10 results
         
         try:
-            limit = int(limit)
             lat = float(lat)
             lng = float(lng)
+            radius = float(radius)
+            limit = int(limit)
         except (ValueError, TypeError):
             return Response(
                 {"error": "Invalid parameters. lat and lng must be valid coordinates."},
@@ -141,61 +139,12 @@ class CarWashViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
             
-        # Create a point from the provided coordinates
         user_location = Point(lng, lat, srid=4326)
-        
-        # Query car washes
-        queryset = CarWash.objects.filter(location__isnull=False)
-        
-        # Apply radius filter if provided
-        if radius:
-            try:
-                radius_km = float(radius)
-                queryset = queryset.filter(
-                    location__distance_lte=(user_location, D(km=radius_km))
-                )
-            except (ValueError, TypeError):
-                return Response(
-                    {"error": "Invalid radius parameter."},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-                
-        # Annotate with distance and order by proximity
-        queryset = queryset.annotate(
+        queryset = CarWash.objects.filter(
+            location__distance_lte=(user_location, D(km=radius))
+        ).annotate(
             distance=Distance('location', user_location)
         ).order_by('distance')[:limit]
-        
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
-        
-    @action(detail=False, methods=['get'])
-    def within_bounds(self, request):
-        """
-        Find car washes within a bounding box.
-        
-        Query parameters:
-        - min_lat: Minimum latitude (required)
-        - min_lng: Minimum longitude (required)
-        - max_lat: Maximum latitude (required)
-        - max_lng: Maximum longitude (required)
-        """
-        try:
-            min_lat = float(request.query_params.get('min_lat'))
-            min_lng = float(request.query_params.get('min_lng'))
-            max_lat = float(request.query_params.get('max_lat'))
-            max_lng = float(request.query_params.get('max_lng'))
-        except (ValueError, TypeError):
-            return Response(
-                {"error": "Invalid parameters. All bounds must be valid coordinates."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-            
-        # Create a bounding box polygon
-        from django.contrib.gis.geos import Polygon
-        bbox = Polygon.from_bbox((min_lng, min_lat, max_lng, max_lat))
-        
-        # Query car washes within the bounding box
-        queryset = CarWash.objects.filter(location__within=bbox)
         
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
