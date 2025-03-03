@@ -90,7 +90,10 @@ WSGI_APPLICATION = 'washbuddy.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    "default": env.db("DATABASE_URL")
+    'default': {
+        'ENGINE': 'django.contrib.gis.db.backends.spatialite',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
 
 SPATIALITE_LIBRARY_PATH = 'mod_spatialite'
