@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  django:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: washbuddy
+    restart: always
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+
+  db:
+    image: postgis/postgis:latest
+    container_name: postgis_db
+    restart: always
+    environment:
+      POSTGRES_DB: washbuddy
+      POSTGRES_USER: washbuddy_user
+      POSTGRES_PASSWORD: washbuddy_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
