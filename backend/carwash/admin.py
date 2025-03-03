@@ -39,7 +39,7 @@ class AmenityCarWashMappingInline(admin.TabularInline):
 @admin.register(CarWash)
 class CarWashAdmin(ModelAdmin):
     list_display = ('car_wash_name', 'automatic_car_wash', 'self_service_car_wash', 'open_24_hours')
-    search_fields = ('car_wash_name', 'car_wash_address')
+    search_fields = ('car_wash_name', 'formatted_address')
     inlines = [
         CarWashOperatingHoursInline,
         CarWashImageInline,

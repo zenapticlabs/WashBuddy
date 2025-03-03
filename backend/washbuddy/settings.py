@@ -90,11 +90,10 @@ WSGI_APPLICATION = 'washbuddy.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-        "default": env.db("DATABASE_URL")
-    }
+    "default": env.db("DATABASE_URL")
+}
 
-SPATIALITE_LIBRARY_PATH = 'mod_spatialite.dll'  # Update this with your actual path
-
+SPATIALITE_LIBRARY_PATH = 'mod_spatialite'
 
 
 # Password validation

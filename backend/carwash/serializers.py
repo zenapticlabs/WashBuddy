@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
+from django.contrib.gis.geos import Point
+from rest_framework_gis.serializers import GeoFeatureModelSerializer
 from .models import (
     CarWash, CarWashOperatingHours, CarWashImage, 
     WashType, Amenity
@@ -55,19 +57,41 @@ class CarWashSerializer(serializers.ModelSerializer):
     wash_types = serializers.PrimaryKeyRelatedField(many=True, queryset=WashType.objects.all())
     amenities = serializers.PrimaryKeyRelatedField(many=True, queryset=Amenity.objects.all())
     distance = serializers.SerializerMethodField(read_only=True)
-    
-    def get_distance(self, obj):
-        """
-        Return the distance in kilometers if it has been annotated.
-        """
-        if hasattr(obj, 'distance'):
-            # Convert from meters to kilometers and round to 2 decimal places
-            return round(obj.distance.m / 1000, 2)
-        return None
 
     class Meta:
         model = CarWash
         fields = '__all__'
+
+    def get_distance(self, obj):
+        if hasattr(obj, 'distance'):
+            return round(obj.distance.m / 1000, 2)
+        return None
+
+    def to_internal_value(self, data):
+        internal_value = super().to_internal_value(data)
+        
+        # Convert GeoJSON to Point
+        location_json = data.get('location')
+        if location_json and isinstance(location_json, dict):
+            try:
+                longitude, latitude = location_json['coordinates']
+                internal_value['location'] = Point(longitude, latitude, srid=4326)
+            except (KeyError, ValueError, TypeError):
+                raise serializers.ValidationError({
+                    'location': 'Invalid GeoJSON Point format'
+                })
+                
+        return internal_value
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        # Convert Point to GeoJSON
+        if instance.location:
+            representation['location'] = {
+                'type': 'Point',
+                'coordinates': [instance.location.x, instance.location.y]
+            }
+        return representation
 
     def validate(self, data):
         open_24_hours = data.get('open_24_hours')
@@ -133,7 +157,6 @@ class CarWashSerializer(serializers.ModelSerializer):
         instance.save()
 
         if operating_hours_data:
-            # Delete existing hours and create new ones
             instance.carwashoperatinghours_set.all().delete()
             for hours_data in operating_hours_data:
                 CarWashOperatingHours.objects.create(car_wash=instance, **hours_data)
