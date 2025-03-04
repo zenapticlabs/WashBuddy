@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 import environ
 import os
 from pathlib import Path
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -86,11 +87,16 @@ TEMPLATES = [
 WSGI_APPLICATION = 'washbuddy.wsgi.application'
 
 
+DATABASE_URL = os.getenv("DATABASE_URL")
+
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
 DATABASES = {
-    "default": env.db("DATABASE_URL")
+    "default": dj_database_url.config(
+        default=DATABASE_URL,
+        engine="django.contrib.gis.db.backends.postgis"
+    )
 }
 
 SPATIALITE_LIBRARY_PATH = 'mod_spatialite'
