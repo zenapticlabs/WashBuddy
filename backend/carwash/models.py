@@ -7,19 +7,19 @@ from django.contrib.auth.models import User
 
 class CarWash(models.Model):
     car_wash_name = models.CharField(max_length=255, db_index=True)
-    formatted_address = models.CharField(max_length=255)
-    country = models.CharField(max_length=100)
-    country_code = models.CharField(max_length=10)
-    state = models.CharField(max_length=100)
-    state_code = models.CharField(max_length=10)
-    postal_code = models.CharField(max_length=20)
-    city = models.CharField(max_length=100)
+    formatted_address = models.CharField(max_length=255, null=True, blank=True)
+    country = models.CharField(max_length=100, null=True, blank=True)
+    country_code = models.CharField(max_length=10, null=True, blank=True)
+    state = models.CharField(max_length=100, null=True, blank=True)
+    state_code = models.CharField(max_length=10, null=True, blank=True)
+    postal_code = models.CharField(max_length=20, null=True, blank=True)
+    city = models.CharField(max_length=100, null=True, blank=True)
     
     phone = models.CharField(max_length=255)
     reviews_count = models.IntegerField(default=0)
     reviews_average = models.DecimalField(max_digits=3, decimal_places=2, default=0)
     
-    location = gis_models.PointField(geography=True, spatial_index=True)
+    location = gis_models.PointField(geography=True, spatial_index=True, null=True, blank=True)
     
     automatic_car_wash = models.BooleanField()
     self_service_car_wash = models.BooleanField()
