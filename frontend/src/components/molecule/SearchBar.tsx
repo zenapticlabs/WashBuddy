@@ -38,8 +38,8 @@ const SearchBar: React.FC<SearchBarProps> = ({ onChange }) => {
     }
   };
   return (
-    <div className="flex items-center gap-4 w-full">
-      <div className={cn("w-[640px] relative")}>
+    <div className="block lg:flex items-center gap-4 w-full px-4 relative">
+      <div className={cn("relative w-full lg:w-[640px]")}>
         <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
           <Search size={20} className="text-blue-500" />
         </div>
@@ -52,9 +52,8 @@ const SearchBar: React.FC<SearchBarProps> = ({ onChange }) => {
           onKeyDown={handleEnter}
         />
       </div>
-
       {recentSearches.length > 0 && (
-        <>
+        <div className="flex items-center gap-2 py-3 px-2">
           <div className="text-title-2 text-neutral-400">Recent</div>
           <div className="flex flex-1 gap-2 overflow-hidden relative">
             {recentSearches.map((search, index) => (
@@ -66,10 +65,10 @@ const SearchBar: React.FC<SearchBarProps> = ({ onChange }) => {
                 {search}
               </div>
             ))}
-            <div className="absolute right-0 top-0 h-full w-20 bg-gradient-to-r from-transparent to-white" />
           </div>
-        </>
+        </div>
       )}
+      <div className="lg:block hidden absolute right-0 top-0 h-full w-20 bg-gradient-to-r from-transparent to-white " />
     </div>
   );
 };
