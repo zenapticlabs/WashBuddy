@@ -1,28 +1,42 @@
-# Use an official Python image
-FROM python:3.11-slim
+# Use an Alpine-based Python image
+FROM python:3.11-alpine
 
-# Install required system packages
-RUN apt-get update && apt-get install -y \
-    gdal-bin \
-    libgdal-dev \
-    libgeos-dev \
-    libproj-dev \
-    postgresql-client
-    
-# Set the working directory
+# Install required system dependencies
+RUN apk add --no-cache \
+    g++ \
+    gcc \
+    musl-dev \
+    make \
+    gdal \
+    gdal-dev \
+    geos \
+    geos-dev \
+    proj \
+    proj-dev \
+    postgresql-client \
+    libffi-dev \
+    openssl-dev \
+    py3-numpy \
+    py3-pip
+
+# Set environment variables for GDAL
+ENV GDAL_LIBRARY_PATH=/usr/lib/libgdal.so
+ENV PROJ_LIB=/usr/share/proj
+
+# Set working directory
 WORKDIR /app
 
-# Install dependencies
+# Install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
 # Copy the Django application
 COPY . .
 
-# **Set the startup command inside the Dockerfile**
+# Start the application
 ENTRYPOINT ["/bin/sh", "-c", \
     "until pg_isready -h db -p 5432; do echo 'Waiting for database...'; sleep 2; done; \
     echo 'Database is ready. Running migrations...'; \
     python manage.py migrate && \
     watchfiles --filter python 'python manage.py runserver 0.0.0.0:8000'"]
-
