@@ -22,6 +22,7 @@ import { ICarWashCard } from "@/types";
 import CarWashDetail from "@/components/pages/main/about/CarWashDetail";
 import type maplibregl from "maplibre-gl";
 import { getCarwashes } from "@/services/CarwashService";
+import CreateCarWashReviewModal from "@/components/pages/main/about/CreateCarWashReviewModal";
 
 const FilterButtonConfigs = [
   {
@@ -140,7 +141,9 @@ export default function Home() {
             <Button
               variant="outline"
               key={config.key}
-              onClick={() => setFilters({ ...filters, carWashType: config.key })}
+              onClick={() =>
+                setFilters({ ...filters, carWashType: config.key })
+              }
               className={`rounded-full shadow-none ${
                 filters.carWashType === config.key
                   ? "border-blue-500"
@@ -212,15 +215,11 @@ export default function Home() {
             </div>
           </ScrollArea>
           {selectedCarWash && (
-            <div className="absolute top-2 left-[560px] text-black z-10 h-full pb-4 ">
-              <ScrollArea className="w-full h-full rounded-xl overflow-hidden">
-                <CarWashDetail
-                  data={selectedCarWash}
-                  onClose={() => setSelectedCarWash(null)}
-                  onNavigate={handleNavigateToLocation}
-                />
-              </ScrollArea>
-            </div>
+            <CarWashDetail
+              data={selectedCarWash}
+              onClose={() => setSelectedCarWash(null)}
+              onNavigate={handleNavigateToLocation}
+            />
           )}
         </div>
         <div className="flex-1 flex items-center justify-center">
