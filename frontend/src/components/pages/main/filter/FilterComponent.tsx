@@ -28,15 +28,17 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
         <CircleBadge
           text={String(
             filters.amenities.length +
-              filters.washType.length +
-              filters.ratings.length +
-              filters.operatingHours.length +
-              (filters.distanceRange > 0 ? 1 : 0) +
-              (filters.priceRange > 0 ? 1 : 0)
+            filters.washType.length +
+            filters.ratings.length +
+            filters.operatingHours.length +
+            (filters.distanceRange > 0 ? 1 : 0) +
+            (filters.priceRange > 0 ? 1 : 0)
           )}
         />
       </Button>
-      <FilterBar filters={filters} setFilters={setFilters} />
+      <div className="hidden md:flex flex-wrap gap-2 ">
+        <FilterBar filters={filters} setFilters={setFilters} />
+      </div>
       <FilterPanel
         open={open}
         setOpen={setOpen}
