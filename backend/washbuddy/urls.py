@@ -35,4 +35,5 @@ urlpatterns = [
     path("", health_check, name="health-check"),
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
+    path('api/v1/carwash/', include('carwash.urls'))
 ]

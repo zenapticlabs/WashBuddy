@@ -2,12 +2,18 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from .models import CarWash, WashType, Amenity
-from .serializers import CarWashSerializer, WashTypeSerializer, AmenitySerializer
+from .serializers import CarWashListSerializer, CarWashSerializer, WashTypeSerializer, AmenitySerializer
 from django.db.models import Q
 from datetime import datetime
 from django.contrib.gis.geos import Point
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.measure import D
+from rest_framework.generics import ListAPIView
+from rest_framework.permissions import AllowAny
+from utilities.utils import ResponseInfo, CustomResponsePagination
+from utilities.mixins import DynamicFieldsViewMixin
+from .filters import DynamicSearchFilter, ListCarWashFilter
+from django_filters.rest_framework import DjangoFilterBackend
 
 class CarWashViewSet(viewsets.ModelViewSet):
     queryset = CarWash.objects.prefetch_related(
@@ -157,3 +163,47 @@ class WashTypeViewSet(viewsets.ModelViewSet):
 class AmenityViewSet(viewsets.ModelViewSet):
     queryset = Amenity.objects.all()
     serializer_class = AmenitySerializer
+
+
+class ListCarWashAPIView(DynamicFieldsViewMixin, ListAPIView):
+    permission_classes = (AllowAny, )
+    serializer_class = CarWashListSerializer
+    pagination_class = CustomResponsePagination
+    filter_backends = [DynamicSearchFilter, DjangoFilterBackend]
+    filterset_class = ListCarWashFilter
+
+    def __init__(self, **kwargs):
+        """
+        Constructor method for formatting web response to return.
+        """
+        self.pagination = False
+        self.response_format = ResponseInfo().response
+        super(ListCarWashAPIView, self).__init__(**kwargs)
+
+    def paginate_queryset(self, queryset):
+        """
+        Method for getting paginated queryset.
+        """
+        pagination = self.request.GET.get("pagination", None)
+        if pagination == "True" or pagination == "true":
+            return super().paginate_queryset(queryset)
+        return None
+
+    def get_queryset(self):
+        queryset = CarWash.objects.all()
+        return queryset
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({"request": self.request})
+        return context
+
+    def get(self, request, *args, **kwargs):
+        serializer = super().list(request, *args, **kwargs)
+
+        self.response_format["data"] = serializer.data
+        self.response_format["error"] = None
+        self.response_format["status_code"] = status.HTTP_200_OK
+        self.response_format["message"] = ["Success"]
+
+        return Response(self.response_format)
