@@ -86,12 +86,24 @@ class CarWashResource(resources.ModelResource):
         if row.get('zip'): address_parts.append(str(row['zip']))
         row['formatted_address'] = ' '.join(address_parts)
 
+        # Calculate location field from lat/lon
+        lat = row.get('lat')
+        lon = row.get('long')
+        if lat and lon:
+            from django.contrib.gis.geos import Point
+            try:
+                lat = float(lat)
+                lon = float(lon)
+                row['location'] = Point(lon, lat, srid=4326)
+            except (ValueError, TypeError):
+                row['location'] = None
+
     class Meta:
         model = CarWash
         import_id_fields = ('car_wash_name',)
         fields = (
             'car_wash_name', 'formatted_address', 'country', 'country_code', 
-            'state', 'postal_code', 'city',
+            'state', 'postal_code', 'city', 'location',
             'automatic_car_wash', 'self_service_car_wash', 'open_24_hours',
             'verified'
         )
@@ -101,7 +113,7 @@ class CarWashAdmin(ImportExportModelAdmin, ModelAdmin):
     import_form_class = ImportForm
     export_form_class = ExportForm
     resource_class = CarWashResource
-    list_display = ['car_wash_name', 'city', 'state', 'verified']
+    list_display = ['car_wash_name', 'city', 'state', 'phone', 'verified']
     list_filter = ['verified', 'state', 'automatic_car_wash', 'self_service_car_wash', 'open_24_hours']
     search_fields = ['car_wash_name', 'formatted_address', 'city']
     inlines = [
