@@ -1,5 +1,7 @@
 from django.contrib import admin
 from unfold.admin import ModelAdmin
+from import_export.admin import ImportExportMixin
+from import_export import resources
 from .models import (
     CarWash, 
     CarWashOperatingHours, 
@@ -36,10 +38,23 @@ class AmenityCarWashMappingInline(admin.TabularInline):
     model = AmenityCarWashMapping
     extra = 1
 
+class CarWashResource(resources.ModelResource):
+    class Meta:
+        model = CarWash
+        import_id_fields = ('car_wash_name',)
+        fields = (
+            'car_wash_name', 'formatted_address', 'country', 'country_code', 
+            'state', 'state_code', 'postal_code', 'city', 'phone',
+            'automatic_car_wash', 'self_service_car_wash', 'open_24_hours',
+            'verified'
+        )
+
 @admin.register(CarWash)
-class CarWashAdmin(ModelAdmin):
-    list_display = ('car_wash_name', 'automatic_car_wash', 'self_service_car_wash', 'open_24_hours')
-    search_fields = ('car_wash_name', 'formatted_address')
+class CarWashAdmin(ImportExportMixin, ModelAdmin):
+    resource_class = CarWashResource
+    list_display = ['car_wash_name', 'city', 'state', 'verified']
+    list_filter = ['verified', 'state', 'automatic_car_wash', 'self_service_car_wash', 'open_24_hours']
+    search_fields = ['car_wash_name', 'formatted_address', 'city']
     inlines = [
         CarWashOperatingHoursInline,
         CarWashImageInline,

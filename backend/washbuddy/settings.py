@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'django.contrib.gis',
     'carwash',
+    'import_export',
 ]
 
 MIDDLEWARE = [
@@ -71,7 +72,9 @@ ROOT_URLCONF = 'washbuddy.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            os.path.join(BASE_DIR, 'templates'),
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
