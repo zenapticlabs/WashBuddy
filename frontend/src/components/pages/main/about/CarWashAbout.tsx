@@ -47,12 +47,12 @@ const CarWashAbout: React.FC = ({}) => {
         {photos.map((photo, index) => (
           <div
             key={index}
-            className="w-24 h-24 bg-neutral-100 flex-shrink-0 rounded-lg overflow-hidden"
+            className="bg-neutral-100 flex-shrink-0 rounded-lg overflow-hidden"
           >
             <Image
               src={photo}
               alt="photo"
-              className="w-full h-full object-cover"
+              className="w-24 h-24 object-cover"
             />
           </div>
         ))}

@@ -48,7 +48,7 @@ const SelectRate = React.forwardRef<HTMLDivElement, SelectRateProps>(
 
     return (
       <div className={cn("w-full justify-between", className)}>
-        <p className="text-sm font-xs font-figtree font-semibold">{title}</p>
+        <p className="text-title-3 font-figtree text-neutral-900 mb-4">{title}</p>
         <div
           ref={ref}
           className={cn("flex gap-1", className)}
@@ -69,10 +69,10 @@ const SelectRate = React.forwardRef<HTMLDivElement, SelectRateProps>(
                 onClick={() => handleClick(index)}
               />
               {index === 0 && (
-                <span className="text-xs mt-1 text-center">Unaccptable</span>
+                <span className="text-body-3 mt-3 text-center text-neutral-900">Unaccptable</span>
               )}
               {index === 4 && (
-                <span className="text-xs mt-1 text-center">Excellent</span>
+                <span className="text-body-3 mt-3 text-center text-neutral-900">Excellent</span>
               )}
             </div>
           ))}

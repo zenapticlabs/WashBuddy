@@ -16,12 +16,12 @@ import AmenitiesCheckboxes from "../../../molecule/AmenitiesCheckboxes";
 import { FilterState } from "@/types/filters";
 import { MockAmenities } from "@/mocks/amenities";
 import { MockWashTypes } from "@/mocks/washTypes";
-import { useEffect } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { getAmenities } from "@/services/AmenityService";
 import { Amenity, WashType } from "@/types";
 import { getWashTypes } from "@/services/WashType";
 import { Car_Wash_Type } from "@/utils/constants";
+import useMediaQuery from "@/hooks/useMediaQuery";
 
 const initialFilterState: FilterState = {
   carWashType: Car_Wash_Type.AUTOMATIC,
@@ -49,6 +49,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
 }) => {
   const [amenities, setAmenities] = useState<Amenity[]>([]);
   const [washTypes, setWashTypes] = useState<WashType[]>([]);
+  const isMobile = useMediaQuery("(max-width: 768px)");
 
   useEffect(() => {
     const fetchAmenities = async () => {
@@ -78,8 +79,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetContent
-        side="left"
-        className="h-screen p-0 rounded-r-xl flex flex-col"
+        side={isMobile ? "bottom" : "left"}
+        className="md:h-screen h-[80vh] p-0 rounded-t-xl md:rounded-l-none flex flex-col"
       >
         <SheetHeader className="p-4">
           <SheetTitle>Filters</SheetTitle>
