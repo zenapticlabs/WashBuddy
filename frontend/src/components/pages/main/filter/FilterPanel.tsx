@@ -20,7 +20,7 @@ import { useEffect, useState } from "react";
 import { getAmenities } from "@/services/AmenityService";
 import { Amenity, WashType } from "@/types";
 import { getWashTypes } from "@/services/WashType";
-import { Car_Wash_Type } from "@/utils/constants";
+import { Car_Wash_Type, SortBy } from "@/utils/constants";
 import useMediaQuery from "@/hooks/useMediaQuery";
 
 const initialFilterState: FilterState = {
@@ -32,6 +32,7 @@ const initialFilterState: FilterState = {
   ratings: [],
   priceRange: 0,
   operatingHours: [],
+  sortBy: SortBy[Car_Wash_Type.AUTOMATIC][0],
 };
 
 export interface FilterPanelProps {
