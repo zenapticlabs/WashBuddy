@@ -6,6 +6,7 @@ from .models import (
     CarWash, CarWashOperatingHours, CarWashImage, 
     WashType, Amenity
 )
+from utilities.mixins import DynamicFieldsSerializerMixin
 
 class WashTypeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -173,3 +174,38 @@ class CarWashSerializer(serializers.ModelSerializer):
             instance.amenities.set(amenities)
             
         return instance
+    
+
+class CarWashTypeSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = WashType
+        fields = "__all__"
+
+class AmenitySerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Amenity
+        fields = "__all__"
+
+class CarWashOperatingHoursSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = CarWashOperatingHours
+        fields = "__all__"
+
+class CarWashImageSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = CarWashImage
+        fields = "__all__"
+
+class CarWashListSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+    wash_types = CarWashTypeSerializer(many=True)
+    amenities = AmenitySerializer(many=True)
+    carwashoperatinghours_set = CarWashOperatingHoursSerializer(many=True)
+    carwashimage_set = CarWashImageSerializer(many=True)
+
+    class Meta:
+        model = CarWash
+        fields = "__all__"
