@@ -31,9 +31,20 @@ jobs:
       - name: Debug Environment Variables
         run: env | sort
 
+      - name: Install Required System Packages (Minimal)
+        run: |
+          apk update && apk add --no-cache \
+            g++ \
+            python3 \
+            py3-pip \
+            gdal \
+            gdal-dev \
+            proj \
+            proj-dev \
+            libstdc++
+
       - name: Install Python and dependencies
         run: |
-          apk update && apk add --no-cache python3 py3-pip py3-virtualenv
           python3 -m venv /opt/venv
           source /opt/venv/bin/activate
           pip install --no-cache-dir -r requirements.txt
