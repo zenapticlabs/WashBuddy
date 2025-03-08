@@ -16,46 +16,33 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    container: geographica/gdal-python
     environment: staging
+
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       
       - name: Load All Secrets into Environment
+        if: env.ALL_SECRETS != ''
         uses: oNaiPs/secrets-to-env-action@v1
         with:
-          secrets: ${{ secrets.ALL_SECRETS || toJSON(secrets) }}
+          secrets: ${{ secrets.ALL_SECRETS }}
 
       - name: Debug Environment Variables
-        run: env
-
-      - name: Setup Python (Backend)
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
+        run: env | sort
 
       - name: Install dependencies (Backend)
         run: |
+          cd backend
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-        working-directory: backend
+          pip install --no-cache-dir -r requirements.txt
 
       - name: Run Migrations (Backend)
-        run: python manage.py migrate --noinput
-        working-directory: backend
+        run: cd backend && python manage.py migrate --noinput
 
       - name: Create Admin Superuser (Backend)
-        run: python manage.py create_admin
-        working-directory: backend
+        run: cd backend && python manage.py create_admin || echo "Admin already exists, skipping..."
 
-      - name: Collect static files (Backend)
-        run: python manage.py collectstatic --noinput
-        working-directory: backend
-
-      - name: Deploy to Vercel (Backend)
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_BACKEND_PROJECT_ID }}
-        run: npx vercel --prod --token $VERCEL_TOKEN
-        working-directory: backend
+      - name: Collect Static Files (Backend)
+        run: cd backend && python manage.py collectstatic --noinput
