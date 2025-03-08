@@ -16,7 +16,7 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    container: osgeo/gdal:alpine-small-3.6.3
+    container: osgeo/gdal:alpine-small-3.10.2
     environment: staging
 
     steps:
