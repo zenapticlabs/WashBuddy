@@ -24,10 +24,9 @@ jobs:
         uses: actions/checkout@v4
       
       - name: Load All Secrets into Environment
-        if: env.ALL_SECRETS != ''
         uses: oNaiPs/secrets-to-env-action@v1
         with:
-          secrets: ${{ secrets.ALL_SECRETS }}
+          secrets: ${{ secrets.ALL_SECRETS || toJSON(secrets) }}
 
       - name: Debug Environment Variables
         run: env | sort
@@ -39,12 +38,16 @@ jobs:
           python3 -m ensurepip
           pip3 install --no-cache-dir --upgrade pip
           pip3 install --no-cache-dir -r requirements.txt
+        working-directory: backend
 
       - name: Run Migrations (Backend)
-        run: cd backend && python manage.py migrate --noinput
+        run: python manage.py migrate --noinput
+        working-directory: backend
 
       - name: Create Admin Superuser (Backend)
-        run: cd backend && python manage.py create_admin || echo "Admin already exists, skipping..."
+        run: python manage.py create_admin || echo "Admin already exists, skipping..."
+        working-directory: backend
 
       - name: Collect Static Files (Backend)
-        run: cd backend && python manage.py collectstatic --noinput
+        run: python manage.py collectstatic --noinput
+        working-directory: backend
