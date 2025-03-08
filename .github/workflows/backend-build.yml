@@ -42,11 +42,11 @@ jobs:
             proj-dev \
             libstdc++
 
-      - name: Set Up Python & Virtual Environment
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.12"
-          cache: "pip"
+      - name: Set Up Python Virtual Environment
+        run: |
+          python3 -m venv /opt/venv
+          echo "VIRTUAL_ENV=/opt/venv" >> $GITHUB_ENV
+          echo "/opt/venv/bin" >> $GITHUB_PATH
 
       - name: Install Python and dependencies
         run: pip install --no-cache-dir -r requirements.txt
