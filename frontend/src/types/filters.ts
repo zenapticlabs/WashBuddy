@@ -7,5 +7,6 @@ export interface FilterState {
   ratings: number[];
   priceRange: number;
   operatingHours: string[];
+  sortBy: string;
 }
 

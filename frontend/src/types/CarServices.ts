@@ -41,3 +41,11 @@ export interface ICarWashCard {
     lng: number;
   };
 }
+
+export interface ICarWashPurchaseHistory {
+  id: string;
+  carWashName: string;
+  location: string;
+  purchaseDate: string;
+  washCode: string;
+}

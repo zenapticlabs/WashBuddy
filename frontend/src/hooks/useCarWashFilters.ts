@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FilterState } from "@/types/filters";
-import { Car_Wash_Type } from "@/utils/constants";
+import { Car_Wash_Type, SortBy } from "@/utils/constants";
 
 function getFiltersFromParams(params: URLSearchParams): FilterState {
   return {
@@ -12,6 +12,7 @@ function getFiltersFromParams(params: URLSearchParams): FilterState {
     priceRange: Number(params.get("priceRange")) || 0,
     amenities: params.getAll("amenities").map(String),
     operatingHours: params.getAll("operatingHours").map(String),
+    sortBy: params.get("sortBy") || "",
   };
 }
 
@@ -25,6 +26,7 @@ export function useCarWashFilters() {
     priceRange: 0,
     amenities: [],
     operatingHours: [],
+    sortBy: SortBy[Car_Wash_Type.AUTOMATIC][0],
   });
 
   // Initialize filters from URL
@@ -50,6 +52,10 @@ export function useCarWashFilters() {
     };
     updateUrlWithFilters();
   }, [filters]);
+
+  useEffect(() => {
+    setFilters({ ...filters, sortBy: SortBy[filters.carWashType][0] });
+  }, [filters.carWashType]);
 
   // Handle browser navigation
   useEffect(() => {

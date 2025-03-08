@@ -10,6 +10,8 @@ import { Bell, MapPin, Plus } from "lucide-react";
 import { FilterState } from "@/types/filters";
 import { useState } from "react";
 import CreateCarWashDiaolog from "./CreateCarWashDiaolog";
+import Sidebar from "./Sidebar";
+import Link from "next/link";
 
 const FilterButtonConfigs = [
   {
@@ -25,41 +27,45 @@ const FilterButtonConfigs = [
 ];
 
 interface TopbarProps {
-  filters: FilterState;
-  setFilters: (filters: FilterState) => void;
+  filters?: FilterState;
+  setFilters?: (filters: FilterState) => void;
+  sideBarAlwaysOpen?: boolean;
 }
 
-const Topbar: React.FC<TopbarProps> = ({ filters, setFilters }) => {
+const Topbar: React.FC<TopbarProps> = ({ filters, setFilters, sideBarAlwaysOpen }) => {
   const [notiCount, setNotiCount] = useState(2);
   const [openCreateModal, setOpenCreateModal] = useState(false);
-
+  const [openSidebar, setOpenSidebar] = useState(false);
   const handleOpenCreateModal = () => setOpenCreateModal(true);
 
   return (
     <div>
-      <div className="flex gap-2 py-4 items-center justify-between px-4">
+      <div className={`flex gap-2 items-center justify-between px-4 h-[66px] ${sideBarAlwaysOpen || openSidebar ? 'border-b border-neutral-100' : ''}`}>
         <div className="flex items-center gap-2">
-          <div className="p-2 rounded-full cursor-pointer" onClick={() => {}}>
+          <div
+            className="p-2 rounded-full cursor-pointer"
+            onClick={() => setOpenSidebar(true)}
+          >
             <MenuIcon size={24} className="text-neutral-900" />
           </div>
-
-          <Image src={logo} alt="logo" width={42} height={42} color="#ff0000" />
-          <span className="hidden lg:block text-headline-4 font-bold pl-1">
-            WashBuddy
-          </span>
+          <Link href="/" className="flex items-center gap-2">
+            <Image src={logo} alt="logo" width={42} height={42} color="#ff0000" />
+            <span className="hidden lg:block text-headline-4 font-bold pl-1">
+              WashBuddy
+            </span>
+          </Link>
           <div className="hidden md:flex items-center gap-2">
             {FilterButtonConfigs.map((config) => (
               <Button
                 variant="outline"
                 key={config.key}
                 onClick={() =>
-                  setFilters({ ...filters, carWashType: config.key })
+                  setFilters && filters && setFilters({ ...filters, carWashType: config.key })
                 }
-                className={`rounded-full shadow-none ${
-                  filters.carWashType === config.key
-                    ? "border-blue-500"
-                    : "border-neutral-100"
-                }`}
+                className={`rounded-full shadow-none ${filters?.carWashType === config.key
+                  ? "border-blue-500"
+                  : "border-neutral-100"
+                  }`}
               >
                 <Image
                   src={config.icon}
@@ -112,6 +118,7 @@ const Topbar: React.FC<TopbarProps> = ({ filters, setFilters }) => {
         open={openCreateModal}
         onOpenChange={setOpenCreateModal}
       />
+      <Sidebar open={openSidebar} onOpenChange={setOpenSidebar} sideBarAlwaysOpen={sideBarAlwaysOpen} />
     </div>
   );
 };
