@@ -1,6 +1,6 @@
 # WashBuddy - Django + PostGIS (Dockerized)
 
-WashBuddy is a Django + PostGIS application for geospatial data, running in a Dockerized environment with automatic database migrations and live reloading.
+WashBuddy is a Django + PostGIS application for geospatial data, running in a Dockerized environment with automatic database migrations and live reloading
 
 ## 📌 Prerequisites
 - [Docker & Docker Compose](https://docs.docker.com/compose/install/)

@@ -37,8 +37,6 @@ jobs:
             g++ \
             python3 \
             py3-pip \
-            gdal \
-            gdal-dev \
             proj \
             proj-dev \
             libstdc++
