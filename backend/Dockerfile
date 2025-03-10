@@ -1,7 +1,7 @@
-# ==== BASE IMAGE (Build Dependencies) ====
-FROM python:3.11-alpine AS builder
+# Use an Alpine-based Python image
+FROM python:3.11-alpine
 
-# Install system dependencies (GDAL, GEOS, PROJ, PostgreSQL)
+# Install required system dependencies
 RUN apk add --no-cache \
     g++ \
     gcc \
@@ -14,61 +14,25 @@ RUN apk add --no-cache \
     proj \
     proj-dev \
     postgresql-client \
-    postgresql-dev \
     libffi-dev \
     openssl-dev \
     py3-numpy \
     py3-pip
 
 # Set environment variables for GDAL
-ENV GDAL_LIBRARY_PATH="/usr/lib/libgdal.so"
-ENV PROJ_LIB="/usr/share/proj"
-ENV LD_LIBRARY_PATH="/usr/lib"
+ENV GDAL_LIBRARY_PATH=/usr/lib/libgdal.so
+ENV PROJ_LIB=/usr/share/proj
 
-# Create a virtual environment
-RUN python3 -m venv /opt/venv
-
-# Set the virtual environment as default Python
-ENV PATH="/opt/venv/bin:$PATH"
+# Set working directory
+WORKDIR /app
 
 # Install Python dependencies
-WORKDIR /app
-COPY requirements.txt .  
+COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# ==== FINAL IMAGE (Production-Optimized) ====
-FROM python:3.11-alpine
-
-# Install only runtime dependencies (No compilers)
-RUN apk add --no-cache \
-    gdal \
-    geos \
-    proj \
-    postgresql-client \
-    libffi \
-    openssl
-
-# Copy GDAL and PROJ environment variables
-ENV GDAL_LIBRARY_PATH="/usr/lib/libgdal.so"
-ENV PROJ_LIB="/usr/share/proj"
-ENV LD_LIBRARY_PATH="/usr/lib"
-
-# # Create a non-root user for security
-# RUN addgroup -S django && adduser -S django -G django
-# USER django
-
-WORKDIR /app
-
-# Copy installed dependencies from builder
-COPY --from=builder /opt/venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-
-# Copy Django application
+# Copy the Django application
 COPY . .
-
-# Debug GDAL Path Issues
-RUN ls -lah /usr/lib/libgdal.so || echo "GDAL library not found!"
 
 ENTRYPOINT ["/bin/sh", "-c", "echo 'Starting application...'; exec sh -c \"$@\""]
 
