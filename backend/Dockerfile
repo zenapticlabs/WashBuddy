@@ -54,11 +54,10 @@ ENV GDAL_LIBRARY_PATH="/usr/lib/libgdal.so"
 ENV PROJ_LIB="/usr/share/proj"
 ENV LD_LIBRARY_PATH="/usr/lib"
 
-# Create a non-root user for security
-RUN addgroup -S django && adduser -S django -G django
-USER django
+# # Create a non-root user for security
+# RUN addgroup -S django && adduser -S django -G django
+# USER django
 
-# Set working directory
 WORKDIR /app
 
 # Copy installed dependencies from builder
