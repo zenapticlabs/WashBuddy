@@ -21,8 +21,8 @@ RUN apk add --no-cache \
     py3-pip
 
 # Set environment variables for GDAL
-ENV GDAL_LIBRARY_PATH=/usr/lib/libgdal.so
-ENV PROJ_LIB=/usr/share/proj
+ENV GDAL_LIBRARY_PATH="/usr/lib/libgdal.so"
+ENV PROJ_LIB="/usr/share/proj"
 
 # Create a virtual environment
 RUN python3 -m venv /opt/venv
@@ -49,8 +49,8 @@ RUN apk add --no-cache \
     openssl
 
 # Copy GDAL and PROJ environment variables
-ENV GDAL_LIBRARY_PATH=/usr/lib/libgdal.so
-ENV PROJ_LIB=/usr/share/proj
+ENV GDAL_LIBRARY_PATH="/usr/lib/libgdal.so"
+ENV PROJ_LIB="/usr/share/proj"
 
 # Create a non-root user for security
 RUN addgroup -S django && adduser -S django -G django
@@ -59,12 +59,15 @@ USER django
 # Set working directory
 WORKDIR /app
 
+# Copy installed dependencies from builder
 COPY --from=builder /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
+# Copy Django application
 COPY . .
 
-ENTRYPOINT ["/bin/sh", "-c", "echo 'Starting application...'; exec sh -c \"$@\""]
+# Set Entrypoint without waiting for database
+ENTRYPOINT ["/bin/sh", "-c", "echo 'Starting application...'; exec \"$@\""]
 
 # Default command (Can be overridden in CI/CD or Compose)
 CMD ["gunicorn", "-b", "0.0.0.0:8000", "washbuddy.wsgi:application", "--workers=3", "--threads=2", "--timeout=120"]
