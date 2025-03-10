@@ -32,9 +32,9 @@ jobs:
       - name: Debug Environment Variables
         run: env | sort
 
-      - name: Build Docker Image from Repository `Dockerfile`
-        run: docker build -t washbuddy-backend -f Dockerfile .
-        working-directory: backend
+      # - name: Build Docker Image from Repository `Dockerfile`
+      #   run: docker build -t washbuddy-backend -f Dockerfile .
+      #   working-directory: backend
 
       # - name: Run Django Migrations, Create Superuser, and Collect Static Files in One Container
       #   run: |
