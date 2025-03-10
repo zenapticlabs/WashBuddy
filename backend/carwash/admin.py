@@ -66,17 +66,17 @@ class CarWashResource(resources.ModelResource):
         # Handle car wash type
         carwash_type = row.get('type', '').lower()
         if carwash_type == 'self':
-            row['self_service_car_wash'] = 1
-            row['automatic_car_wash'] = 0
+            row['self_service_car_wash'] = True
+            row['automatic_car_wash'] = False
         elif carwash_type == 'auto':
-            row['self_service_car_wash'] = 0
-            row['automatic_car_wash'] = 1
+            row['self_service_car_wash'] = False
+            row['automatic_car_wash'] = True
         elif carwash_type == 'both':
-            row['self_service_car_wash'] = 1
-            row['automatic_car_wash'] = 1
+            row['self_service_car_wash'] = True
+            row['automatic_car_wash'] = True
         else:
-            row['self_service_car_wash'] = 0
-            row['automatic_car_wash'] = 0
+            row['self_service_car_wash'] = False
+            row['automatic_car_wash'] = False
 
         # Create formatted address - convert all parts to strings
         address_parts = []
@@ -100,7 +100,7 @@ class CarWashResource(resources.ModelResource):
 
     class Meta:
         model = CarWash
-        import_id_fields = ('car_wash_name',)
+        import_id_fields = ('car_wash_name', 'formatted_address')
         fields = (
             'car_wash_name', 'formatted_address', 'country', 'country_code', 
             'state', 'postal_code', 'city', 'location',
