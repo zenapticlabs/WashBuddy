@@ -45,6 +45,7 @@ class AmenityCarWashMappingInline(admin.TabularInline):
 
 class CarWashResource(resources.ModelResource):
     car_wash_name = resources.Field(column_name='name', attribute='car_wash_name')
+    street = fields.Field(column_name='street', attribute='street')
     postal_code = resources.Field(column_name='zip', attribute='postal_code')
     state = resources.Field(column_name='state', attribute='state')
     city = resources.Field(column_name='city', attribute='city')
@@ -100,7 +101,7 @@ class CarWashResource(resources.ModelResource):
 
     class Meta:
         model = CarWash
-        import_id_fields = ('car_wash_name', 'formatted_address')
+        import_id_fields = ('car_wash_name', 'street')
         fields = (
             'car_wash_name', 'formatted_address', 'country', 'country_code', 
             'state', 'postal_code', 'city', 'location',
