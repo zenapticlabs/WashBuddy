@@ -40,7 +40,7 @@ jobs:
             -e "DATABASE_URL=${{ env.DATABASE_URL }}" \
             -e "ADMIN_USERNAME=${{ env.ADMIN_USERNAME }}" \
             -e "ADMIN_PASSWORD=${{ env.ADMIN_PASSWORD }}" \
-            washbuddy-backend sh -c '
-            python manage.py migrate --noinput &&
-            python manage.py create_admin || echo "Admin already exists, skipping..." &&
-            python manage.py collectstatic --noinput'
+            washbuddy-backend sh -c "
+            python manage.py migrate --noinput && \
+            python manage.py create_admin || echo 'Admin already exists, skipping...' && \
+            python manage.py collectstatic --noinput"
