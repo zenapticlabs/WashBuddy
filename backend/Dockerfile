@@ -31,10 +31,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# Copy the Django application
 COPY . .
-
-ENTRYPOINT []
 
 # Default command (Can be overridden in CI/CD or Compose)
 CMD ["cd /app && gunicorn -b 0.0.0.0:8000 washbuddy.wsgi:application --workers=2 --threads=1 --timeout=120"]
