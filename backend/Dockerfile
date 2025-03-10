@@ -63,7 +63,6 @@ WORKDIR /app
 COPY --from=builder /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Copy Django application
 COPY . .
 
 ENTRYPOINT ["/bin/sh", "-c", \

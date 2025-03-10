@@ -37,9 +37,6 @@ jobs:
       - name: Run Django Migrations, Create Superuser, and Collect Static Files in One Container
         run: |
           docker run --rm \
-            -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
-            -e ADMIN_USERNAME=${{ secrets.ADMIN_USERNAME }} \
-            -e ADMIN_PASSWORD=${{ secrets.ADMIN_PASSWORD }} \
             washbuddy-backend sh -c "
             python manage.py migrate --noinput &&
             python manage.py create_admin || echo 'Admin already exists, skipping...' &&
