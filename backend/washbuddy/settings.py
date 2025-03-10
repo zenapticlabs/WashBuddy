@@ -36,6 +36,11 @@ DEBUG = env("DEBUG")
 
 ALLOWED_HOSTS = ["*"]
 CORS_ALLOW_ALL_ORIGINS = True
+CSRF_TRUSTED_ORIGINS = [
+    "https://washbuddy.fly.dev",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]
 
 # Application definition
 
