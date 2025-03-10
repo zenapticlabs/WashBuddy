@@ -11,6 +11,8 @@ on:
         required: true
       VERCEL_BACKEND_PROJECT_ID:
         required: true
+      FLY_API_TOKEN:
+        required: true
   workflow_dispatch:
 
 jobs:
@@ -44,3 +46,11 @@ jobs:
             python manage.py migrate --noinput && \
             python manage.py create_admin || echo 'Admin already exists, skipping...' && \
             python manage.py collectstatic --noinput"
+
+      - name: Set up Fly.io CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy Django App to Fly.io
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: flyctl deploy --remote-only --config fly.toml
