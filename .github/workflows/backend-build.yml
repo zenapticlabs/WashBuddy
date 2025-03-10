@@ -32,20 +32,20 @@ jobs:
       - name: Debug Environment Variables
         run: env | sort
 
-      # - name: Build Docker Image from Repository `Dockerfile`
-      #   run: docker build -t washbuddy-backend -f Dockerfile .
-      #   working-directory: backend
+      - name: Build Docker Image from Repository `Dockerfile`
+        run: docker build -t washbuddy-backend -f Dockerfile .
+        working-directory: backend
 
-      # - name: Run Django Migrations, Create Superuser, and Collect Static Files in One Container
-      #   run: |
-      #     docker run --rm \
-      #       -e "DATABASE_URL=${{ env.DATABASE_URL }}" \
-      #       -e "ADMIN_USERNAME=${{ env.ADMIN_USERNAME }}" \
-      #       -e "ADMIN_PASSWORD=${{ env.ADMIN_PASSWORD }}" \
-      #       washbuddy-backend sh -c "
-      #       python manage.py migrate --noinput && \
-      #       python manage.py create_admin || echo 'Admin already exists, skipping...' && \
-      #       python manage.py collectstatic --noinput"
+      - name: Run Django Migrations, Create Superuser, and Collect Static Files in One Container
+        run: |
+          docker run --rm \
+            -e "DATABASE_URL=${{ env.DATABASE_URL }}" \
+            -e "ADMIN_USERNAME=${{ env.ADMIN_USERNAME }}" \
+            -e "ADMIN_PASSWORD=${{ env.ADMIN_PASSWORD }}" \
+            washbuddy-backend sh -c "
+            python manage.py migrate --noinput && \
+            python manage.py create_admin || echo 'Admin already exists, skipping...' && \
+            python manage.py collectstatic --noinput"
 
       - name: Set up Fly.io CLI
         uses: superfly/flyctl-actions/setup-flyctl@master
