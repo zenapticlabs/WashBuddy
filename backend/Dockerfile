@@ -66,11 +66,8 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Copy Django application
 COPY . .
 
-# Set Entrypoint to only wait for database, NO migrations inside container
 ENTRYPOINT ["/bin/sh", "-c", \
-    "until pg_isready -h db -p 5432; do echo 'Waiting for database...'; sleep 2; done; \
-    echo 'Database is ready. Starting application...'; \
-    exec \"$@\""]
+    "echo 'Starting application...'; exec \"$@\""]
 
 # Default command (Can be overridden in CI/CD or Compose)
-CMD ["gunicorn", "-b", "0.0.0.0:8000", "myproject.wsgi:application", "--workers=3", "--threads=2", "--timeout=120"]
+CMD ["gunicorn", "-b", "0.0.0.0:8000", "washbuddy.wsgi:application", "--workers=3", "--threads=2", "--timeout=120"]
