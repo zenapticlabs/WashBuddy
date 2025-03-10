@@ -23,6 +23,7 @@ RUN apk add --no-cache \
 # Set environment variables for GDAL
 ENV GDAL_LIBRARY_PATH="/usr/lib/libgdal.so"
 ENV PROJ_LIB="/usr/share/proj"
+ENV LD_LIBRARY_PATH="/usr/lib"
 
 # Create a virtual environment
 RUN python3 -m venv /opt/venv
@@ -32,7 +33,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 
 # Install Python dependencies
 WORKDIR /app
-COPY requirements.txt .
+COPY requirements.txt .  
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
@@ -51,6 +52,7 @@ RUN apk add --no-cache \
 # Copy GDAL and PROJ environment variables
 ENV GDAL_LIBRARY_PATH="/usr/lib/libgdal.so"
 ENV PROJ_LIB="/usr/share/proj"
+ENV LD_LIBRARY_PATH="/usr/lib"
 
 # Create a non-root user for security
 RUN addgroup -S django && adduser -S django -G django
@@ -63,7 +65,11 @@ WORKDIR /app
 COPY --from=builder /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
+# Copy Django application
 COPY . .
+
+# Debug GDAL Path Issues
+RUN ls -lah /usr/lib/libgdal.so || echo "GDAL library not found!"
 
 ENTRYPOINT ["/bin/sh", "-c", "echo 'Starting application...'; exec sh -c \"$@\""]
 
