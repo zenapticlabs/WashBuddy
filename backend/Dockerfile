@@ -34,5 +34,6 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Copy the Django application
 COPY . .
 
+ENTRYPOINT ["/bin/sh", "-c"]
 # Default command (Can be overridden in CI/CD or Compose)
 CMD ["gunicorn", "-b", "0.0.0.0:8000", "washbuddy.wsgi:application", "--workers=3", "--threads=2", "--timeout=120"]
