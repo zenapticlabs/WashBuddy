@@ -66,7 +66,6 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Copy Django application
 COPY . .
 
-# Set Entrypoint without waiting for database
 ENTRYPOINT ["/bin/sh", "-c", "echo 'Starting application...'; exec \"$@\""]
 
 # Default command (Can be overridden in CI/CD or Compose)
