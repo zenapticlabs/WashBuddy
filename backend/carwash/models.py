@@ -7,13 +7,14 @@ from django.contrib.auth.models import User
 
 class CarWash(models.Model):
     car_wash_name = models.CharField(max_length=255, db_index=True)
-    formatted_address = models.CharField(max_length=255, null=True, blank=True)
-    country = models.CharField(max_length=100, null=True, blank=True)
-    country_code = models.CharField(max_length=10, null=True, blank=True)
+    street = models.CharField(max_length=255, null=True, blank=True)
+    city = models.CharField(max_length=100, null=True, blank=True)
     state = models.CharField(max_length=100, null=True, blank=True)
     state_code = models.CharField(max_length=10, null=True, blank=True)
     postal_code = models.CharField(max_length=20, null=True, blank=True)
-    city = models.CharField(max_length=100, null=True, blank=True)
+    country = models.CharField(max_length=100, null=True, blank=True)
+    country_code = models.CharField(max_length=10, null=True, blank=True)
+    formatted_address = models.CharField(max_length=255, null=True, blank=True)
     
     phone = models.CharField(max_length=255)
     reviews_count = models.IntegerField(default=0)
