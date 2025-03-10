@@ -36,8 +36,7 @@ jobs:
 
       - name: Run Django Migrations, Create Superuser, and Collect Static Files in One Container
         run: |
-          docker run --rm \
-            washbuddy-backend sh -c "
+          docker run --rm washbuddy-backend sh -c "
             python manage.py migrate --noinput &&
             python manage.py create_admin || echo 'Admin already exists, skipping...' &&
             python manage.py collectstatic --noinput"

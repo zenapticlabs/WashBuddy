@@ -59,7 +59,6 @@ USER django
 # Set working directory
 WORKDIR /app
 
-# Copy installed dependencies from builder
 COPY --from=builder /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
