@@ -1,6 +1,5 @@
 export interface FilterState {
   carWashType: string;
-  searchKey: string;
   distance: number;
   amenities: string[];
   washType: string[];
@@ -11,7 +10,7 @@ export interface FilterState {
   // latitude: number;
   // longitude: number;
   pagination: boolean;
-  pageSize: number;
+  page_size: number;
   userLat: number;
   userLng: number;
 }

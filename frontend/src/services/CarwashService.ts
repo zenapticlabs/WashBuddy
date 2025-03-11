@@ -29,6 +29,6 @@ export const getCarwashes = async (filters: Record<string, any> = {}) => {
     return response.data;
   } catch (error) {
     console.error("Error fetching car washes:", error);
-    throw error;
+
   }
 };

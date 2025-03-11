@@ -6,7 +6,6 @@ import useLocationData from './useLocationData';
 function getFiltersFromParams(params: URLSearchParams): FilterState {
   return {
     carWashType: params.get("carWashType") || Car_Wash_Type.AUTOMATIC,
-    searchKey: params.get("searchKey") || "",
     washType: params.getAll("washType").map(String),
     ratings: params.getAll("ratings").map(Number),
     distance: Number(params.get("distance")) || 0,
@@ -15,17 +14,15 @@ function getFiltersFromParams(params: URLSearchParams): FilterState {
     operatingHours: params.getAll("operatingHours").map(String),
     sortBy: params.get("sortBy") || "",
     pagination: Boolean(params.get("pagination")) || true,
-    pageSize: Number(params.get("pageSize")) || 3,
+    page_size: Number(params.get("page_size")) || 3,
     userLat: Number(params.get("userLat")) || 0,
     userLng: Number(params.get("userLng")) || 0,
   };
 }
 
 export function useCarWashFilters() {
-  const { locationData, fetchLocationData } = useLocationData();
   const [filters, setFilters] = useState<FilterState>({
     carWashType: Car_Wash_Type.AUTOMATIC,
-    searchKey: "",
     washType: [],
     ratings: [],
     distance: 0,
@@ -34,7 +31,7 @@ export function useCarWashFilters() {
     operatingHours: [],
     sortBy: SortBy[Car_Wash_Type.AUTOMATIC][0],
     pagination: true,
-    pageSize: 3,
+    page_size: 3,
     userLat: 0,
     userLng: 0,
   });
@@ -44,16 +41,6 @@ export function useCarWashFilters() {
     const params = new URLSearchParams(window.location.search);
     setFilters(getFiltersFromParams(params));
   }, []);
-
-  useEffect(() => {
-    fetchLocationData();
-  }, []);
-
-  useEffect(() => {
-    if (locationData) {
-      setFilters(prev => ({ ...prev, userLat: locationData.latitude, userLng: locationData.longitude }));
-    }
-  }, [locationData]);
 
   // Update URL when filters change
   useEffect(() => {
