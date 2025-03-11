@@ -42,6 +42,33 @@ export interface ICarWashCard {
   };
 }
 
+export interface CarWashResponse {
+  id: number;
+  wash_types: string[];
+  amenities: string[];
+  carwashoperatinghours_set: any[]; // You might want to create a specific type for this
+  carwashimage_set: any[]; // You might want to create a specific type for this
+  car_wash_name: string;
+  street: string;
+  city: string;
+  state: string;
+  state_code: string | null;
+  postal_code: string;
+  country: string;
+  country_code: string;
+  formatted_address: string;
+  phone: string;
+  reviews_count: number;
+  reviews_average: string;
+  location: string;
+  automatic_car_wash: boolean;
+  self_service_car_wash: boolean;
+  open_24_hours: boolean;
+  verified: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface ICarWashPurchaseHistory {
   id: string;
   carWashName: string;

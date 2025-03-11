@@ -10,3 +10,15 @@ export function formatTimeAgo(dateString: string): string {
     return `${Math.floor(diffInSeconds / 3600)} hours ago`;
   return `${Math.floor(diffInSeconds / 86400)} days ago`;
 }
+
+export function extractCoordinates(locationString: string): { lat: number; lng: number } {
+  // Format: "SRID=4326;POINT (-88.154784 42.0090209)"
+  const matches = locationString.match(/POINT \(([-\d.]+) ([-\d.]+)\)/);
+  if (!matches) {
+    return { lat: 0, lng: 0 };
+  }
+  return {
+    lat: parseFloat(matches[2]), // latitude is second number
+    lng: parseFloat(matches[1]), // longitude is first number
+  };
+}

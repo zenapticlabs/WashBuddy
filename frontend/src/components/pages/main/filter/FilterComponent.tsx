@@ -31,7 +31,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
             filters.washType.length +
             filters.ratings.length +
             filters.operatingHours.length +
-            (filters.distanceRange > 0 ? 1 : 0) +
+            (filters.distance > 0 ? 1 : 0) +
             (filters.priceRange > 0 ? 1 : 0)
           )}
         />

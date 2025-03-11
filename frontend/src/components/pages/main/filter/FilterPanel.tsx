@@ -17,7 +17,7 @@ import { FilterState } from "@/types/filters";
 import { MockAmenities } from "@/mocks/amenities";
 import { MockWashTypes } from "@/mocks/washTypes";
 import { useEffect, useState } from "react";
-import { getAmenities } from "@/services/AmenityService";
+// import { getAmenities } from "@/services/AmenityService";
 import { Amenity, WashType } from "@/types";
 import { getWashTypes } from "@/services/WashType";
 import { Car_Wash_Type, SortBy } from "@/utils/constants";
@@ -26,13 +26,17 @@ import useMediaQuery from "@/hooks/useMediaQuery";
 const initialFilterState: FilterState = {
   carWashType: Car_Wash_Type.AUTOMATIC,
   searchKey: "",
-  distanceRange: 0,
+  distance: 0,
   amenities: [],
   washType: [],
   ratings: [],
   priceRange: 0,
   operatingHours: [],
   sortBy: SortBy[Car_Wash_Type.AUTOMATIC][0],
+  pagination: true,
+  pageSize: 3,
+  userLat: 0,
+  userLng: 0,
 };
 
 export interface FilterPanelProps {
@@ -54,16 +58,16 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
 
   useEffect(() => {
     const fetchAmenities = async () => {
-      const amenities = await getAmenities();
-      setAmenities(amenities);
+      // const amenities = await getAmenities();
+      // setAmenities(amenities);
     };
     fetchAmenities();
   }, []);
 
   useEffect(() => {
     const fetchWashTypes = async () => {
-      const washTypes = await getWashTypes();
-      setWashTypes(washTypes);
+      // const washTypes = await getWashTypes();
+      // setWashTypes(washTypes);
     };
     fetchWashTypes();
   }, []);
@@ -88,9 +92,9 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         </SheetHeader>
         <div className="flex flex-col px-2 overflow-y-auto h-full gap-4">
           <DistanceRange
-            value={filters.distanceRange}
+            value={filters.distance}
             onChange={(value) =>
-              setFilters((prev) => ({ ...prev, distanceRange: value }))
+              setFilters((prev) => ({ ...prev, distance: value }))
             }
           />
           <Separator />

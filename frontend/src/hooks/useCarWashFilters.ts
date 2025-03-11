@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { FilterState } from "@/types/filters";
 import { Car_Wash_Type, SortBy } from "@/utils/constants";
+import useLocationData from './useLocationData';
 
 function getFiltersFromParams(params: URLSearchParams): FilterState {
   return {
@@ -8,25 +9,34 @@ function getFiltersFromParams(params: URLSearchParams): FilterState {
     searchKey: params.get("searchKey") || "",
     washType: params.getAll("washType").map(String),
     ratings: params.getAll("ratings").map(Number),
-    distanceRange: Number(params.get("distanceRange")) || 0,
+    distance: Number(params.get("distance")) || 0,
     priceRange: Number(params.get("priceRange")) || 0,
     amenities: params.getAll("amenities").map(String),
     operatingHours: params.getAll("operatingHours").map(String),
     sortBy: params.get("sortBy") || "",
+    pagination: Boolean(params.get("pagination")) || true,
+    pageSize: Number(params.get("pageSize")) || 3,
+    userLat: Number(params.get("userLat")) || 0,
+    userLng: Number(params.get("userLng")) || 0,
   };
 }
 
 export function useCarWashFilters() {
+  const { locationData, fetchLocationData } = useLocationData();
   const [filters, setFilters] = useState<FilterState>({
     carWashType: Car_Wash_Type.AUTOMATIC,
     searchKey: "",
     washType: [],
     ratings: [],
-    distanceRange: 0,
+    distance: 0,
     priceRange: 0,
     amenities: [],
     operatingHours: [],
     sortBy: SortBy[Car_Wash_Type.AUTOMATIC][0],
+    pagination: true,
+    pageSize: 3,
+    userLat: 0,
+    userLng: 0,
   });
 
   // Initialize filters from URL
@@ -34,6 +44,16 @@ export function useCarWashFilters() {
     const params = new URLSearchParams(window.location.search);
     setFilters(getFiltersFromParams(params));
   }, []);
+
+  useEffect(() => {
+    fetchLocationData();
+  }, []);
+
+  useEffect(() => {
+    if (locationData) {
+      setFilters(prev => ({ ...prev, userLat: locationData.latitude, userLng: locationData.longitude }));
+    }
+  }, [locationData]);
 
   // Update URL when filters change
   useEffect(() => {

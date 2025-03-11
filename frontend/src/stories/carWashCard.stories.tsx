@@ -1,80 +1,83 @@
-import type { Meta, StoryObj } from "@storybook/react";
-import { CarWashCard } from "../components/organism/carWashCard";
-import { ICarWashCard } from "@/types";
+import type { Meta, StoryObj } from '@storybook/react';
+import { CarWashCard } from '@/components/organism/carWashCard';
 
-const meta = {
-  title: "Organism/CarWashCard",
+const meta: Meta<typeof CarWashCard> = {
+  title: 'Organisms/CarWashCard',
   component: CarWashCard,
   parameters: {
-    layout: "centered",
+    layout: 'centered',
   },
-  tags: ["autodocs"],
-} satisfies Meta<typeof CarWashCard>;
+  tags: ['autodocs'],
+};
 
 export default meta;
-type Story = StoryObj<typeof meta>;
+type Story = StoryObj<typeof CarWashCard>;
 
-const baseCarWash: ICarWashCard = {
-  id: "1",
-  image: "https://img.freepik.com/free-photo/professional-washer-blue-uniform-washing-luxury-car-with-water-gun-open-air-car-wash_496169-333.jpg",
-  name: "Clean & Shine Car Wash",
-  address: "123 Main St, Anytown, USA",
-  price: 3.85,
-  howFarAway: 1.2,
-  rating: 4.8,
-  reviewsCount: 100,
-  washType: "Basic Wash",
-  promotion: "Special WashBuddy Price",
-  location: { lat: 0, lng: 0 },
+const mockCarWashData = {
+  car_wash_name: "Sparkle & Shine Auto Wash",
+  formatted_address: "123 Main Street, City, State",
+  reviews_average: "4.5",
+  reviews_count: 128,
+  wash_types: ["Basic", "Premium", "Deluxe"],
+  id: 1,
+  latitude: 0,
+  longitude: 0,
+  amenities: ["Vacuum", "Air Freshener"],
+  carwashoperatinghours_set: [],
+  carwashimage_set: [],
+  street: "123 Main Street",
+  city: "City",
+  state: "State",
+  state_code: "ST",
+  postal_code: "12345",
+  country: "United States",
+  country_code: "US",
+  phone: "555-0123",
+  location: "POINT(0 0)",
+  automatic_car_wash: true,
+  self_service_car_wash: false,
+  open_24_hours: false,
+  verified: true,
+  created_at: "2024-01-01",
+  updated_at: "2024-01-01"
 };
 
 export const Default: Story = {
   args: {
-    data: baseCarWash,
-    onClick: () => {},
+    data: mockCarWashData,
+    onClick: () => console.log("Card clicked"),
   },
 };
 
 export const HighRating: Story = {
   args: {
     data: {
-      ...baseCarWash,
-      rating: 5.0,
-      reviewsCount: 250,
+      ...mockCarWashData,
+      reviews_average: "5.0",
+      reviews_count: 250,
     },
-    onClick: () => {},
+    onClick: () => console.log("Card clicked"),
   },
 };
 
-export const LongDistance: Story = {
+export const LowRating: Story = {
   args: {
     data: {
-      ...baseCarWash,
-      howFarAway: 15.7,
-      name: "Far Away Car Wash",
+      ...mockCarWashData,
+      reviews_average: "2.5",
+      reviews_count: 45,
     },
-    onClick: () => {},
+    onClick: () => console.log("Card clicked"),
   },
 };
 
-export const PremiumWash: Story = {
+export const LongName: Story = {
   args: {
     data: {
-      ...baseCarWash,
-      price: 8.99,
-      washType: "Premium Detail Wash",
-      promotion: "Premium Service - 20% Off First Visit",
+      ...mockCarWashData,
+      car_wash_name: "Super Deluxe Premium Professional Auto Washing & Detailing Center",
+      formatted_address: "987 Very Long Street Name, City With A Long Name, State",
     },
-    onClick: () => {  },
+    onClick: () => console.log("Card clicked"),
   },
 };
-
-export const NoPromotion: Story = {
-  args: {
-    data: {
-      ...baseCarWash,
-      promotion: undefined,
-    },
-    onClick: () => {},
-  },
-}; 

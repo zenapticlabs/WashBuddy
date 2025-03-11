@@ -1,20 +1,28 @@
 import { useEffect, useState } from 'react';
 import { getCarwashes } from "@/services/CarwashService";
 import { FilterState } from "@/types/filters";
-import { ICarWashCard } from "@/types";
-import { mockCarWashes } from "@/mocks/carWashes";
+import { CarWashResponse } from "@/types/CarServices";
+import useLocationData from './useLocationData';
 
 export function useCarWashes(filters: FilterState) {
-  const [carWashes, setCarWashes] = useState<ICarWashCard[]>(mockCarWashes);
+  const [carWashes, setCarWashes] = useState<CarWashResponse[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  // const { locationData, fetchLocationData } = useLocationData();
 
   useEffect(() => {
-    const fetchCarWashes = async () => {
-      const result = await getCarwashes(filters);
-      // TODO: Update carWashes when API is ready
-      // setCarWashes(result);
-    };
-    fetchCarWashes();
+    fetchData();
   }, [filters]);
 
-  return { carWashes };
+
+  const fetchData = async () => {
+    setIsLoading(true);
+    if (filters.userLat != 0 && filters.userLng != 0) {
+      const result = await getCarwashes(filters);
+      setCarWashes(result.data[0].results);
+    }
+    setIsLoading(false);
+  };
+
+  return { carWashes, isLoading };
+
 } 

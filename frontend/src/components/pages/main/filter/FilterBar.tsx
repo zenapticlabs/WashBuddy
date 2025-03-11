@@ -24,17 +24,17 @@ interface FilterBarProps {
 const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
   const filterConfigs = [
     {
-      key: "distanceRange",
+      key: "distance",
       label: "Distance",
       icon: <ArrowUpDown size={16} />,
-      isActive: filters.distanceRange > 0,
-      additionalText: `: ${filters.distanceRange} miles`,
+      isActive: filters.distance > 0,
+      additionalText: `: ${filters.distance} miles`,
       content: (
         <div className="w-[450px] pt-2">
           <DistanceRange
-            value={filters.distanceRange}
+            value={filters.distance}
             onChange={(value) =>
-              setFilters({ ...filters, distanceRange: value })
+              setFilters({ ...filters, distance: value })
             }
           />
         </div>
