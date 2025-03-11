@@ -2,6 +2,10 @@ import { FilterState } from "@/types/filters";
 import SearchBar from "@/components/molecule/SearchBar";
 import FilterComponent from "@/components/pages/main/filter/FilterComponent";
 import { Button } from "@/components/ui/button";
+import { RadarAddress } from "@/types";
+import { useEffect, useState } from "react";
+import useLocationData from "@/hooks/useLocationData";
+import useGeoLocationData from "@/hooks/useGeoLocationData";
 
 interface SearchAndFilterBarProps {
   filters: FilterState;
@@ -16,16 +20,45 @@ export function SearchAndFilterBar({
   showMap,
   setShowMap,
 }: SearchAndFilterBarProps) {
-  const handleSearch = (search: string) => {
-    setFilters({
-      ...filters,
-      searchKey: search,
-    });
-  };
+  const { latitude, longitude, loading, error, fetchLocationData } = useGeoLocationData();
+  const [address, setAddress] = useState<RadarAddress | null>(null);
+  useEffect(() => {
+    fetchLocationData();
+  }, [])
+  useEffect(() => {
+    if (address) {
+      setFilters({
+        ...filters,
+        userLat: address.latitude,
+        userLng: address.longitude,
+      })
+    } else if (latitude && longitude) {
+      setFilters({
+        ...filters,
+        userLat: latitude,
+        userLng: longitude,
+      })
+    }
+  }, [latitude, longitude, address])
 
+
+  const handleChange = (address: RadarAddress | null) => {
+    setAddress(address);
+  }
   return (
     <>
-      <SearchBar onChange={handleSearch} />
+      <div className="flex items-center gap-2">
+        <SearchBar onChange={handleChange} />
+        <Button
+          variant="outline"
+          className="rounded-full shadow-none"
+          onClick={fetchLocationData}
+          disabled={loading}
+        >
+          {loading ? "..." : "📍"}
+        </Button>
+      </div>
+      {error && <div className="text-red-500 text-sm px-4">{error}</div>}
       <div className="flex items-center justify-between px-4">
         <FilterComponent filters={filters} setFilters={setFilters} />
         <Button
@@ -39,4 +72,4 @@ export function SearchAndFilterBar({
       </div>
     </>
   );
-} 
+}

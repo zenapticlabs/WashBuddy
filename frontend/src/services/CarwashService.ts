@@ -15,21 +15,20 @@ export const createCarwash = async (formData: any) => {
 export const getCarwashes = async (filters: Record<string, any> = {}) => {
   try {
     const params = new URLSearchParams();
-
     // Add filters to the query string
     Object.entries(filters).forEach(([key, value]) => {
       if (value) {
         params.append(key, value.toString());
       }
     });
-    
-    const response = await axios.get(`${API_URL}/api/carwashes`, {
+
+    const response = await axios.get(`${API_URL}/api/v1/carwash/list-car-wash`, {
       params,
     });
 
     return response.data;
   } catch (error) {
     console.error("Error fetching car washes:", error);
-    throw error;
+
   }
 };

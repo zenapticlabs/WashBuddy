@@ -13,16 +13,17 @@ import {
   Star,
   XIcon,
 } from "lucide-react";
-import { ICarWashCard } from "@/types";
+import { CarWashResponse, ICarWashCard } from "@/types";
 import CreateCarWashReviewModal from "./CreateCarWashReviewModal";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import useMediaQuery from "@/hooks/useMediaQuery";
+import { extractCoordinates } from "@/utils/functions";
 
 interface CarWashDetailProps {
-  data?: ICarWashCard | null;
+  data?: CarWashResponse | null;
   open: boolean;
   setOpen: (open: boolean) => void;
   onNavigate?: (location: { lat: number; lng: number }) => void;
@@ -40,7 +41,8 @@ const CarWashDetail: React.FC<CarWashDetailProps> = ({
 
   const handleNavigate = () => {
     if (data?.location) {
-      onNavigate?.(data.location);
+      const coordinates = extractCoordinates(data.location);
+      onNavigate?.(coordinates);
     }
   };
 
@@ -64,7 +66,7 @@ const CarWashDetail: React.FC<CarWashDetailProps> = ({
           <div className="flex flex-col gap-2 p-3">
             <div className="flex items-center justify-between">
               <div className="text-headline-4 text-neutral-900">
-                {data?.name}
+                {data?.car_wash_name}
               </div>
               <button
                 onClick={handleNavigate}
@@ -87,15 +89,15 @@ const CarWashDetail: React.FC<CarWashDetailProps> = ({
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-neutral-500" />
                 <div className="flex items-center gap-0.5 text-body-2 text-neutral-500">
-                  {data?.address}
+                  {data?.formatted_address}
                   <Dot className="w-4 h-4 text-neutral-500" />
-                  {data?.howFarAway} miles
+                  12 miles
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-neutral-500" />
                 <span className="text-body-2 text-neutral-500">
-                  +1972 325 2970
+                  {data?.phone}
                 </span>
               </div>
             </div>
@@ -137,7 +139,7 @@ const CarWashDetail: React.FC<CarWashDetailProps> = ({
         <Sheet open={open} onOpenChange={(check) => setOpen(check)}>
           <SheetHeader>
             <SheetTitle className="hidden text-headline-4 px-6 py-6 text-neutral-900 border-b border-neutral-100 bg-white">
-              {data?.name}
+              {data?.car_wash_name}
             </SheetTitle>
           </SheetHeader>
           <SheetContent

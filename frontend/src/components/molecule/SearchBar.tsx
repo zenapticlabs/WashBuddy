@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react";
-import { Input } from "../ui/input";
-import { Search } from "lucide-react";
-import { cn } from "@/lib/utils";
+import AutoComplete from "./AutoComplete";
+import { RadarAddress } from "@/types";
 interface SearchBarProps {
-  onChange: (option: string) => void;
+  onChange: (option: RadarAddress | null) => void;
 }
 
 const SearchBar: React.FC<SearchBarProps> = ({ onChange }) => {
-  const [searchKey, setSearchKey] = useState("");
-  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [recentSearches, setRecentSearches] = useState<RadarAddress[]>([]);
+  const [inputValue, setInputValue] = useState("");
   useEffect(() => {
     const recentSearches = localStorage.getItem("recentSearches");
     if (recentSearches) {
@@ -16,19 +15,23 @@ const SearchBar: React.FC<SearchBarProps> = ({ onChange }) => {
     }
   }, []);
 
-  const handleEnter = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      onChange(searchKey);
-      handleRecentSearch(searchKey);
+  const handleSelectRecent = (search: RadarAddress) => {
+    handleRecentSearch(search);
+    setInputValue(search.formattedAddress);
+    onChange(search);
+  };
+
+  const handleSelectAutoComplete = (address: RadarAddress | null) => {
+    if (address) {
+      onChange(address);
+      handleRecentSearch(address);
+    } else {
+      onChange(null);
     }
   };
-  const handleSelectRecent = (search: string) => {
-    setSearchKey(search);
-    onChange(search);
-    handleRecentSearch(search);
-  };
-  const handleRecentSearch = (search: string) => {
-    if (search != recentSearches[0]) {
+
+  const handleRecentSearch = (search: RadarAddress) => {
+    if (!recentSearches.length || search.formattedAddress !== recentSearches[0].formattedAddress) {
       const newRecentSearches = [search, ...recentSearches];
       if (newRecentSearches.length > 5) {
         newRecentSearches.pop();
@@ -39,21 +42,9 @@ const SearchBar: React.FC<SearchBarProps> = ({ onChange }) => {
   };
   return (
     <div className="block lg:flex items-center gap-4 w-full px-4 relative">
-      <div className={cn("relative w-full lg:w-[640px]")}>
-        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-          <Search size={20} className="text-blue-500" />
-        </div>
-        <Input
-          type="text"
-          placeholder="Search car washes location"
-          className="rounded-full text-sm py-3.5 border-[#189DEF80] border-2 pl-10"
-          value={searchKey}
-          onChange={(e) => setSearchKey(e.target.value)}
-          onKeyDown={handleEnter}
-        />
-      </div>
+      <AutoComplete onSelect={handleSelectAutoComplete} inputValue={inputValue} setInputValue={setInputValue} />
       {recentSearches.length > 0 && (
-        <div className="flex items-center gap-2 py-3 px-2">
+        <div className="flex items-center gap-2 py-3 px-2 w-full overflow-hidden">
           <div className="text-title-2 text-neutral-400">Recent</div>
           <div className="flex flex-1 gap-2 overflow-hidden relative">
             {recentSearches.map((search, index) => (
@@ -62,7 +53,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onChange }) => {
                 onClick={() => handleSelectRecent(search)}
                 className="text-body-2 text-neutral-500 bg-neutral-100 rounded-full px-3 py-1 whitespace-nowrap cursor-pointer hover:bg-neutral-200 transition-colors duration-200"
               >
-                {search}
+                {search.formattedAddress}
               </div>
             ))}
           </div>

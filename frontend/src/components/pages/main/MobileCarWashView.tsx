@@ -1,18 +1,18 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CarWashCard } from "@/components/organism/carWashCard";
-import { FilterState, ICarWashCard } from "@/types";
+import { FilterState } from "@/types";
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 import { SortBy } from "@/utils/constants";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-
+import { CarWashResponse } from "@/types/CarServices";
 interface MobileCarWashViewProps {
   showMap: boolean;
-  carWashes: ICarWashCard[];
-  selectedCarWash: ICarWashCard | null;
-  onCarWashSelect: (carWash: ICarWashCard) => void;
+  carWashes: CarWashResponse[];
+  selectedCarWash: CarWashResponse | null;
+  onCarWashSelect: (carWash: CarWashResponse) => void;
   filters: FilterState;
   setFilters: React.Dispatch<React.SetStateAction<FilterState>>;
 }
