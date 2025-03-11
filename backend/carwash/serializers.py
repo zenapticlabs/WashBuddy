@@ -53,8 +53,8 @@ class CarWashImageSerializer(serializers.ModelSerializer):
         exclude = ('car_wash',)
 
 class CarWashSerializer(serializers.ModelSerializer):
-    operating_hours = CarWashOperatingHoursSerializer(source='carwashoperatinghours_set', many=True)
-    images = CarWashImageSerializer(source='carwashimage_set', many=True)
+    operating_hours = CarWashOperatingHoursSerializer(source='operating_hours', many=True)
+    images = CarWashImageSerializer(source='images', many=True)
     wash_types = serializers.PrimaryKeyRelatedField(many=True, queryset=WashType.objects.all())
     amenities = serializers.PrimaryKeyRelatedField(many=True, queryset=Amenity.objects.all())
     distance = serializers.SerializerMethodField(read_only=True)
@@ -96,7 +96,7 @@ class CarWashSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         open_24_hours = data.get('open_24_hours')
-        operating_hours = data.get('carwashoperatinghours_set', [])
+        operating_hours = data.get('operating_hours', [])
 
         if open_24_hours:
             for hours in operating_hours:
@@ -127,8 +127,8 @@ class CarWashSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
-        operating_hours_data = validated_data.pop('carwashoperatinghours_set', [])
-        images_data = validated_data.pop('carwashimage_set', [])
+        operating_hours_data = validated_data.pop('operating_hours', [])
+        images_data = validated_data.pop('images', [])
         wash_types = validated_data.pop('wash_types', [])
         amenities = validated_data.pop('amenities', [])
 
@@ -148,8 +148,8 @@ class CarWashSerializer(serializers.ModelSerializer):
         return car_wash
         
     def update(self, instance, validated_data):
-        operating_hours_data = validated_data.pop('carwashoperatinghours_set', [])
-        images_data = validated_data.pop('carwashimage_set', [])
+        operating_hours_data = validated_data.pop('operating_hours', [])
+        images_data = validated_data.pop('images', [])
         wash_types = validated_data.pop('wash_types', None)
         amenities = validated_data.pop('amenities', None)
         
@@ -158,12 +158,12 @@ class CarWashSerializer(serializers.ModelSerializer):
         instance.save()
 
         if operating_hours_data:
-            instance.carwashoperatinghours_set.all().delete()
+            instance.operating_hours.all().delete()
             for hours_data in operating_hours_data:
                 CarWashOperatingHours.objects.create(car_wash=instance, **hours_data)
                 
         if images_data:
-            instance.carwashimage_set.all().delete()
+            instance.images.all().delete()
             for image_data in images_data:
                 CarWashImage.objects.create(car_wash=instance, **image_data)
                 
@@ -177,16 +177,32 @@ class CarWashSerializer(serializers.ModelSerializer):
     
 
 class CarWashTypeSerializer(serializers.ModelSerializer):
+    price_rate = serializers.SerializerMethodField()
     
     class Meta:
         model = WashType
         fields = "__all__"
 
+    def get_price_rate(self, instance):
+        car_wash = self.context.get("car_wash")
+        if car_wash:
+            mapping = instance.car_wash_mapping.filter(car_wash=car_wash).first()
+            return mapping.price_rate if mapping else 0
+        return 0
+
 class AmenitySerializer(serializers.ModelSerializer):
-    
+    price_rate = serializers.SerializerMethodField()
+
     class Meta:
         model = Amenity
         fields = "__all__"
+
+    def get_price_rate(self, instance):
+        car_wash = self.context.get("car_wash")
+        if car_wash:
+            mapping = instance.car_wash_mapping.filter(car_wash=car_wash).first()
+            return mapping.price_rate if mapping else 0
+        return 0
 
 class CarWashOperatingHoursSerializer(serializers.ModelSerializer):
     
@@ -201,11 +217,17 @@ class CarWashImageSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 class CarWashListSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
-    wash_types = CarWashTypeSerializer(many=True)
-    amenities = AmenitySerializer(many=True)
-    carwashoperatinghours_set = CarWashOperatingHoursSerializer(many=True)
-    carwashimage_set = CarWashImageSerializer(many=True)
+    wash_types = serializers.SerializerMethodField()
+    amenities = serializers.SerializerMethodField()
+    operating_hours = CarWashOperatingHoursSerializer(many=True)
+    images = CarWashImageSerializer(many=True)
 
     class Meta:
         model = CarWash
         fields = "__all__"
+
+    def get_wash_types(self, instance):
+        return CarWashTypeSerializer(instance.wash_types, many=True, context={"car_wash": instance}).data
+    
+    def get_amenities(self, instance):
+        return AmenitySerializer(instance.amenities, many=True, context={"car_wash": instance}).data

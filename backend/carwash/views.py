@@ -17,8 +17,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 class CarWashViewSet(viewsets.ModelViewSet):
     queryset = CarWash.objects.prefetch_related(
-        'carwashoperatinghours_set',
-        'carwashimage_set',
+        'operating_hours',
+        'images',
         'wash_types',
         'amenities'
     ).all()
