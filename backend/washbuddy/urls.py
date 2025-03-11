@@ -20,6 +20,7 @@ from django.urls import path, include
 from django.http import JsonResponse
 from rest_framework.routers import DefaultRouter
 from carwash.views import CarWashViewSet, AmenityViewSet, WashTypeViewSet
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 
 router = DefaultRouter()
@@ -34,6 +35,8 @@ def health_check(request):
 urlpatterns = [
     path("", health_check, name="health-check"),
     path('admin/', admin.site.urls),
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path("api/docs/swagger/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
     path('api/', include(router.urls)),
     path('api/v1/carwash/', include('carwash.urls'))
 ]

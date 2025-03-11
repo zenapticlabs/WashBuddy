@@ -62,7 +62,12 @@ INSTALLED_APPS = [
     'django.contrib.gis',
     'carwash',
     'import_export',
+    'drf_spectacular',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
