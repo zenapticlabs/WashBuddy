@@ -88,7 +88,7 @@ class CarWash(models.Model):
         ]
 
 class CarWashOperatingHours(models.Model):
-    car_wash = models.ForeignKey(CarWash, on_delete=models.CASCADE)
+    car_wash = models.ForeignKey(CarWash, on_delete=models.CASCADE, related_name="operating_hours")
     day_of_week = models.SmallIntegerField(
         validators=[
             MinValueValidator(0, "Day must be at least 0"),
@@ -118,7 +118,7 @@ class CarWashOperatingHours(models.Model):
         return f"{self.car_wash.car_wash_name} - {self.day_of_week}"
 
 class CarWashImage(models.Model):
-    car_wash = models.ForeignKey(CarWash, on_delete=models.CASCADE)
+    car_wash = models.ForeignKey(CarWash, on_delete=models.CASCADE, related_name="images")
     image_type = models.SmallIntegerField(
         validators=[
             MinValueValidator(0, "Image type must be at least 0"),
@@ -162,8 +162,9 @@ class WashType(models.Model):
         return f"{self.name} ({self.category} - {self.subclass})"
 
 class CarWashWashTypeMapping(models.Model):
-    car_wash = models.ForeignKey(CarWash, on_delete=models.CASCADE)
-    wash_type = models.ForeignKey(WashType, on_delete=models.CASCADE)
+    car_wash = models.ForeignKey(CarWash, on_delete=models.CASCADE, related_name="wash_type_mapping")
+    wash_type = models.ForeignKey(WashType, on_delete=models.CASCADE, related_name="car_wash_mapping")
+    price_rate = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -193,8 +194,9 @@ class Amenity(models.Model):
         return f"{self.name} ({self.category})"
 
 class AmenityCarWashMapping(models.Model):
-    car_wash = models.ForeignKey(CarWash, on_delete=models.CASCADE)
-    amenity = models.ForeignKey(Amenity, on_delete=models.CASCADE)
+    car_wash = models.ForeignKey(CarWash, on_delete=models.CASCADE, related_name="amenity_mapping")
+    amenity = models.ForeignKey(Amenity, on_delete=models.CASCADE, related_name="car_wash_mapping")
+    price_rate = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

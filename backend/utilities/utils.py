@@ -19,7 +19,7 @@ class ResponseInfo(object):
 
 
 class CustomResponsePagination(pagination.PageNumberPagination):
-    page_size = 30
+    page_size = 10
     page_size_query_param  = 'page_size'
 
     def get_paginated_response(self, data):
