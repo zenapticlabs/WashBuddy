@@ -184,7 +184,7 @@ class ListCarWashAPIView(DynamicFieldsViewMixin, ListAPIView):
         """
         Method for getting paginated queryset.
         """
-        pagination = self.request.GET.get("pagination", None)
+        pagination = self.request.GET.get("pagination", "True")
         if pagination == "True" or pagination == "true":
             return super().paginate_queryset(queryset)
         return None
