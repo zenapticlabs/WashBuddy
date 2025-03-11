@@ -3,7 +3,7 @@ import django_filters
 from .models import CarWash
 from django.contrib.gis.geos import Point
 from django.contrib.gis.db.models.functions import Distance
-from django.db.models import Sum, Value, DecimalField, FloatField
+from django.db.models import Sum, Value, DecimalField, FloatField, Q
 from django.db.models.functions import Coalesce
 
 class DynamicSearchFilter(filters.SearchFilter):
@@ -72,6 +72,8 @@ class ListCarWashFilter(django_filters.FilterSet):
             ('recommended', 'recommended'),
             ('distance_near_to_far', 'distance_near_to_far'),
         ))
+    searchLocations = django_filters.BaseInFilter(method='filter_search', label='Search Locations')
+    price_lte = django_filters.BaseInFilter(method='price', label='Price Range')
 
     class Meta:
         model = CarWash
@@ -92,3 +94,19 @@ class ListCarWashFilter(django_filters.FilterSet):
         ).filter(distance__lte=float(radius_km) * 1000)  # Convert km to meters
 
         return queryset
+    
+    def price(self, queryset, name, value):
+        queryset = queryset.annotate(price_rate=Coalesce(Sum("wash_type_mapping__price_rate", output_field=DecimalField()), Value(0, output_field=DecimalField())))
+        return queryset.filter(price_rate__lte=float(value[0]))
+    
+    def filter_search(self, queryset, name, value):
+        return queryset.filter(
+            Q(street__icontains=value) |
+            Q(city__icontains=value) |
+            Q(state__icontains=value) |
+            Q(state_code__icontains=value) |
+            Q(postal_code__icontains=value) |
+            Q(country__icontains=value) |
+            Q(country_code__icontains=value) |
+            Q(formatted_address__icontains=value)
+        )
