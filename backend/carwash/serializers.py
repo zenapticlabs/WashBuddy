@@ -53,8 +53,8 @@ class CarWashImageSerializer(serializers.ModelSerializer):
         exclude = ('car_wash',)
 
 class CarWashSerializer(serializers.ModelSerializer):
-    operating_hours = CarWashOperatingHoursSerializer(source='operating_hours', many=True)
-    images = CarWashImageSerializer(source='images', many=True)
+    operating_hours = CarWashOperatingHoursSerializer(many=True)
+    images = CarWashImageSerializer(many=True)
     wash_types = serializers.PrimaryKeyRelatedField(many=True, queryset=WashType.objects.all())
     amenities = serializers.PrimaryKeyRelatedField(many=True, queryset=Amenity.objects.all())
     distance = serializers.SerializerMethodField(read_only=True)
