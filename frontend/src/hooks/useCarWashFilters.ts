@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FilterState } from "@/types/filters";
 import { Car_Wash_Type, SortBy } from "@/utils/constants";
-import useLocationData from './useLocationData';
 
 function getFiltersFromParams(params: URLSearchParams): FilterState {
   return {
@@ -60,21 +59,17 @@ export function useCarWashFilters() {
     updateUrlWithFilters();
   }, [filters]);
 
-  useEffect(() => {
-    setFilters({ ...filters, sortBy: SortBy[filters.carWashType][0] });
-  }, [filters.carWashType]);
-
   // Handle browser navigation
-  useEffect(() => {
-    const handlePopState = () => {
-      const params = new URLSearchParams(window.location.search);
-      setFilters(getFiltersFromParams(params));
-    };
-    window.addEventListener("popstate", handlePopState);
-    return () => {
-      window.removeEventListener("popstate", handlePopState);
-    };
-  }, []);
+  // useEffect(() => {
+  //   const handlePopState = () => {
+  //     const params = new URLSearchParams(window.location.search);
+  //     setFilters(getFiltersFromParams(params));
+  //   };
+  //   window.addEventListener("popstate", handlePopState);
+  //   return () => {
+  //     window.removeEventListener("popstate", handlePopState);
+  //   };
+  // }, []);
 
   return { filters, setFilters };
 } 

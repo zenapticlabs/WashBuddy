@@ -51,9 +51,14 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   filters,
   setFilters,
 }) => {
+  const [inlineFilters, setInlineFilters] = useState<FilterState>(filters);
   const [amenities, setAmenities] = useState<Amenity[]>([]);
   const [washTypes, setWashTypes] = useState<WashType[]>([]);
   const isMobile = useMediaQuery("(max-width: 768px)");
+
+  useEffect(() => {
+    setInlineFilters(filters);
+  }, [filters]);
 
   useEffect(() => {
     const fetchAmenities = async () => {
@@ -76,7 +81,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   };
 
   const handleApply = () => {
-    setFilters(filters);
+    setFilters(inlineFilters);
     setOpen(false);
   };
 
@@ -91,46 +96,46 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
         </SheetHeader>
         <div className="flex flex-col px-2 overflow-y-auto h-full gap-4">
           <DistanceRange
-            value={filters.distance}
+            value={inlineFilters.distance}
             onChange={(value) =>
-              setFilters((prev) => ({ ...prev, distance: value }))
+              setInlineFilters((prev) => ({ ...prev, distance: value }))
             }
           />
           <Separator />
           <AmenitiesCheckboxes
-            value={filters.amenities}
+            value={inlineFilters.amenities}
             onChange={(value) =>
-              setFilters((prev) => ({ ...prev, amenities: value }))
+              setInlineFilters((prev) => ({ ...prev, amenities: value }))
             }
             options={MockAmenities}
           />
           <Separator />
           <WashTypeCheckboxes
-            value={filters.washType}
+            value={inlineFilters.washType}
             onChange={(value) =>
-              setFilters((prev) => ({ ...prev, washType: value }))
+              setInlineFilters((prev) => ({ ...prev, washType: value }))
             }
             options={MockWashTypes}
           />
           <Separator />
           <Ratings
-            value={filters.ratings}
+            value={inlineFilters.ratings}
             onChange={(value) =>
-              setFilters((prev) => ({ ...prev, ratings: value }))
+              setInlineFilters((prev) => ({ ...prev, ratings: value }))
             }
           />
           <Separator />
           <PriceRange
-            value={filters.priceRange}
+            value={inlineFilters.priceRange}
             onChange={(value) =>
-              setFilters((prev) => ({ ...prev, priceRange: value }))
+              setInlineFilters((prev) => ({ ...prev, priceRange: value }))
             }
           />
           <Separator />
           <OperatingHours
-            value={filters.operatingHours}
+            value={inlineFilters.operatingHours}
             onChange={(value) =>
-              setFilters((prev) => ({ ...prev, operatingHours: value }))
+              setInlineFilters((prev) => ({ ...prev, operatingHours: value }))
             }
           />
         </div>
