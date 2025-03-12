@@ -4,7 +4,7 @@ import { FilterState } from "@/types";
 import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
-import { SortBy } from "@/utils/constants";
+import { SortBy, Car_Wash_Type } from "@/utils/constants";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { CarWashResponse } from "@/types/CarServices";
@@ -59,7 +59,7 @@ export function MobileCarWashView({
             </SheetTitle>
           </SheetHeader>
           <div className="flex flex-col gap-6">
-            {SortBy[filters.carWashType].map((sort) => (
+            {SortBy[filters.automaticCarWash ? Car_Wash_Type.AUTOMATIC : Car_Wash_Type.SELF_SERVICE].map((sort) => (
               <button
                 key={sort}
                 className={cn(

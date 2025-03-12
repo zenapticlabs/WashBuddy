@@ -4,7 +4,7 @@ import { Car_Wash_Type, SortBy } from "@/utils/constants";
 
 function getFiltersFromParams(params: URLSearchParams): FilterState {
   return {
-    carWashType: params.get("carWashType") || Car_Wash_Type.AUTOMATIC,
+    automaticCarWash: params.get("automaticCarWash") === "true" || true,    
     washType: params.getAll("washType").map(String),
     ratings: params.getAll("ratings").map(Number),
     distance: Number(params.get("distance")) || 0,
@@ -13,7 +13,7 @@ function getFiltersFromParams(params: URLSearchParams): FilterState {
     operatingHours: params.getAll("operatingHours").map(String),
     sortBy: params.get("sortBy") || "",
     pagination: Boolean(params.get("pagination")) || true,
-    page_size: Number(params.get("page_size")) || 3,
+    page_size: Number(params.get("page_size")) || 30,
     userLat: Number(params.get("userLat")) || 0,
     userLng: Number(params.get("userLng")) || 0,
   };
@@ -21,7 +21,7 @@ function getFiltersFromParams(params: URLSearchParams): FilterState {
 
 export function useCarWashFilters() {
   const [filters, setFilters] = useState<FilterState>({
-    carWashType: Car_Wash_Type.AUTOMATIC,
+    automaticCarWash: true,
     washType: [],
     ratings: [],
     distance: 0,
@@ -30,7 +30,7 @@ export function useCarWashFilters() {
     operatingHours: [],
     sortBy: SortBy[Car_Wash_Type.AUTOMATIC][0],
     pagination: true,
-    page_size: 3,
+    page_size: 30,
     userLat: 0,
     userLng: 0,
   });
@@ -53,6 +53,8 @@ export function useCarWashFilters() {
         }
       });
       const queryString = params.toString();
+      console.log(filters);
+      console.log(queryString);
       const newUrl = `${window.location.pathname}?${queryString}`;
       window.history.replaceState(null, "", newUrl);
     };

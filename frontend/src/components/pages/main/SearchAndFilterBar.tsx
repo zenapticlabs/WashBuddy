@@ -49,14 +49,6 @@ export function SearchAndFilterBar({
     <>
       <div className="flex items-center gap-2">
         <SearchBar onChange={handleChange} />
-        <Button
-          variant="outline"
-          className="rounded-full shadow-none"
-          onClick={fetchLocationData}
-          disabled={loading}
-        >
-          {loading ? "..." : "📍"}
-        </Button>
       </div>
       {error && <div className="text-red-500 text-sm px-4">{error}</div>}
       <div className="flex items-center justify-between px-4">

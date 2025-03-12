@@ -1,7 +1,7 @@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "./button";
 import { ChevronDown } from "lucide-react";
-import { SortBy } from "@/utils/constants";
+import { Car_Wash_Type, SortBy } from "@/utils/constants";
 import { FilterState } from "@/types/filters";
 import { cn } from "@/lib/utils";
 interface SortBySelectProps {
@@ -26,7 +26,7 @@ export function SortBySelect({ setFilters, filters }: SortBySelectProps) {
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="mt-2 shadow-md border-none rounded-xl">
-                {SortBy[filters.carWashType].map((sort) => (
+                {SortBy[filters.automaticCarWash ? Car_Wash_Type.AUTOMATIC : Car_Wash_Type.SELF_SERVICE].map((sort) => (
                     <DropdownMenuItem key={sort} onClick={() => setFilters({ ...filters, sortBy: sort })}>{sort}</DropdownMenuItem>
                 ))}
             </DropdownMenuContent>

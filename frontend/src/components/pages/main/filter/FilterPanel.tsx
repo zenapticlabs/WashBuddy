@@ -24,7 +24,7 @@ import { Car_Wash_Type, SortBy } from "@/utils/constants";
 import useMediaQuery from "@/hooks/useMediaQuery";
 
 const initialFilterState: FilterState = {
-  carWashType: Car_Wash_Type.AUTOMATIC,
+  automaticCarWash: true,
   distance: 0,
   amenities: [],
   washType: [],
@@ -33,7 +33,7 @@ const initialFilterState: FilterState = {
   operatingHours: [],
   sortBy: SortBy[Car_Wash_Type.AUTOMATIC][0],
   pagination: true,
-  page_size: 3,
+  page_size: 30,
   userLat: 0,
   userLng: 0,
 };
