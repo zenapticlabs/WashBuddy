@@ -58,6 +58,7 @@ class CarWashSerializer(serializers.ModelSerializer):
     wash_types = serializers.PrimaryKeyRelatedField(many=True, queryset=WashType.objects.all())
     amenities = serializers.PrimaryKeyRelatedField(many=True, queryset=Amenity.objects.all())
     distance = serializers.SerializerMethodField(read_only=True)
+    location = serializers.SerializerMethodField()
 
     class Meta:
         model = CarWash
@@ -219,6 +220,7 @@ class CarWashImageSerializer(serializers.ModelSerializer):
 class CarWashListSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
     wash_types = serializers.SerializerMethodField()
     amenities = serializers.SerializerMethodField()
+    location = serializers.SerializerMethodField()
     operating_hours = CarWashOperatingHoursSerializer(many=True)
     images = CarWashImageSerializer(many=True)
 
@@ -231,3 +233,11 @@ class CarWashListSerializer(DynamicFieldsSerializerMixin, serializers.ModelSeria
     
     def get_amenities(self, instance):
         return AmenitySerializer(instance.amenities, many=True, context={"car_wash": instance}).data
+    
+    def get_location(self, instance):
+        if instance.location:
+            return {
+                "type": "Point",
+                "coordinates": [instance.location.x, instance.location.y]
+            }
+        return None
