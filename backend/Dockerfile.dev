@@ -38,5 +38,6 @@ COPY . .
 ENTRYPOINT ["/bin/sh", "-c", \
     "until pg_isready -h db -p 5432; do echo 'Waiting for database...'; sleep 2; done; \
     echo 'Database is ready. Running migrations...'; \
+    python manage.py makemigrations && \
     python manage.py migrate && \
     watchfiles --filter python 'python manage.py runserver 0.0.0.0:8000'"]

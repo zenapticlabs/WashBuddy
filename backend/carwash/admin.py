@@ -52,6 +52,8 @@ class CarWashResource(resources.ModelResource):
     formatted_address = resources.Field(attribute='formatted_address')
     country = resources.Field(attribute='country', default='United States')
     country_code = resources.Field(attribute='country_code', default='US')
+    website = resources.Field(attribute='website')
+    image_url = resources.Field(column_name='image', attribute='image_url')
     automatic_car_wash = resources.Field(attribute='automatic_car_wash')
     self_service_car_wash = resources.Field(attribute='self_service_car_wash')
     open_24_hours = resources.Field(attribute='open_24_hours')
@@ -81,11 +83,17 @@ class CarWashResource(resources.ModelResource):
 
         # Create formatted address - convert all parts to strings
         address_parts = []
-        if row.get('street'): address_parts.append(str(row['street']))
-        if row.get('city'): address_parts.append(str(row['city']))
-        if row.get('state'): address_parts.append(str(row['state']))
-        if row.get('zip'): address_parts.append(str(row['zip']))
-        row['formatted_address'] = ' '.join(address_parts)
+        if row.get('street'):
+            address_parts.append(str(row['street']))
+        if row.get('city'):
+            address_parts.append(str(row['city']))
+        if row.get('state') and row.get('zip'):
+            address_parts.append(f"{row['state']} {row['zip']}")
+        elif row.get('state'):
+            address_parts.append(str(row['state']))
+        elif row.get('zip'):
+            address_parts.append(str(row['zip']))
+        row['formatted_address'] = ', '.join(address_parts)
 
         # Calculate location field from lat/lon
         lat = row.get('lat')
@@ -104,7 +112,7 @@ class CarWashResource(resources.ModelResource):
         import_id_fields = ('car_wash_name', 'street')
         fields = (
             'car_wash_name', 'street', 'formatted_address', 'country', 'country_code', 
-            'state', 'postal_code', 'city', 'location',
+            'state', 'postal_code', 'city', 'location', 'website', 'image_url',
             'automatic_car_wash', 'self_service_car_wash', 'open_24_hours',
             'verified'
         )

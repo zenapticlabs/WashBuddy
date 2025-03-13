@@ -4,6 +4,7 @@ from django.contrib.gis.db import models as gis_models
 from django.contrib.gis.geos import Point
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.auth.models import User
+from phonenumber_field.modelfields import PhoneNumberField
 
 class CarWash(models.Model):
     car_wash_name = models.CharField(max_length=255, db_index=True)
@@ -16,9 +17,13 @@ class CarWash(models.Model):
     country_code = models.CharField(max_length=10, null=True, blank=True)
     formatted_address = models.CharField(max_length=255, null=True, blank=True)
     
-    phone = models.CharField(max_length=255)
-    reviews_count = models.IntegerField(default=0)
-    reviews_average = models.DecimalField(max_digits=3, decimal_places=2, default=0)
+    phone = PhoneNumberField(region="US", blank=True, null=True)
+    website = models.URLField(max_length=255, null=True, blank=True)
+    email = models.EmailField(max_length=255, null=True, blank=True)
+    image_url = models.URLField(max_length=500, null=True, blank=True, verbose_name="Image URL")
+    
+    reviews_count = models.IntegerField(default=0, null=True, blank=True)
+    reviews_average = models.DecimalField(max_digits=3, decimal_places=2, default=0, null=True, blank=True)
     
     location = gis_models.PointField(geography=True, spatial_index=True, null=True, blank=True)
     
@@ -86,6 +91,8 @@ class CarWash(models.Model):
             models.Index(fields=['automatic_car_wash', 'self_service_car_wash']),
             models.Index(fields=['open_24_hours']),
         ]
+        verbose_name = "Car Wash"
+        verbose_name_plural = "Car Washes"
 
 class CarWashOperatingHours(models.Model):
     car_wash = models.ForeignKey(CarWash, on_delete=models.CASCADE, related_name="operating_hours")
@@ -192,6 +199,10 @@ class Amenity(models.Model):
 
     def __str__(self):
         return f"{self.name} ({self.category})"
+    
+    class Meta:
+        verbose_name_plural = "Amenities"
+
 
 class AmenityCarWashMapping(models.Model):
     car_wash = models.ForeignKey(CarWash, on_delete=models.CASCADE, related_name="amenity_mapping")
