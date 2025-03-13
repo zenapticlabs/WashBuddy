@@ -19,9 +19,3 @@ export interface WashType {
   updated_at: Date;
 }
 
-export interface RadarAddress {
-  formattedAddress: string;
-  latitude: number;
-  longitude: number;
-}
-

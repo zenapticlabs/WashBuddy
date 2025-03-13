@@ -4,15 +4,15 @@ import { Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { RadarAddress } from 'radar-sdk-js/dist/types';
 
+// Add interface for Radar API response
 
 interface AutoCompleteProps {
     onSelect: (address: RadarAddress | null) => void;  // Modified to pass full address object
-    inputValue: string;
-    setInputValue: (value: string) => void;
 }
 
-const AutoComplete: React.FC<AutoCompleteProps> = ({ onSelect, inputValue, setInputValue }) => {
+const AddressAutoComplete: React.FC<AutoCompleteProps> = ({ onSelect }) => {
     const wrapperRef = useRef<HTMLDivElement>(null);
+    const [inputValue, setInputValue] = useState("");
     const [suggestions, setSuggestions] = useState<RadarAddress[]>([]);
     // Add debouncing to prevent too many API calls
     const debounce = (func: Function, delay: number) => {
@@ -71,20 +71,17 @@ const AutoComplete: React.FC<AutoCompleteProps> = ({ onSelect, inputValue, setIn
 
     return (
         <div ref={wrapperRef} className="relative">
-            <div className={cn("relative w-full lg:w-[640px]")}>
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                    <Search size={20} className="text-blue-500" />
-                </div>
+            <div className={cn("relative w-full")}>
                 <Input
                     type="text"
                     placeholder="Search car washes location"
-                    className="rounded-full text-sm py-3.5 border-[#189DEF80] border-2 pl-10 w-full"
+                    className="py-3.5 w-full"
                     value={inputValue}
                     onChange={handleInputChange}
                 />
             </div>
             {suggestions.length > 0 && (
-                <ul className="absolute z-10 w-full lg:w-[640px] mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto">
                     {suggestions.map((suggestion, index) => (
                         <li
                             key={index}
@@ -100,4 +97,4 @@ const AutoComplete: React.FC<AutoCompleteProps> = ({ onSelect, inputValue, setIn
     );
 };
 
-export default AutoComplete;
+export default AddressAutoComplete;

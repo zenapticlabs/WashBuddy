@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import AutoComplete from "./AutoComplete";
-import { RadarAddress } from "@/types";
+import { RadarAddress } from "radar-sdk-js/dist/types";
 interface SearchBarProps {
   onChange: (option: RadarAddress | null) => void;
 }
@@ -17,7 +17,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onChange }) => {
 
   const handleSelectRecent = (search: RadarAddress) => {
     handleRecentSearch(search);
-    setInputValue(search.formattedAddress);
+    setInputValue(search.formattedAddress || "");
     onChange(search);
   };
 
