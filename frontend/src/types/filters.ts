@@ -1,12 +1,12 @@
 export interface FilterState {
-  carWashType: string;
+  automaticCarWash: boolean;
   distance: number;
   amenities: string[];
   washType: string[];
   ratings: number[];
   priceRange: number;
   operatingHours: string[];
-  sortBy: string;
+  sortBy: string[];
   // latitude: number;
   // longitude: number;
   pagination: boolean;

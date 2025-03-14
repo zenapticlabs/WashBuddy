@@ -1,20 +1,21 @@
 import { useState, useEffect } from 'react';
 import { FilterState } from "@/types/filters";
 import { Car_Wash_Type, SortBy } from "@/utils/constants";
-import useLocationData from './useLocationData';
 
 function getFiltersFromParams(params: URLSearchParams): FilterState {
   return {
-    carWashType: params.get("carWashType") || Car_Wash_Type.AUTOMATIC,
+    automaticCarWash: params.get("automaticCarWash") === "true" || true,    
     washType: params.getAll("washType").map(String),
     ratings: params.getAll("ratings").map(Number),
     distance: Number(params.get("distance")) || 0,
     priceRange: Number(params.get("priceRange")) || 0,
     amenities: params.getAll("amenities").map(String),
     operatingHours: params.getAll("operatingHours").map(String),
-    sortBy: params.get("sortBy") || "",
+    sortBy: params.getAll("sortBy").map(String).length > 0 
+      ? params.getAll("sortBy").map(String)
+      : [SortBy[Car_Wash_Type.AUTOMATIC][0].value],
     pagination: Boolean(params.get("pagination")) || true,
-    page_size: Number(params.get("page_size")) || 3,
+    page_size: Number(params.get("page_size")) || 30,
     userLat: Number(params.get("userLat")) || 0,
     userLng: Number(params.get("userLng")) || 0,
   };
@@ -22,20 +23,20 @@ function getFiltersFromParams(params: URLSearchParams): FilterState {
 
 export function useCarWashFilters() {
   const [filters, setFilters] = useState<FilterState>({
-    carWashType: Car_Wash_Type.AUTOMATIC,
+    automaticCarWash: true,
     washType: [],
     ratings: [],
     distance: 0,
     priceRange: 0,
     amenities: [],
     operatingHours: [],
-    sortBy: SortBy[Car_Wash_Type.AUTOMATIC][0],
+    sortBy: [SortBy[Car_Wash_Type.AUTOMATIC][0].value],
     pagination: true,
-    page_size: 3,
+    page_size: 30,
     userLat: 0,
     userLng: 0,
   });
-
+  
   // Initialize filters from URL
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -48,6 +49,7 @@ export function useCarWashFilters() {
       const params = new URLSearchParams();
       Object.entries(filters)?.forEach(([key, value]) => {
         if (Array.isArray(value)) {
+          console.log("array", value);
           value?.forEach((item) => params.append(key, item.toString()));
         } else if (value !== undefined && value !== null) {
           params.append(key, value.toString());
@@ -59,10 +61,6 @@ export function useCarWashFilters() {
     };
     updateUrlWithFilters();
   }, [filters]);
-
-  useEffect(() => {
-    setFilters({ ...filters, sortBy: SortBy[filters.carWashType][0] });
-  }, [filters.carWashType]);
 
   // Handle browser navigation
   useEffect(() => {

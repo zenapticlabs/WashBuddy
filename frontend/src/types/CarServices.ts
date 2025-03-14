@@ -60,7 +60,10 @@ export interface CarWashResponse {
   phone: string;
   reviews_count: number;
   reviews_average: string;
-  location: string;
+  location: {
+    type: string;
+    coordinates: [number, number];
+  };
   automatic_car_wash: boolean;
   self_service_car_wash: boolean;
   open_24_hours: boolean;

@@ -33,7 +33,10 @@ const mockCarWashData = {
   country: "United States",
   country_code: "US",
   phone: "555-0123",
-  location: "POINT(0 0)",
+  location: {
+    type: "Point",
+    coordinates: [0, 0] as [number, number]
+  },
   automatic_car_wash: true,
   self_service_car_wash: false,
   open_24_hours: false,

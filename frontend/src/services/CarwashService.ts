@@ -22,7 +22,7 @@ export const getCarwashes = async (filters: Record<string, any> = {}) => {
       }
     });
 
-    const response = await axios.get(`${API_URL}/api/v1/carwash/list-car-wash`, {
+    const response = await axios.get(`${API_URL}/api/v1/carwash/search`, {
       params,
     });
 

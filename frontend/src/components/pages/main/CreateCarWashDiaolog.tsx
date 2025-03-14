@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogFooter, DialogTitle } from "@/components/ui/dialog";
 import { DialogHeader } from "@/components/ui/dialog";
 import { DialogContent } from "@/components/ui/dialog";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Toaster, toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import useLocationData from "@/hooks/useLocationData";
@@ -27,23 +27,40 @@ import {
 } from "@/components/ui/drawer"
 import ImageUploadZone from "@/components/ui/imageUploadZone";
 import { Separator } from "@/components/ui/separator";
+import { Checkbox } from "@/components/ui/checkbox";
+import AddressAutoComplete from "@/components/molecule/AddressAutoComplete";
+import { RadarAddress } from "radar-sdk-js/dist/types";
+
+const OPERATING_HOURS = Array.from({ length: 7 }, (_, index) => ({
+  day_of_week: index,
+  is_closed: false,
+  opening_time: "06:00",
+  closing_time: "18:00"
+}));
+
+const DEFAULT_IMAGES = Array.from({ length: 8 }, (_, index) => ({
+  image_type: index,
+  image_key: "string"
+}));
+
+const defaultPayload = {
+  operating_hours: OPERATING_HOURS,
+  images: DEFAULT_IMAGES,
+  wash_types: [],
+  amenities: [],
+  phone: "",
+  reviews_count: 0,
+  reviews_average: 0,
+  open_24_hours: true,
+  verified: false
+};
 
 const formConfig = [
   {
-    name: "name",
+    name: "car_wash_name",
     label: "Name",
     type: "text",
     required: true,
-  },
-  {
-    name: "email",
-    label: "Email",
-    type: "text",
-  },
-  {
-    name: "website",
-    label: "Website",
-    type: "text",
   },
 ];
 
@@ -58,15 +75,17 @@ const CreateCarWashDiaolog: React.FC<CreateCarWashDiaologProps> = ({
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const { locationData, error, loading, fetchLocationData } = useLocationData();
+  const [manualAddress, setManualAddress] = useState<RadarAddress | null>(null)
+  const [errorMessage, setErrorMessage] = useState<any>(null)
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [formData, setFormData] = useState<any>({
-    name: "",
-    email: "",
-    website: "",
-    phone: "",
+    car_wash_name: "",
+    automatic_car_wash: false,
+    self_service_car_wash: false,
   });
   const [knowPhone, setKnowPhone] = useState(false);
   const [knowHours, setKnowHours] = useState(false);
+  const [activeTab, setActiveTab] = useState<"use_gps" | "enter_address">("use_gps");
 
   const handleChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -79,10 +98,51 @@ const CreateCarWashDiaolog: React.FC<CreateCarWashDiaologProps> = ({
   const handleSubmit = async () => {
     try {
       setIsLoading(true);
+      let payload = { ...formData, ...defaultPayload };
+      if (activeTab == "use_gps") {
+        if (locationData) {
+          setErrorMessage({
+            ...errorMessage,
+            location: null
+          });
+          payload = { ...locationData, ...payload }
+        } else {
+          setErrorMessage({
+            ...errorMessage,
+            location: "Location data not found"
+          });
+          return;
+        }
+      } else {
+        if (manualAddress) {
+          setErrorMessage({
+            ...errorMessage,
+            location: null
+          });
+          payload = {
+            ...payload,
+            address: manualAddress?.addressLabel,
+            city: manualAddress?.city,
+            state: manualAddress?.state,
+            state_code: manualAddress?.stateCode,
+            postal_code: manualAddress?.postalCode,
+            country: manualAddress?.country,
+            country_code: manualAddress?.countryCode,
+            formatted_address: manualAddress?.formattedAddress,
+            location: {
+              type: "Point",
+              coordinates: [manualAddress?.longitude, manualAddress?.latitude],
+            },
+          }
+        } else {
+          setErrorMessage({
+            ...errorMessage,
+            location: "Manual address not found"
+          });
+          return;
+        }
+      }
 
-      const payload = { ...locationData, ...formData };
-
-      console.log(payload);
       const response = await createCarwash(payload);
 
       if (!response.ok) {
@@ -108,6 +168,12 @@ const CreateCarWashDiaolog: React.FC<CreateCarWashDiaologProps> = ({
 
   const handleDetectLocation = async () => {
     fetchLocationData();
+  };
+
+  const handleSelectAddress = (address: RadarAddress | null) => {
+    if (address) {
+      setManualAddress(address)
+    }
   };
 
   const mainContent = () => {
@@ -138,6 +204,7 @@ const CreateCarWashDiaolog: React.FC<CreateCarWashDiaologProps> = ({
                 required={field.required}
                 className="p-3"
               />
+              {errorMessage && errorMessage[field.name] && <p className="text-body-2 mt-1 text-red-500">{errorMessage[field.name]}</p>}
             </div>
           ))}
         </div>
@@ -145,12 +212,17 @@ const CreateCarWashDiaolog: React.FC<CreateCarWashDiaologProps> = ({
           <div className="text-title-1 text-[#262626]">Location</div>
           <Tabs defaultValue="use_gps" className="w-full">
             <TabsList className="bg-transparent w-full">
-              <TabsTrigger value="use_gps" className="w-full text-title-2">
+              <TabsTrigger
+                value="use_gps"
+                className="w-full text-title-2"
+                onClick={() => setActiveTab("use_gps")}
+              >
                 <Crosshair size={20} className="mr-2" /> Use GPS
               </TabsTrigger>
               <TabsTrigger
                 value="enter_address"
                 className="w-full text-title-2"
+                onClick={() => setActiveTab("enter_address")}
               >
                 <MapPin size={20} className="mr-2" /> Enter Address
               </TabsTrigger>
@@ -167,35 +239,44 @@ const CreateCarWashDiaolog: React.FC<CreateCarWashDiaologProps> = ({
                 <Crosshair size={20} className="mr-2" />
                 Detect Location
               </Button>
-              {loading && <p>Loading...</p>}
+              {loading && <p className="pt-2 text-neutral-600">Loading...</p>}
               {error && <p>Error: {error}</p>}
               {locationData && (
-                <div className="flex flex-col gap-2 pt-4">
-                  <div className="flex justify-between text-neutral-800">
+                <div className="flex flex-col gap-2 pt-4 text-neutral-800">
+                  <div className="flex justify-between text-neutral-600">
                     <div className="text-title-1">Address</div>
-                    <p>{locationData.address}</p>
-                  </div>
-                  <div className="flex justify-between text-neutral-800">
-                    <div className="text-title-1">City</div>
-                    <p>{locationData.city}</p>
-                  </div>
-                  <div className="flex justify-between text-neutral-800">
-                    <div className="text-title-1">State</div>
-                    <p>{locationData.state}</p>
-                  </div>
-                  <div className="flex justify-between text-neutral-800">
-                    <div className="text-title-1">Postal Code</div>
-                    <p>{locationData.postal_code}</p>
-                  </div>
-                  <div className="flex justify-between text-neutral-800">
-                    <div className="text-title-1">Country</div>
-                    <p>{locationData.country}</p>
+                    <p>{locationData.formatted_address}</p>
                   </div>
                 </div>
               )}
             </TabsContent>
-            <TabsContent value="enter_address"></TabsContent>
+            <TabsContent value="enter_address" className="pt-2">
+              <AddressAutoComplete onSelect={handleSelectAddress} />
+            </TabsContent>
           </Tabs>
+          {errorMessage && errorMessage.location && <p className="text-body-2 mt-1 text-red-500">{errorMessage.location}</p>}
+        </div>
+        <div className="flex flex-col gap-2 mt-4 px-6">
+          <Checkbox
+            label="Automatic car wash"
+            checked={formData.automatic_car_wash}
+            onChange={(checked) =>
+              setFormData({
+                ...formData,
+                automatic_car_wash: !!checked,
+              })
+            }
+          />
+          <Checkbox
+            label="Self-service car wash"
+            checked={formData.self_service_car_wash}
+            onChange={(checked) =>
+              setFormData({
+                ...formData,
+                self_service_car_wash: !!checked,
+              })
+            }
+          />
         </div>
         <div className="px-6 py-6 flex flex-col gap-5 border-b">
           <div className="text-title-1 text-[#262626]">Hours/Phone</div>

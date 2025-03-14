@@ -15,26 +15,33 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-
+import { useEffect, useState } from "react";
 interface FilterBarProps {
   filters: FilterState;
   setFilters: (filters: FilterState) => void;
 }
 
 const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
+  const [inlineFilters, setInlineFilters] = useState<FilterState>(filters);
+
+  useEffect(() => {
+    setInlineFilters(filters);
+  }, [filters]);
+
+
   const filterConfigs = [
     {
       key: "distance",
       label: "Distance",
       icon: <ArrowUpDown size={16} />,
-      isActive: filters.distance > 0,
-      additionalText: `: ${filters.distance} miles`,
+      isActive: inlineFilters.distance > 0,
+      additionalText: `: ${inlineFilters.distance} miles`,
       content: (
         <div className="w-[450px] pt-2">
           <DistanceRange
-            value={filters.distance}
+            value={inlineFilters.distance}
             onChange={(value) =>
-              setFilters({ ...filters, distance: value })
+              setInlineFilters({ ...inlineFilters, distance: value })
             }
           />
         </div>
@@ -44,11 +51,11 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
       key: "ratings",
       label: "Ratings",
       icon: <Star size={16} />,
-      isActive: filters.ratings.length > 0,
+      isActive: inlineFilters.ratings.length > 0,
       content: (
         <Ratings
-          value={filters.ratings}
-          onChange={(value) => setFilters({ ...filters, ratings: value })}
+          value={inlineFilters.ratings}
+          onChange={(value) => setInlineFilters({ ...inlineFilters, ratings: value })}
         />
       ),
     },
@@ -56,12 +63,12 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
       key: "priceRange",
       label: "Price range",
       icon: <WalletCards size={16} />,
-      isActive: filters.priceRange > 0,
+      isActive: inlineFilters.priceRange > 0,
       content: (
         <div className="w-[450px] pt-2">
           <PriceRange
-            value={filters.priceRange}
-            onChange={(value) => setFilters({ ...filters, priceRange: value })}
+            value={inlineFilters.priceRange}
+            onChange={(value) => setInlineFilters({ ...inlineFilters, priceRange: value })}
           />
         </div>
       ),
@@ -70,11 +77,11 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
       key: "washType",
       label: "Wash type",
       icon: <Droplet size={16} />,
-      isActive: filters.washType.length > 0,
+      isActive: inlineFilters.washType.length > 0,
       content: (
         <WashTypeCheckboxes
-          value={filters.washType}
-          onChange={(value) => setFilters({ ...filters, washType: value })}
+          value={inlineFilters.washType}
+          onChange={(value) => setInlineFilters({ ...inlineFilters, washType: value })}
           options={MockWashTypes}
         />
       ),
@@ -83,11 +90,11 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
       key: "amenities",
       label: "Amenities",
       icon: <House size={16} />,
-      isActive: filters.amenities.length > 0,
+      isActive: inlineFilters.amenities.length > 0,
       content: (
         <AmenitiesCheckboxes
-          value={filters.amenities}
-          onChange={(value) => setFilters({ ...filters, amenities: value })}
+          value={inlineFilters.amenities}
+          onChange={(value) => setInlineFilters({ ...inlineFilters, amenities: value })}
           options={MockAmenities}
         />
       ),
@@ -96,12 +103,12 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
       key: "operatingHours",
       label: "Operating hours",
       icon: <Clock size={16} />,
-      isActive: filters.operatingHours.length > 0,
+      isActive: inlineFilters.operatingHours.length > 0,
       content: (
         <OperatingHours
-          value={filters.operatingHours}
+          value={inlineFilters.operatingHours}
           onChange={(value) =>
-            setFilters({ ...filters, operatingHours: value })
+            setInlineFilters({ ...inlineFilters, operatingHours: value })
           }
         />
       ),
@@ -133,6 +140,8 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
           </DropdownMenuContent>
         </DropdownMenu>
       ))}
+      <Button variant="ghost" className="rounded-full" onClick={() => setInlineFilters(filters)}>Reset Filters</Button>
+      <Button className="rounded-full" onClick={() => setFilters(inlineFilters)}>Apply Filters</Button>
     </>
   );
 };

@@ -4,7 +4,7 @@ import logo from "@/assets/logo.png";
 import { Button } from "@/components/ui/button";
 import AutomaticIcon from "@/assets/icons/automatic.svg";
 import SelfServiceIcon from "@/assets/icons/self-service.svg";
-import { Car_Wash_Type } from "@/utils/constants";
+import { Car_Wash_Type, SortBy } from "@/utils/constants";
 import user from "@/assets/user.png";
 import { Bell, MapPin, Plus } from "lucide-react";
 import { FilterState } from "@/types/filters";
@@ -16,12 +16,12 @@ import Link from "next/link";
 const FilterButtonConfigs = [
   {
     icon: AutomaticIcon,
-    key: Car_Wash_Type.AUTOMATIC,
+    value: true,
     label: Car_Wash_Type.AUTOMATIC,
   },
   {
     icon: SelfServiceIcon,
-    key: Car_Wash_Type.SELF_SERVICE,
+    value: false,
     label: Car_Wash_Type.SELF_SERVICE,
   },
 ];
@@ -37,6 +37,13 @@ const Topbar: React.FC<TopbarProps> = ({ filters, setFilters, sideBarAlwaysOpen 
   const [openCreateModal, setOpenCreateModal] = useState(false);
   const [openSidebar, setOpenSidebar] = useState(false);
   const handleOpenCreateModal = () => setOpenCreateModal(true);
+
+  const handleSelectCarWashType = (value: boolean) => {
+    console.log(value);
+    if (filters && setFilters) {
+      setFilters({ ...filters, automaticCarWash: value, sortBy: [SortBy[value ? Car_Wash_Type.AUTOMATIC : Car_Wash_Type.SELF_SERVICE][0].value] });
+    }
+  }
 
   return (
     <div>
@@ -58,11 +65,9 @@ const Topbar: React.FC<TopbarProps> = ({ filters, setFilters, sideBarAlwaysOpen 
             {FilterButtonConfigs.map((config) => (
               <Button
                 variant="outline"
-                key={config.key}
-                onClick={() =>
-                  setFilters && filters && setFilters({ ...filters, carWashType: config.key })
-                }
-                className={`rounded-full shadow-none ${filters?.carWashType === config.key
+                key={config.label}
+                onClick={() => handleSelectCarWashType(config.value)}
+                className={`rounded-full shadow-none ${filters?.automaticCarWash === config.value
                   ? "border-blue-500"
                   : "border-neutral-100"
                   }`}

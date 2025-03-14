@@ -2,8 +2,6 @@ import { add } from "date-fns";
 import { useState, useCallback } from "react";
 
 interface LocationData {
-  latitude: number;
-  longitude: number;
   address: string;
   city: string;
   state: string;
@@ -11,6 +9,11 @@ interface LocationData {
   postal_code: string;
   country: string;
   country_code: string;
+  formatted_address: string;
+  location: {
+    type: string;
+    coordinates: [number, number];
+  };
 }
 
 const useLocationData = () => {
@@ -42,8 +45,6 @@ const useLocationData = () => {
             const data = await response.json();
             const address = data.addresses[0]; // Assuming the API returns an array of addresses
             setLocationData({
-              latitude,
-              longitude,
               address: address.addressLabel,
               city: address.city,
               state: address.state,
@@ -51,6 +52,11 @@ const useLocationData = () => {
               postal_code: address.postalCode,
               country: address.country,
               country_code: address.countryCode,
+              formatted_address: address.formattedAddress,
+              location: {
+                type: "Point",
+                coordinates: [longitude, latitude],
+              },
             });
 
             setError(null);
