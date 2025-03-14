@@ -41,7 +41,10 @@ const CarWashDetail: React.FC<CarWashDetailProps> = ({
 
   const handleNavigate = () => {
     if (data?.location) {
-      const coordinates = extractCoordinates(data.location);
+      const coordinates = {
+        lat: data.location.coordinates[1],
+        lng: data.location.coordinates[0],
+      };
       onNavigate?.(coordinates);
     }
   };

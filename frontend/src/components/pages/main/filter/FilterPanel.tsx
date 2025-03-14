@@ -31,7 +31,7 @@ const initialFilterState: FilterState = {
   ratings: [],
   priceRange: 0,
   operatingHours: [],
-  sortBy: SortBy[Car_Wash_Type.AUTOMATIC][0],
+  sortBy: [SortBy[Car_Wash_Type.AUTOMATIC][0].value],
   pagination: true,
   page_size: 30,
   userLat: 0,

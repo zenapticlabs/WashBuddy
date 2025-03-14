@@ -6,7 +6,7 @@ export interface FilterState {
   ratings: number[];
   priceRange: number;
   operatingHours: string[];
-  sortBy: string;
+  sortBy: string[];
   // latitude: number;
   // longitude: number;
   pagination: boolean;

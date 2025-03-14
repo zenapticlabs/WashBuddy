@@ -10,14 +10,35 @@ export const Car_Wash_Type = {
 
 export const SortBy = {
   [Car_Wash_Type.AUTOMATIC]: [
-    "Recommended",
-    "Price (low to high)",
-    "Distance (near to far)",
+    {
+      label: "Recommended",
+      value: "recommended",
+    },
+    {
+      label: "Price (high to low)",
+      value: "price_high_to_low",
+    },
+    {
+      label: "Price (low to high)",
+      value: "price_low_to_high",
+    },
+    {
+      label: "Distance (near to far)",
+      value: "distance_near_to_far",
+    },
   ],
   [Car_Wash_Type.SELF_SERVICE]: [
-    "Price per minute (low to high)",
-    "Price to start (low to high)",
-    "Distance (near to far)",
+    {
+      label: "Price per minute (low to high)",
+      value: "price_low_to_high",
+    },
+    {
+      label: "Price per minute (high to low)",
+      value: "price_high_to_low",
+    },
+    {
+      label: "Distance (near to far)",
+      value: "distance_near_to_far",
+    },
   ],
 };
-

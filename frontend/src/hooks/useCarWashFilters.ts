@@ -11,7 +11,9 @@ function getFiltersFromParams(params: URLSearchParams): FilterState {
     priceRange: Number(params.get("priceRange")) || 0,
     amenities: params.getAll("amenities").map(String),
     operatingHours: params.getAll("operatingHours").map(String),
-    sortBy: params.get("sortBy") || "",
+    sortBy: params.getAll("sortBy").map(String).length > 0 
+      ? params.getAll("sortBy").map(String)
+      : [SortBy[Car_Wash_Type.AUTOMATIC][0].value],
     pagination: Boolean(params.get("pagination")) || true,
     page_size: Number(params.get("page_size")) || 30,
     userLat: Number(params.get("userLat")) || 0,
@@ -28,13 +30,13 @@ export function useCarWashFilters() {
     priceRange: 0,
     amenities: [],
     operatingHours: [],
-    sortBy: SortBy[Car_Wash_Type.AUTOMATIC][0],
+    sortBy: [SortBy[Car_Wash_Type.AUTOMATIC][0].value],
     pagination: true,
     page_size: 30,
     userLat: 0,
     userLng: 0,
   });
-
+  
   // Initialize filters from URL
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -47,14 +49,13 @@ export function useCarWashFilters() {
       const params = new URLSearchParams();
       Object.entries(filters)?.forEach(([key, value]) => {
         if (Array.isArray(value)) {
+          console.log("array", value);
           value?.forEach((item) => params.append(key, item.toString()));
         } else if (value !== undefined && value !== null) {
           params.append(key, value.toString());
         }
       });
       const queryString = params.toString();
-      console.log(filters);
-      console.log(queryString);
       const newUrl = `${window.location.pathname}?${queryString}`;
       window.history.replaceState(null, "", newUrl);
     };
@@ -62,16 +63,16 @@ export function useCarWashFilters() {
   }, [filters]);
 
   // Handle browser navigation
-  // useEffect(() => {
-  //   const handlePopState = () => {
-  //     const params = new URLSearchParams(window.location.search);
-  //     setFilters(getFiltersFromParams(params));
-  //   };
-  //   window.addEventListener("popstate", handlePopState);
-  //   return () => {
-  //     window.removeEventListener("popstate", handlePopState);
-  //   };
-  // }, []);
+  useEffect(() => {
+    const handlePopState = () => {
+      const params = new URLSearchParams(window.location.search);
+      setFilters(getFiltersFromParams(params));
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, []);
 
   return { filters, setFilters };
 } 

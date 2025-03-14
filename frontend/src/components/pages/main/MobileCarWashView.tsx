@@ -61,17 +61,17 @@ export function MobileCarWashView({
           <div className="flex flex-col gap-6">
             {SortBy[filters.automaticCarWash ? Car_Wash_Type.AUTOMATIC : Car_Wash_Type.SELF_SERVICE].map((sort) => (
               <button
-                key={sort}
+                key={sort.value}
                 className={cn(
                   "rounded-full bg-white text-left text-title-2",
-                  filters.sortBy === sort ? "text-blue-500" : "text-neutral-900"
+                  filters.sortBy.includes(sort.value) ? "text-blue-500" : "text-neutral-900"
                 )}
                 onClick={() => {
-                  setFilters({ ...filters, sortBy: sort });
+                  setFilters({ ...filters, sortBy: [sort.value] });
                   setOpenSortBy(false);
                 }}
               >
-                {sort}
+                {sort.label}
               </button>
             ))}
           </div>

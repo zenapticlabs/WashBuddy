@@ -15,9 +15,8 @@ export function RadarMap({ publishableKey, userId, carWashes, onMapReady }: Rada
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
 
-  const getLngLat = (location: string): [number, number] => {
-    const coordinates = extractCoordinates(location);
-    return [coordinates.lng, coordinates.lat] as [number, number];
+  const getLngLat = (location: [number, number]): [number, number] => {
+    return [location[0], location[1]] as [number, number];
   }
   // Initialize map only once
   useEffect(() => {
@@ -104,7 +103,7 @@ export function RadarMap({ publishableKey, userId, carWashes, onMapReady }: Rada
         element: customMarker,
         anchor: "bottom",
       })
-        .setLngLat(getLngLat(carWash.location))
+        .setLngLat(getLngLat(carWash.location.coordinates))
         .setPopup(
           new maplibregl.Popup({
             offset: 25,
