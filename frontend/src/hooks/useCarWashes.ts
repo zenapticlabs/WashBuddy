@@ -6,7 +6,9 @@ import { CarWashResponse } from "@/types/CarServices";
 export function useCarWashes(filters: FilterState) {
   const [carWashes, setCarWashes] = useState<CarWashResponse[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-
+  const [count, setCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
   useEffect(() => {
     fetchData();
   }, [filters]);
@@ -17,10 +19,12 @@ export function useCarWashes(filters: FilterState) {
     if (filters.userLat != 0 && filters.userLng != 0) {
       const result = await getCarwashes(filters);
       setCarWashes(result.data[0].results);
+      setCount(result.data[0].count);
+      setTotalPages(result.data[0].links.totalPages);
+      setCurrentPage(result.data[0].links.currentPage);
     }
     setIsLoading(false);
   };
 
-  return { carWashes, isLoading };
-
+  return { carWashes, isLoading, count, totalPages, currentPage };
 } 

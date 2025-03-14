@@ -45,11 +45,11 @@ export function CustomPagination({
     };
 
     return (
-        <div className="flex justify-between items-center">
-            <div className="text-body-2 text-neutral-500">
+        <div className="flex justify-between flex-col md:flex-row">
+            <div className="text-body-2 text-neutral-800 py-2">
                 Showing {((currentPage - 1) * pageSize) + 1}-{Math.min(currentPage * pageSize, totalItems)} of {totalItems}
             </div>
-            <div>
+            <div className="w-fit">
                 <Pagination>
                     <PaginationContent>
                         <PaginationItem>

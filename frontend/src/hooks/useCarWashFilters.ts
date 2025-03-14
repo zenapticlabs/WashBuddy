@@ -7,7 +7,7 @@ function getFiltersFromParams(params: URLSearchParams): FilterState {
     automaticCarWash: params.get("automaticCarWash") === "true" || true,    
     washType: params.getAll("washType").map(String),
     ratings: params.getAll("ratings").map(Number),
-    distance: Number(params.get("distance")) || 0,
+    distance: Number(params.get("distance")) || 3,
     priceRange: Number(params.get("priceRange")) || 0,
     amenities: params.getAll("amenities").map(String),
     operatingHours: params.getAll("operatingHours").map(String),
@@ -18,6 +18,7 @@ function getFiltersFromParams(params: URLSearchParams): FilterState {
     page_size: Number(params.get("page_size")) || 30,
     userLat: Number(params.get("userLat")) || 0,
     userLng: Number(params.get("userLng")) || 0,
+    page: Number(params.get("page")) || 1,
   };
 }
 
@@ -26,7 +27,7 @@ export function useCarWashFilters() {
     automaticCarWash: true,
     washType: [],
     ratings: [],
-    distance: 0,
+    distance: 3,
     priceRange: 0,
     amenities: [],
     operatingHours: [],
@@ -35,6 +36,7 @@ export function useCarWashFilters() {
     page_size: 30,
     userLat: 0,
     userLng: 0,
+    page: 1,
   });
   
   // Initialize filters from URL
@@ -49,7 +51,6 @@ export function useCarWashFilters() {
       const params = new URLSearchParams();
       Object.entries(filters)?.forEach(([key, value]) => {
         if (Array.isArray(value)) {
-          console.log("array", value);
           value?.forEach((item) => params.append(key, item.toString()));
         } else if (value !== undefined && value !== null) {
           params.append(key, value.toString());

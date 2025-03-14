@@ -18,6 +18,26 @@ export function RadarMap({ publishableKey, userId, carWashes, onMapReady }: Rada
   const getLngLat = (location: [number, number]): [number, number] => {
     return [location[0], location[1]] as [number, number];
   }
+
+  // Add fitToMarkers function
+  const fitToMarkers = () => {
+    if (!mapRef.current || !carWashes?.length) return;
+
+    const bounds = new maplibregl.LngLatBounds();
+
+    // Extend bounds to include all car wash locations
+    carWashes.forEach((carWash) => {
+      bounds.extend(getLngLat(carWash.location.coordinates));
+    });
+
+    // Fit the map to show all markers
+    mapRef.current.fitBounds(bounds, {
+      padding: { top: 50, bottom: 50, left: 50, right: 50 },
+      maxZoom: 15,
+      duration: 1000
+    });
+  };
+
   // Initialize map only once
   useEffect(() => {
     Radar.initialize(publishableKey);
@@ -29,8 +49,15 @@ export function RadarMap({ publishableKey, userId, carWashes, onMapReady }: Rada
       zoom: 7,
     });
 
+    // Add zoom controls
+    map.addControl(new maplibregl.NavigationControl(), 'top-right');
+
     map.on("load", () => {
       onMapReady?.(map);
+      // Fit to markers after map loads
+      if (carWashes?.length) {
+        fitToMarkers();
+      }
     });
 
     if (userId) {
@@ -121,6 +148,11 @@ export function RadarMap({ publishableKey, userId, carWashes, onMapReady }: Rada
 
       markersRef.current.push(marker);
     });
+
+    // Fit to markers after adding them
+    if (carWashes?.length) {
+      fitToMarkers();
+    }
   }, [carWashes]);
 
   return (

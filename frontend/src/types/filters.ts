@@ -13,5 +13,6 @@ export interface FilterState {
   page_size: number;
   userLat: number;
   userLng: number;
+  page: number;
 }
 

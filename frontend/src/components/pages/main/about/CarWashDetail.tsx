@@ -21,6 +21,7 @@ import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import useMediaQuery from "@/hooks/useMediaQuery";
 import { extractCoordinates } from "@/utils/functions";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface CarWashDetailProps {
   data?: CarWashResponse | null;
@@ -36,8 +37,12 @@ const CarWashDetail: React.FC<CarWashDetailProps> = ({
   setOpen,
 }) => {
   const [reviewOpen, setReviewOpen] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
   const isMobile = useMediaQuery("(max-width: 768px)");
 
+  useEffect(() => {
+    setImageLoading(true);
+  }, [data]);
 
   const handleNavigate = () => {
     if (data?.location) {
@@ -54,10 +59,23 @@ const CarWashDetail: React.FC<CarWashDetailProps> = ({
       <ScrollArea className="w-full h-full rounded-xl overflow-hidden md:mt-2">
         <div className="w-full md:w-[400px] bg-white rounded-xl relative">
           <div className="w-full h-[240px] overflow-hidden flex items-center justify-center rounded-t-xl relative">
+            {imageLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-neutral-100">
+                <Skeleton className="w-full h-full rounded-t-xl" />
+              </div>
+            )}
             <Image
-              src={carlogo}
-              alt="logo"
+              src={data?.image_url || ""}
+              alt={data?.car_wash_name || ""}
               className="w-full h-full object-cover"
+              width={400}
+              height={240}
+              priority={true}
+              loading="eager"
+              quality={50}
+              onLoadingComplete={() => setImageLoading(false)}
+              blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx4dHRsdHR4dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR3/2wBDAR0XFyAeIRshIRshHRsdIR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR3/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
+              placeholder="blur"
             />
             <button
               className="absolute top-2 right-2 bg-white rounded-full p-1.5 cursor-pointer hover:bg-neutral-100"
