@@ -11,6 +11,7 @@ interface SearchAndFilterBarProps {
   setFilters: React.Dispatch<React.SetStateAction<FilterState>>;
   showMap: boolean;
   setShowMap: (show: boolean) => void;
+  handleNavigateToLocation: (location: { lat: number; lng: number }) => void;
 }
 
 export function SearchAndFilterBar({
@@ -18,6 +19,7 @@ export function SearchAndFilterBar({
   setFilters,
   showMap,
   setShowMap,
+  handleNavigateToLocation,
 }: SearchAndFilterBarProps) {
   const { latitude, longitude, loading, error, fetchLocationData } = useGeoLocationData();
   const [address, setAddress] = useState<RadarAddress | null>(null);
@@ -31,11 +33,19 @@ export function SearchAndFilterBar({
         userLat: address.latitude,
         userLng: address.longitude,
       })
+      handleNavigateToLocation({
+        lat: address.latitude ?? 0,
+        lng: address.longitude ?? 0,
+      })
     } else if (latitude && longitude) {
       setFilters({
         ...filters,
         userLat: latitude,
         userLng: longitude,
+      })
+      handleNavigateToLocation({
+        lat: latitude ?? 0,
+        lng: longitude ?? 0,
       })
     }
   }, [latitude, longitude, address])

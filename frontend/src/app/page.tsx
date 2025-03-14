@@ -53,6 +53,7 @@ export default function Home() {
         setFilters={setFilters}
         showMap={showMap}
         setShowMap={setShowMap}
+        handleNavigateToLocation={handleNavigateToLocation}
       />
       <div className="flex flex-1 overflow-hidden bg-neutral-100 relative">
         <div className="w-[550px] relative bg-white hidden md:block">
