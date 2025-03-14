@@ -39,7 +39,6 @@ const Topbar: React.FC<TopbarProps> = ({ filters, setFilters, sideBarAlwaysOpen 
   const handleOpenCreateModal = () => setOpenCreateModal(true);
 
   const handleSelectCarWashType = (value: boolean) => {
-    console.log(value);
     if (filters && setFilters) {
       setFilters({ ...filters, automaticCarWash: value, sortBy: [SortBy[value ? Car_Wash_Type.AUTOMATIC : Car_Wash_Type.SELF_SERVICE][0].value] });
     }

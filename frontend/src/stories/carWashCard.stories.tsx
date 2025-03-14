@@ -42,7 +42,8 @@ const mockCarWashData = {
   open_24_hours: false,
   verified: true,
   created_at: "2024-01-01",
-  updated_at: "2024-01-01"
+  updated_at: "2024-01-01",
+  image_url: "https://via.placeholder.com/150"
 };
 
 export const Default: Story = {

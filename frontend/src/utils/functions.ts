@@ -13,7 +13,6 @@ export function formatTimeAgo(dateString: string): string {
 
 export function extractCoordinates(locationString: string): { lat: number; lng: number } {
   // Format: "SRID=4326;POINT (-88.154784 42.0090209)"
-  console.log(locationString);
   const matches = locationString.match(/POINT \(([-\d.]+) ([-\d.]+)\)/);
   if (!matches) {
     return { lat: 0, lng: 0 };

@@ -25,7 +25,7 @@ import useMediaQuery from "@/hooks/useMediaQuery";
 
 const initialFilterState: FilterState = {
   automaticCarWash: true,
-  distance: 0,
+  distance: 3,
   amenities: [],
   washType: [],
   ratings: [],
@@ -36,6 +36,7 @@ const initialFilterState: FilterState = {
   page_size: 30,
   userLat: 0,
   userLng: 0,
+  page: 1,
 };
 
 export interface FilterPanelProps {

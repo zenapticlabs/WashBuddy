@@ -14,6 +14,9 @@ import { CarWashCard } from "@/components/organism/carWashCard";
 import CarWashDetail from "@/components/pages/main/about/CarWashDetail";
 import { SortBySelect } from "@/components/ui/sortBySelect";
 import { LoadingSpinner } from "@/components/ui/spinner";
+import { Skeleton } from "@/components/ui/skeleton";
+import { CarWashSkeleton } from "@/components/organism/carWashSkeleton";
+import { CustomPagination } from "@/components/molecule/CustomPagination";
 
 export default function Home() {
   const RADAR_KEY = process.env.NEXT_PUBLIC_RADAR_API_KEY;
@@ -26,7 +29,7 @@ export default function Home() {
   const mapRef = useRef<maplibregl.Map | null>(null);
 
   const { filters, setFilters } = useCarWashFilters();
-  const { carWashes, isLoading } = useCarWashes(filters);
+  const { carWashes, isLoading, count, totalPages, currentPage } = useCarWashes(filters);
 
   const handleMapReady = (map: maplibregl.Map) => (mapRef.current = map);
 
@@ -56,17 +59,34 @@ export default function Home() {
         handleNavigateToLocation={handleNavigateToLocation}
       />
       <div className="flex flex-1 overflow-hidden bg-neutral-100 relative">
-        <div className="w-[550px] relative bg-white hidden md:block">
-          <div className="flex justify-between py-2 px-4">
-            <div className="flex items-center gap-2">Showing {carWashes.length} results {isLoading && <LoadingSpinner />}</div>
+        <div className="w-[550px] relative bg-white hidden md:flex flex-col">
+          <div className="px-4">
+            <CustomPagination
+              currentPage={filters.page}
+              totalItems={count}
+              pageSize={filters.page_size}
+              onPageChange={(page: number) => setFilters({ ...filters, page })}
+            />
+          </div>
+          <div className="flex justify-end py-2 px-4">
             <SortBySelect
               filters={filters}
               setFilters={setFilters}
             />
           </div>
-          <ScrollArea className="w-full h-full">
+          <ScrollArea className="w-full flex-1">
             <div className="flex flex-col gap-2 pr-4">
-              {carWashes?.map((carWash) => (
+              {isLoading && (
+                <div className="flex flex-col gap-2">
+                  <CarWashSkeleton />
+                  <CarWashSkeleton />
+                  <CarWashSkeleton />
+                  <CarWashSkeleton />
+                  <CarWashSkeleton />
+                  <CarWashSkeleton />
+                </div>
+              )}
+              {!isLoading && carWashes?.map((carWash) => (
                 <CarWashCard
                   key={carWash.id}
                   data={carWash}
@@ -90,6 +110,8 @@ export default function Home() {
           />
         </div>
         <MobileCarWashView
+          totalCount={count}
+          isLoading={isLoading}
           showMap={showMap}
           carWashes={carWashes}
           selectedCarWash={selectedCarWash}
