@@ -7,6 +7,7 @@ from .models import (
     WashType, Amenity
 )
 from utilities.mixins import DynamicFieldsSerializerMixin
+from rest_framework_gis.fields import GeometryField
 
 class WashTypeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -246,3 +247,47 @@ class CarWashListSerializer(DynamicFieldsSerializerMixin, serializers.ModelSeria
     def get_distance(self, obj):
         return round(obj.distance, 1) if hasattr(obj, "distance") else None
 
+
+class CarWashOperatingHoursPatchSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CarWashOperatingHours
+        fields = ["day_of_week", "is_closed", "opening_time", "closing_time"]
+    
+
+class CarWashPatchSerializer(serializers.ModelSerializer):
+    wash_types = serializers.PrimaryKeyRelatedField(
+        queryset=WashType.objects.all(), many=True, required=False
+    )
+    amenities = serializers.PrimaryKeyRelatedField(
+        queryset=Amenity.objects.all(), many=True, required=False
+    )
+    operating_hours = CarWashOperatingHoursPatchSerializer(many=True, required=False)
+    location = GeometryField()
+
+    class Meta:
+        model = CarWash
+        fields = "__all__"
+
+    def update(self, instance, validated_data):
+        self.handle_location(validated_data)
+        self.handle_operating_hours(instance, validated_data)
+
+        return super().update(instance, validated_data)
+    
+    def handle_location(self, validated_data):
+        location = validated_data.get("location", {})
+        if location:
+            validated_data["location"] = Point(location.x, location.y, srid=4326)
+
+    def handle_operating_hours(self, instance, validated_data):
+        operating_hours = validated_data.pop("operating_hours", [])   
+        for operating_hour_object in operating_hours:
+            existing_object = instance.operating_hours.filter(day_of_week=operating_hour_object["day_of_week"])
+            if not existing_object:
+                CarWashOperatingHours.objects.create(
+                    car_wash=instance,
+                    **operating_hour_object
+                )
+                return
+            existing_object.update(**operating_hour_object)

@@ -4,13 +4,14 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from .models import CarWash, WashType, Amenity
-from .serializers import CarWashListSerializer, CarWashSerializer, WashTypeSerializer, AmenitySerializer
+from .serializers import CarWashListSerializer, CarWashPatchSerializer, CarWashSerializer, WashTypeSerializer, AmenitySerializer
 from django.db.models import Q
 from datetime import datetime
 from django.contrib.gis.geos import Point
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.measure import D
 from rest_framework.generics import ListAPIView
+from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from utilities.utils import ResponseInfo, CustomResponsePagination
 from utilities.mixins import DynamicFieldsViewMixin
@@ -18,6 +19,7 @@ from .filters import DynamicSearchFilter, ListCarWashFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models.functions import Coalesce
 from django.db.models import FloatField, Value
+from django.db import transaction
 
 class CarWashViewSet(viewsets.ModelViewSet):
     queryset = CarWash.objects.prefetch_related(
@@ -167,6 +169,85 @@ class WashTypeViewSet(viewsets.ModelViewSet):
 class AmenityViewSet(viewsets.ModelViewSet):
     queryset = Amenity.objects.all()
     serializer_class = AmenitySerializer
+
+
+class CarWashAPIView(APIView):
+    """
+    CRUD for Car Wash
+    """
+    permission_classes = (AllowAny, )
+
+    def __init__(self, **kwargs):
+        """
+        Constructor method for formatting web response to return.
+        """
+        self.pagination = False
+        self.response_format = ResponseInfo().response
+        super(CarWashAPIView, self).__init__(**kwargs)
+
+    @transaction.atomic()
+    def post(self, request):
+        """
+            Create New Car Wash
+        """
+        # TO:DO
+        return Response(self.response_format)
+    
+    @extend_schema(
+        summary="Get Car Wash",
+        description="Get Car Wash from the given ID",
+        responses={200: CarWashListSerializer}
+    )
+    def get(self, request, car_wash_id):
+        """
+            Get Car Wash
+        """
+        car_wash = self.get_query_object(car_wash_id)
+        if not car_wash:
+            return Response(self.response_format, status=status.HTTP_404_NOT_FOUND)
+
+        data = CarWashListSerializer(car_wash).data
+        
+        self.response_format["data"] = data
+        self.response_format["error"] = None
+        self.response_format["status_code"] = status.HTTP_200_OK
+        self.response_format["message"]= ["Success"]
+
+        return Response(self.response_format)
+    
+    @extend_schema(
+        summary="Update Car Wash",
+        description="Updates Car Wash data based on provided input",
+        request=CarWashPatchSerializer,
+        responses={200: CarWashListSerializer}
+    )
+    @transaction.atomic()
+    def patch(self, request, car_wash_id):
+        car_wash = self.get_query_object(car_wash_id)
+        if not car_wash:
+            return Response(self.response_format, status=status.HTTP_404_NOT_FOUND)
+        
+        car_wash_serializer = CarWashPatchSerializer(car_wash, data=request.data, partial=True)
+        if car_wash_serializer.is_valid(raise_exception=True):
+            car_wash = car_wash_serializer.save()
+
+            data = CarWashListSerializer(car_wash).data
+            self.response_format["data"] = data
+
+        return Response(self.response_format)    
+
+    def get_query_object(self, car_wash_id):
+        try:
+            car_wash = CarWash.objects.get(id=car_wash_id)
+        except Exception as e:
+            print("Error in getting car wash object => ", e)
+            self.response_format["data"] = None
+            self.response_format["error"] = "Car Wash"
+            self.response_format["status_code"] = status.HTTP_404_NOT_FOUND
+            self.response_format["message"] = ["Car Wash does not exist"]
+            return None
+        
+        return car_wash
 
 
 class ListCarWashAPIView(DynamicFieldsViewMixin, ListAPIView):
