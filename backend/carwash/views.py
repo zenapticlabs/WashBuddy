@@ -16,6 +16,8 @@ from utilities.utils import ResponseInfo, CustomResponsePagination
 from utilities.mixins import DynamicFieldsViewMixin
 from .filters import DynamicSearchFilter, ListCarWashFilter
 from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models.functions import Coalesce
+from django.db.models import FloatField, Value
 
 class CarWashViewSet(viewsets.ModelViewSet):
     queryset = CarWash.objects.prefetch_related(
@@ -193,6 +195,17 @@ class ListCarWashAPIView(DynamicFieldsViewMixin, ListAPIView):
 
     def get_queryset(self):
         queryset = CarWash.objects.all()
+        user_lat = self.request.GET.get("userLat")
+        user_lng = self.request.GET.get("userLng")
+
+        if user_lat and user_lng:
+            reference_point = Point(float(user_lng), float(user_lat), srid=4326)
+            queryset = queryset.annotate(
+                distance=Coalesce(
+                    Distance("location", reference_point, output_field=FloatField()) * Value(0.000621371, output_field=FloatField()),
+                    Value(0, output_field=FloatField())
+                )
+            )
         return queryset
 
     def get_serializer_context(self):

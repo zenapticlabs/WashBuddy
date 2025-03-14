@@ -28,16 +28,7 @@ class CustomOrderingFilter(django_filters.OrderingFilter):
 
         if value[0] in ['price_high_to_low', 'price_low_to_high']:
             qs = qs.annotate(price_rate=Coalesce(Sum("wash_type_mapping__price_rate", output_field=DecimalField()), Value(0, output_field=DecimalField())))
-        
-        if value[0] == "distance_near_to_far":
-            user_lat = self.parent.request.GET.get("userLat")
-            user_lng = self.parent.request.GET.get("userLng")
-            if not user_lat or not user_lng:
-                return qs
-            
-            reference_point = Point(float(user_lng), float(user_lat), srid=4326)
-            qs = qs.annotate(distance=Coalesce(Distance("location", reference_point, output_field=FloatField()), Value(0, output_field=FloatField())))
-        
+                
         ordering = custom_ordering.get(value[0], value)
         return qs.order_by(*ordering)
 
@@ -86,19 +77,8 @@ class ListCarWashFilter(django_filters.FilterSet):
         return queryset
         
     def get_nearest_shops(self, queryset, name, value):
-        user_lat = self.request.GET.get("userLat")
-        user_lng = self.request.GET.get("userLng")
-        radius_miles = self.request.GET.get("distance")
-        if not user_lat or not user_lng:
-            return queryset
-        
-        reference_point = Point(float(user_lng), float(user_lat), srid=4326)
-        radius_meters = float(radius_miles) * 1609.34
-        
-        queryset = queryset.annotate(
-            distance=Distance("location", reference_point)
-        ).filter(distance__lte=radius_meters)
-
+        if value:
+            return queryset.filter(distance__lte=float(value))
         return queryset
     
     def price(self, queryset, name, value):

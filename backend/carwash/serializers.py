@@ -223,6 +223,7 @@ class CarWashListSerializer(DynamicFieldsSerializerMixin, serializers.ModelSeria
     location = serializers.SerializerMethodField()
     operating_hours = CarWashOperatingHoursSerializer(many=True)
     images = CarWashImageSerializer(many=True)
+    distance = serializers.FloatField(read_only=True)
 
     class Meta:
         model = CarWash
@@ -241,3 +242,7 @@ class CarWashListSerializer(DynamicFieldsSerializerMixin, serializers.ModelSeria
                 "coordinates": [instance.location.x, instance.location.y]
             }
         return None
+    
+    def get_distance(self, obj):
+        return round(obj.distance, 1) if hasattr(obj, "distance") else None
+
