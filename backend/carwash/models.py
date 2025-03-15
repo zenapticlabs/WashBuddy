@@ -5,6 +5,7 @@ from django.contrib.gis.geos import Point
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.auth.models import User
 from phonenumber_field.modelfields import PhoneNumberField
+from django.core.exceptions import ValidationError
 
 class CarWash(models.Model):
     car_wash_name = models.CharField(max_length=255, db_index=True)
@@ -34,7 +35,6 @@ class CarWash(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
-    # Add direct relationships
     wash_types = models.ManyToManyField(
         'WashType', 
         through='CarWashWashTypeMapping',
@@ -140,25 +140,25 @@ class CarWashImage(models.Model):
         return f"{self.car_wash.car_wash_name} - {self.image_type}"
 
 class WashType(models.Model):
+    CATEGORY_CHOICES = [
+        ('automatic', 'Automatic Car Wash'),
+        ('selfservice', 'Self Service Car Wash')
+    ]
     SUBCLASS_CHOICES = [
         ('Clean', 'Clean'),
         ('Polish', 'Polish'),
         ('Shine/Dry', 'Shine/Dry')
     ]
-    CATEGORY_CHOICES = [
-        ('automatic', 'Automatic Car Wash'),
-        ('selfservice', 'Self Service Car Wash')
-    ]
     name = models.CharField(max_length=255, db_index=True)
     description = models.TextField()
-    subclass = models.CharField(
-        max_length=20,
-        choices=SUBCLASS_CHOICES,
-        db_index=True
-    )
     category = models.CharField(
         max_length=20,
         choices=CATEGORY_CHOICES,
+        db_index=True
+    )
+    subclass = models.CharField(
+        max_length=20,
+        choices=SUBCLASS_CHOICES,
         db_index=True
     )
 
@@ -171,7 +171,6 @@ class WashType(models.Model):
 class CarWashWashTypeMapping(models.Model):
     car_wash = models.ForeignKey(CarWash, on_delete=models.CASCADE, related_name="wash_type_mapping")
     wash_type = models.ForeignKey(WashType, on_delete=models.CASCADE, related_name="car_wash_mapping")
-    price_rate = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -207,7 +206,6 @@ class Amenity(models.Model):
 class AmenityCarWashMapping(models.Model):
     car_wash = models.ForeignKey(CarWash, on_delete=models.CASCADE, related_name="amenity_mapping")
     amenity = models.ForeignKey(Amenity, on_delete=models.CASCADE, related_name="car_wash_mapping")
-    price_rate = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -216,6 +214,43 @@ class AmenityCarWashMapping(models.Model):
 
     def __str__(self):
         return f"{self.car_wash.car_wash_name} - {self.amenity.name}"
+
+class CarWashPackage(models.Model):
+    car_wash = models.ForeignKey(CarWash, on_delete=models.CASCADE, related_name="packages")
+    name = models.CharField(max_length=255)
+    description = models.TextField(null=True, blank=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    wash_types = models.ManyToManyField(WashType, related_name="packages", blank=True)
+    amenities = models.ManyToManyField(Amenity, related_name="packages", blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.car_wash.car_wash_name} - {self.name}"
+
+    def clean(self):
+        if self.pk and self.car_wash:
+            car_wash_wash_types = list(self.car_wash.wash_types.values_list('id', flat=True))
+            car_wash_amenities = list(self.car_wash.amenities.values_list('id', flat=True))
+
+            if car_wash_wash_types:
+                invalid_wash_types = self.wash_types.exclude(id__in=car_wash_wash_types)
+                if invalid_wash_types.exists():
+                    raise ValidationError(f"Invalid wash types: {', '.join(invalid_wash_types.values_list('name', flat=True))}")
+
+            if car_wash_amenities:
+                invalid_amenities = self.amenities.exclude(id__in=car_wash_amenities)
+                if invalid_amenities.exists():
+                    raise ValidationError(f"Invalid amenities: {', '.join(invalid_amenities.values_list('name', flat=True))}")
+
+    def save(self, *args, **kwargs):
+        self.clean()
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+
+        if is_new:
+            self.wash_types.set(self.wash_types.all())
+            self.amenities.set(self.amenities.all())
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)

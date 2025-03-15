@@ -40,4 +40,7 @@ ENTRYPOINT ["/bin/sh", "-c", \
     echo 'Database is ready. Running migrations...'; \
     python manage.py makemigrations && \
     python manage.py migrate && \
+    python manage.py create_admin && \
+    python manage.py create_filter && \
+    echo 'Starting the server...'; \
     watchfiles --filter python 'python manage.py runserver 0.0.0.0:8000'"]

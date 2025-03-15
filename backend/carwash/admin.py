@@ -5,6 +5,8 @@ from unfold.contrib.import_export.forms import ExportForm, ImportForm
 
 # from import_export.admin import ImportExportMixin
 from import_export import resources
+from django import forms
+from unfold.widgets import UnfoldAdminSingleTimeWidget, UnfoldBooleanSwitchWidget
 # from unfold.contrib.import_export.forms import ExportForm, ImportForm
 
 from .models import (
@@ -14,7 +16,8 @@ from .models import (
     WashType, 
     Amenity,
     CarWashWashTypeMapping,
-    AmenityCarWashMapping
+    AmenityCarWashMapping,
+    CarWashPackage,
 )
 
 @admin.register(WashType)
@@ -27,13 +30,48 @@ class AmenityAdmin(ModelAdmin):
     list_display = ('name', 'category')
     search_fields = ('name',)
 
+class BusinessOperatingHoursForm(forms.ModelForm):
+    day_of_week = forms.ChoiceField(
+        choices = [
+            (0, "Monday"),
+            (1, "Tuesday"),
+            (2, "Wednesday"),
+            (3, "Thursday"),
+            (4, "Friday"),
+            (5, "Saturday"),
+            (6, "Sunday"),
+        ],
+        widget=forms.Select(attrs={"class": "vSelect"}),
+    )
+
+    opening_time = forms.TimeField(
+        required=False,
+        widget=UnfoldAdminSingleTimeWidget(),
+        
+    )
+    closing_time = forms.TimeField(
+        required=False,
+        widget=UnfoldAdminSingleTimeWidget(),
+    )
+    is_closed = forms.BooleanField(
+        required=False,
+        widget=UnfoldBooleanSwitchWidget(attrs={'class': 'vCheckboxInput'}),
+        label='Closed',
+    )
+
+    class Meta:
+        model = CarWashOperatingHours
+        fields = ['day_of_week', 'opening_time', 'closing_time', 'is_closed']
+
+
 class CarWashOperatingHoursInline(admin.TabularInline):
     model = CarWashOperatingHours
-    extra = 7
+    form = BusinessOperatingHoursForm
+    extra = 0
 
 class CarWashImageInline(admin.TabularInline):
     model = CarWashImage
-    extra = 7
+    extra = 0
 
 class CarWashWashTypeMappingInline(admin.TabularInline):
     model = CarWashWashTypeMapping
@@ -41,6 +79,10 @@ class CarWashWashTypeMappingInline(admin.TabularInline):
 
 class AmenityCarWashMappingInline(admin.TabularInline):
     model = AmenityCarWashMapping
+    extra = 1
+
+class PackageInline(admin.TabularInline):
+    model = CarWashPackage
     extra = 1
 
 class CarWashResource(resources.ModelResource):
@@ -127,7 +169,8 @@ class CarWashAdmin(ImportExportModelAdmin, ModelAdmin):
     search_fields = ['car_wash_name', 'formatted_address', 'city']
     inlines = [
         CarWashOperatingHoursInline,
-        CarWashImageInline,
         CarWashWashTypeMappingInline,
-        AmenityCarWashMappingInline
+        AmenityCarWashMappingInline,
+        PackageInline,
+        CarWashImageInline,
     ]

@@ -20,13 +20,19 @@ from django.urls import path, include
 from django.http import JsonResponse
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
+admin.site.site_header = 'Washbuddy Admin'
+admin.site.index_title = 'Washbuddy'
+admin.site.site_title = 'Washbuddy Admin'
+
 def health_check(request):
     return JsonResponse({"status": "ok"}, status=200)
 
 urlpatterns = [
     path("", health_check, name="health-check"),
     path('admin/', admin.site.urls),
-    path('api/v1/', include('carwash.urls')),
+    path('api/v1/', include([
+        path("carwash/", include("carwash.urls")),
+    ])),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/swagger/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
 ]

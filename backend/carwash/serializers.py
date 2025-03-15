@@ -4,15 +4,16 @@ from django.contrib.gis.geos import Point
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
 from .models import (
     CarWash, CarWashOperatingHours, CarWashImage, 
-    WashType, Amenity
+    WashType, Amenity, CarWashPackage
 )
 from utilities.mixins import DynamicFieldsSerializerMixin
 from rest_framework_gis.fields import GeometryField
+from django.db import transaction
 
 class WashTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = WashType
-        fields = '__all__'
+        exclude = ("created_at", "updated_at",)
 
     def validate_category(self, value):
         if value not in ['automatic', 'selfservice']:
@@ -27,7 +28,7 @@ class WashTypeSerializer(serializers.ModelSerializer):
 class AmenitySerializer(serializers.ModelSerializer):
     class Meta:
         model = Amenity
-        fields = '__all__'
+        exclude = ("created_at", "updated_at",)
 
     def validate_category(self, value):
         if value not in ['automatic', 'selfservice']:
@@ -53,11 +54,19 @@ class CarWashImageSerializer(serializers.ModelSerializer):
         model = CarWashImage
         exclude = ('car_wash',)
 
+class CarWashPackageSerializer(serializers.ModelSerializer):
+    wash_types = WashTypeSerializer(many=True)
+    amenities = AmenitySerializer(many=True)
+    class Meta:
+        model = CarWashPackage
+        exclude = ('car_wash',)
+
 class CarWashSerializer(serializers.ModelSerializer):
     operating_hours = CarWashOperatingHoursSerializer(many=True)
     images = CarWashImageSerializer(many=True)
     wash_types = serializers.PrimaryKeyRelatedField(many=True, queryset=WashType.objects.all())
     amenities = serializers.PrimaryKeyRelatedField(many=True, queryset=Amenity.objects.all())
+    packages = CarWashPackageSerializer(many=True)
     distance = serializers.SerializerMethodField(read_only=True)
     location = serializers.SerializerMethodField()
 
@@ -128,107 +137,116 @@ class CarWashSerializer(serializers.ModelSerializer):
         
         return value
 
+    @transaction.atomic
     def create(self, validated_data):
         operating_hours_data = validated_data.pop('operating_hours', [])
         images_data = validated_data.pop('images', [])
         wash_types = validated_data.pop('wash_types', [])
         amenities = validated_data.pop('amenities', [])
+        packages_data = validated_data.pop('packages', [])
 
         car_wash = CarWash.objects.create(**validated_data)
-        
-        for hours_data in operating_hours_data:
-            CarWashOperatingHours.objects.create(car_wash=car_wash, **hours_data)
 
-        for image_data in images_data:
-            CarWashImage.objects.create(car_wash=car_wash, **image_data)
+        CarWashOperatingHours.objects.bulk_create([
+            CarWashOperatingHours(car_wash=car_wash, **hours_data) for hours_data in operating_hours_data
+        ])
 
-        if wash_types:
-            car_wash.wash_types.set(wash_types)
-        if amenities:
-            car_wash.amenities.set(amenities)
+        CarWashImage.objects.bulk_create([
+            CarWashImage(car_wash=car_wash, **image_data) for image_data in images_data
+        ])
+
+        car_wash.wash_types.set(wash_types)
+        car_wash.amenities.set(amenities)
+
+        for package_data in packages_data:
+            wash_types_for_package = package_data.pop('wash_types', [])
+            amenities_for_package = package_data.pop('amenities', [])
+
+            package = CarWashPackage.objects.create(car_wash=car_wash, **package_data)
+            package.wash_types.set(wash_types_for_package)
+            package.amenities.set(amenities_for_package)
 
         return car_wash
-        
+
+    @transaction.atomic
     def update(self, instance, validated_data):
         operating_hours_data = validated_data.pop('operating_hours', [])
         images_data = validated_data.pop('images', [])
         wash_types = validated_data.pop('wash_types', None)
         amenities = validated_data.pop('amenities', None)
-        
+        packages_data = validated_data.pop('packages', [])
+
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
 
         if operating_hours_data:
-            instance.operating_hours.all().delete()
             for hours_data in operating_hours_data:
-                CarWashOperatingHours.objects.create(car_wash=instance, **hours_data)
-                
+                obj, created = CarWashOperatingHours.objects.update_or_create(
+                    car_wash=instance, day_of_week=hours_data['day_of_week'], defaults=hours_data
+                )
+
         if images_data:
-            instance.images.all().delete()
             for image_data in images_data:
-                CarWashImage.objects.create(car_wash=instance, **image_data)
-                
+                obj, created = CarWashImage.objects.update_or_create(
+                    car_wash=instance, image_type=image_data['image_type'], defaults=image_data
+                )
+
         if wash_types is not None:
             instance.wash_types.set(wash_types)
-            
+
         if amenities is not None:
             instance.amenities.set(amenities)
-            
-        return instance
-    
 
-class CarWashTypeSerializer(serializers.ModelSerializer):
-    price_rate = serializers.SerializerMethodField()
-    
+        if packages_data:
+            for package_data in packages_data:
+                wash_types_for_package = package_data.pop('wash_types', [])
+                amenities_for_package = package_data.pop('amenities', [])
+
+                package, created = CarWashPackage.objects.update_or_create(
+                    car_wash=instance,
+                    name=package_data['name'],
+                    defaults=package_data
+                )
+
+                if not created:
+                    package.wash_types.set(wash_types_for_package)
+                    package.amenities.set(amenities_for_package)
+
+        return instance
+
+class CarWashTypeSerializer(serializers.ModelSerializer):    
     class Meta:
         model = WashType
         fields = "__all__"
 
-    def get_price_rate(self, instance):
-        car_wash = self.context.get("car_wash")
-        if car_wash:
-            mapping = instance.car_wash_mapping.filter(car_wash=car_wash).first()
-            return mapping.price_rate if mapping else 0
-        return 0
-
 class AmenitySerializer(serializers.ModelSerializer):
-    price_rate = serializers.SerializerMethodField()
-
     class Meta:
         model = Amenity
-        fields = "__all__"
-
-    def get_price_rate(self, instance):
-        car_wash = self.context.get("car_wash")
-        if car_wash:
-            mapping = instance.car_wash_mapping.filter(car_wash=car_wash).first()
-            return mapping.price_rate if mapping else 0
-        return 0
+        fields = '__all__'
 
 class CarWashOperatingHoursSerializer(serializers.ModelSerializer):
-    
     class Meta:
         model = CarWashOperatingHours
-        fields = "__all__"
+        fields = '__all__'
 
 class CarWashImageSerializer(serializers.ModelSerializer):
-    
     class Meta:
         model = CarWashImage
-        fields = "__all__"
+        fields = '__all__'
 
 class CarWashListSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
     wash_types = serializers.SerializerMethodField()
     amenities = serializers.SerializerMethodField()
     location = serializers.SerializerMethodField()
     operating_hours = CarWashOperatingHoursSerializer(many=True)
+    packages = serializers.SerializerMethodField()
     images = CarWashImageSerializer(many=True)
     distance = serializers.FloatField(read_only=True)
 
     class Meta:
         model = CarWash
-        fields = "__all__"
+        fields = '__all__'
 
     def get_wash_types(self, instance):
         return CarWashTypeSerializer(instance.wash_types, many=True, context={"car_wash": instance}).data
@@ -246,10 +264,13 @@ class CarWashListSerializer(DynamicFieldsSerializerMixin, serializers.ModelSeria
     
     def get_distance(self, obj):
         return round(obj.distance, 1) if hasattr(obj, "distance") else None
+    
+    def get_packages(self, instance):
+        from .serializers import CarWashPackageSerializer
+        return CarWashPackageSerializer(instance.packages.all(), many=True).data
 
 
 class CarWashOperatingHoursPatchSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = CarWashOperatingHours
         fields = ["day_of_week", "is_closed", "opening_time", "closing_time"]

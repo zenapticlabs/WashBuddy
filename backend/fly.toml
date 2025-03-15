@@ -5,7 +5,7 @@ primary_region = "ord"
   dockerfile = "Dockerfile"
 
 [deploy]
-  release_command = "sh -c 'cd /app && python manage.py migrate'"
+  release_command = "sh -c 'cd /app && python manage.py migrate && python manage.py create_admin && python manage.py create_filter'"
 
 [vm]
   size = "shared-cpu-1x"
