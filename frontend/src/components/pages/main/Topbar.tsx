@@ -12,6 +12,7 @@ import { useState } from "react";
 import CreateCarWashDiaolog from "./CreateCarWashDiaolog";
 import Sidebar from "./Sidebar";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 const FilterButtonConfigs = [
   {
@@ -33,10 +34,14 @@ interface TopbarProps {
 }
 
 const Topbar: React.FC<TopbarProps> = ({ filters, setFilters, sideBarAlwaysOpen }) => {
+  const router = useRouter();
   const [notiCount, setNotiCount] = useState(2);
-  const [openCreateModal, setOpenCreateModal] = useState(false);
+  // const [openCreateModal, setOpenCreateModal] = useState(false);
   const [openSidebar, setOpenSidebar] = useState(false);
-  const handleOpenCreateModal = () => setOpenCreateModal(true);
+  const handleOpenCreateModal = () => {
+    // setOpenCreateModal(true);
+    router.push("/create");
+  }
 
   const handleSelectCarWashType = (value: boolean) => {
     if (filters && setFilters) {
@@ -94,13 +99,12 @@ const Topbar: React.FC<TopbarProps> = ({ filters, setFilters, sideBarAlwaysOpen 
             className="block md:hidden text-blue-500"
             onClick={handleOpenCreateModal}
           />
-          <Button
-            variant="ghost"
-            className=" rounded-full shadow-none text-title-2 text-blue-500 hover:text-blue-500 hidden md:block"
-            onClick={handleOpenCreateModal}
+          <Link
+            className="rounded-full shadow-none text-title-2 text-blue-500 hover:text-blue-500 hidden md:block mr-4"
+            href="/create"
           >
             + Add a WashNearby
-          </Button>
+          </Link>
           <div className="relative">
             <Bell size={24} className="text-neutral-900" />
             {notiCount > 0 && (
@@ -118,10 +122,10 @@ const Topbar: React.FC<TopbarProps> = ({ filters, setFilters, sideBarAlwaysOpen 
           />
         </div>
       </div>
-      <CreateCarWashDiaolog
+      {/* <CreateCarWashDiaolog
         open={openCreateModal}
         onOpenChange={setOpenCreateModal}
-      />
+      /> */}
       <Sidebar open={openSidebar} onOpenChange={setOpenSidebar} sideBarAlwaysOpen={sideBarAlwaysOpen} />
     </div>
   );
