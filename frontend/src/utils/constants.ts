@@ -8,6 +8,11 @@ export const Car_Wash_Type = {
   SELF_SERVICE: "Self Service",
 };
 
+export const Car_Wash_Type_Value = {
+  AUTOMATIC: "automatic",
+  SELF_SERVICE: "selfservice",
+};
+
 export const SortBy = {
   [Car_Wash_Type.AUTOMATIC]: [
     {

@@ -5,6 +5,7 @@ export * from "./Review";
 export interface Amenity {
   id: string;
   name: string;
+  category: string;
   description: string;
   created_at: Date;
   updated_at: Date;
@@ -12,10 +13,8 @@ export interface Amenity {
 
 export interface WashType {
   id: string;
-  service_type: string;
-  service_name: string;
-  description: string;
-  created_at: Date;
-  updated_at: Date;
+  cagetory: string;
+  name: string;
+  subclass: string;
 }
 
