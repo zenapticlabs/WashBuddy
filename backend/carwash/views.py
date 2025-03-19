@@ -4,7 +4,7 @@ from rest_framework import viewsets, status, generics
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from .models import CarWash, WashType, Amenity
-from .serializers import CarWashListSerializer, CarWashPatchSerializer, CarWashSerializer, WashTypeSerializer, AmenitySerializer
+from .serializers import CarWashListSerializer, CarWashPostPatchSerializer, CarWashSerializer, WashTypeSerializer, AmenitySerializer
 from django.db.models import Q
 from datetime import datetime
 from django.contrib.gis.geos import Point
@@ -171,7 +171,11 @@ class AmenityListAPIView(generics.ListAPIView):
     serializer_class = AmenitySerializer
 
 
-class CarWashRetrieveUpdateView(generics.RetrieveUpdateAPIView):
+class CarWashCreateView(generics.CreateAPIView):
+    serializer_class = CarWashPostPatchSerializer
+    permission_classes = [AllowAny] 
+
+class CarWashRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = CarWash.objects.all()
     permission_classes = [AllowAny]
     lookup_field = "id"
@@ -179,7 +183,7 @@ class CarWashRetrieveUpdateView(generics.RetrieveUpdateAPIView):
     def get_serializer_class(self):
         if self.request.method == "GET":
             return CarWashListSerializer
-        return CarWashPatchSerializer
+        return CarWashPostPatchSerializer
 
     @extend_schema(
         summary="Retrieve Car Wash",
@@ -192,7 +196,7 @@ class CarWashRetrieveUpdateView(generics.RetrieveUpdateAPIView):
     @extend_schema(
         summary="Update Car Wash",
         description="Update Car Wash details using PATCH",
-        request=CarWashPatchSerializer,
+        request=CarWashPostPatchSerializer,
         responses={200: CarWashListSerializer}
     )
     @transaction.atomic
