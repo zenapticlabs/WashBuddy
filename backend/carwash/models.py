@@ -4,10 +4,12 @@ from django.contrib.gis.db import models as gis_models
 from django.contrib.gis.geos import Point
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.auth.models import User
+from .managers import ActiveManager
+from utilities.mixins import CustomModelMixin
 from phonenumber_field.modelfields import PhoneNumberField
 from django.core.exceptions import ValidationError
 
-class CarWash(models.Model):
+class CarWash(CustomModelMixin):
     car_wash_name = models.CharField(max_length=255, db_index=True)
     street = models.CharField(max_length=255, null=True, blank=True)
     city = models.CharField(max_length=100, null=True, blank=True)
@@ -32,8 +34,6 @@ class CarWash(models.Model):
     self_service_car_wash = models.BooleanField()
     open_24_hours = models.BooleanField()
     verified = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
     
     wash_types = models.ManyToManyField(
         'WashType', 
@@ -85,6 +85,9 @@ class CarWash(models.Model):
             )
             
         return queryset
+    
+    objects = models.Manager()
+    active_objects = ActiveManager()
 
     class Meta:
         indexes = [
@@ -94,7 +97,7 @@ class CarWash(models.Model):
         verbose_name = "Car Wash"
         verbose_name_plural = "Car Washes"
 
-class CarWashOperatingHours(models.Model):
+class CarWashOperatingHours(CustomModelMixin):
     car_wash = models.ForeignKey(CarWash, on_delete=models.CASCADE, related_name="operating_hours")
     day_of_week = models.SmallIntegerField(
         validators=[
@@ -105,6 +108,9 @@ class CarWashOperatingHours(models.Model):
     is_closed = models.BooleanField(default=False)
     opening_time = models.TimeField(null=True, blank=True)
     closing_time = models.TimeField(null=True, blank=True)
+
+    objects = models.Manager()
+    active_objects = ActiveManager()
 
     class Meta:
         unique_together = ('car_wash', 'day_of_week')
@@ -124,7 +130,7 @@ class CarWashOperatingHours(models.Model):
     def __str__(self):
         return f"{self.car_wash.car_wash_name} - {self.day_of_week}"
 
-class CarWashImage(models.Model):
+class CarWashImage(CustomModelMixin):
     car_wash = models.ForeignKey(CarWash, on_delete=models.CASCADE, related_name="images")
     image_type = models.SmallIntegerField(
         validators=[
@@ -133,13 +139,14 @@ class CarWashImage(models.Model):
         ]
     )
     image_key = models.CharField(max_length=255)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+
+    objects = models.Manager()
+    active_objects = ActiveManager()
 
     def __str__(self):
         return f"{self.car_wash.car_wash_name} - {self.image_type}"
 
-class WashType(models.Model):
+class WashType(CustomModelMixin):
     CATEGORY_CHOICES = [
         ('automatic', 'Automatic Car Wash'),
         ('selfservice', 'Self Service Car Wash')
@@ -162,17 +169,18 @@ class WashType(models.Model):
         db_index=True
     )
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    objects = models.Manager()
+    active_objects = ActiveManager()
 
     def __str__(self):
         return f"{self.name} ({self.category} - {self.subclass})"
 
-class CarWashWashTypeMapping(models.Model):
+class CarWashWashTypeMapping(CustomModelMixin):
     car_wash = models.ForeignKey(CarWash, on_delete=models.CASCADE, related_name="wash_type_mapping")
     wash_type = models.ForeignKey(WashType, on_delete=models.CASCADE, related_name="car_wash_mapping")
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+
+    objects = models.Manager()
+    active_objects = ActiveManager()
 
     class Meta:
         unique_together = ('car_wash', 'wash_type')
@@ -180,7 +188,7 @@ class CarWashWashTypeMapping(models.Model):
     def __str__(self):
         return f"{self.car_wash.car_wash_name} - {self.wash_type.name}"
 
-class Amenity(models.Model):
+class Amenity(CustomModelMixin):
     CATEGORY_CHOICES = [
         ('automatic', 'Automatic Car Wash'),
         ('selfservice', 'Self Service Car Wash')
@@ -193,8 +201,9 @@ class Amenity(models.Model):
         choices=CATEGORY_CHOICES,
         db_index=True
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+
+    objects = models.Manager()
+    active_objects = ActiveManager()
 
     def __str__(self):
         return f"{self.name} ({self.category})"
@@ -203,11 +212,12 @@ class Amenity(models.Model):
         verbose_name_plural = "Amenities"
 
 
-class AmenityCarWashMapping(models.Model):
+class AmenityCarWashMapping(CustomModelMixin):
     car_wash = models.ForeignKey(CarWash, on_delete=models.CASCADE, related_name="amenity_mapping")
     amenity = models.ForeignKey(Amenity, on_delete=models.CASCADE, related_name="car_wash_mapping")
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+
+    objects = models.Manager()
+    active_objects = ActiveManager()
 
     class Meta:
         unique_together = ('car_wash', 'amenity')
@@ -215,15 +225,16 @@ class AmenityCarWashMapping(models.Model):
     def __str__(self):
         return f"{self.car_wash.car_wash_name} - {self.amenity.name}"
 
-class CarWashPackage(models.Model):
+class CarWashPackage(CustomModelMixin):
     car_wash = models.ForeignKey(CarWash, on_delete=models.CASCADE, related_name="packages")
     name = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     wash_types = models.ManyToManyField(WashType, related_name="packages", blank=True)
     amenities = models.ManyToManyField(Amenity, related_name="packages", blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+
+    objects = models.Manager()
+    active_objects = ActiveManager()
 
     def __str__(self):
         return f"{self.car_wash.car_wash_name} - {self.name}"
