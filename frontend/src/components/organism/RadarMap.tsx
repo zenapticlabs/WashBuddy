@@ -47,6 +47,7 @@ export function RadarMap({ publishableKey, userId, carWashes, onMapReady }: Rada
       style: `https://api.radar.io/maps/styles/radar-default-v1?publishableKey=${publishableKey}`,
       center: [-89.4012, 43.0731],
       zoom: 7,
+      attributionControl: false,
     });
 
     // Add zoom controls

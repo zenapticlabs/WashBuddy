@@ -19,15 +19,15 @@ import { CustomPagination } from "@/components/molecule/CustomPagination";
 export default function Home() {
   const RADAR_KEY = process.env.NEXT_PUBLIC_RADAR_API_KEY;
   const [openAbout, setOpenAbout] = useState(false);
-  const [selectedCarWash, setSelectedCarWash] = useState<CarWashResponse | null>(
-    null
-  );
+  const [selectedCarWash, setSelectedCarWash] =
+    useState<CarWashResponse | null>(null);
 
   const [showMap, setShowMap] = useState(true);
   const mapRef = useRef<maplibregl.Map | null>(null);
 
   const { filters, setFilters } = useCarWashFilters();
-  const { carWashes, isLoading, count, totalPages, currentPage } = useCarWashes(filters);
+  const { carWashes, isLoading, count, totalPages, currentPage } =
+    useCarWashes(filters);
 
   const handleMapReady = (map: maplibregl.Map) => (mapRef.current = map);
 
@@ -67,10 +67,7 @@ export default function Home() {
             />
           </div>
           <div className="flex justify-end py-2 px-4">
-            <SortBySelect
-              filters={filters}
-              setFilters={setFilters}
-            />
+            <SortBySelect filters={filters} setFilters={setFilters} />
           </div>
           <ScrollArea className="w-full flex-1">
             <div className="flex flex-col gap-2 pr-4">
@@ -84,13 +81,14 @@ export default function Home() {
                   <CarWashSkeleton />
                 </div>
               )}
-              {!isLoading && carWashes?.map((carWash) => (
-                <CarWashCard
-                  key={carWash.id}
-                  data={carWash}
-                  onClick={() => handleOpenAbout(carWash)}
-                />
-              ))}
+              {!isLoading &&
+                carWashes?.map((carWash) => (
+                  <CarWashCard
+                    key={carWash.id}
+                    data={carWash}
+                    onClick={() => handleOpenAbout(carWash)}
+                  />
+                ))}
             </div>
           </ScrollArea>
           <CarWashDetail

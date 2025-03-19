@@ -17,7 +17,7 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
 }) => {
   const [open, setOpen] = useState(false);
   return (
-    <div className="flex gap-2 py-4">
+    <div className="flex gap-2 py-2 lg:py-4">
       <Button
         variant="ghost"
         className="px-4 py-2 h-auto rounded-full"
@@ -28,11 +28,11 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
         <CircleBadge
           text={String(
             filters.amenities.length +
-            filters.washType.length +
-            filters.ratings.length +
-            filters.operatingHours.length +
-            (filters.distance > 0 ? 1 : 0) +
-            (filters.priceRange > 0 ? 1 : 0)
+              filters.washType.length +
+              filters.ratings.length +
+              filters.operatingHours.length +
+              (filters.distance > 0 ? 1 : 0) +
+              (filters.priceRange > 0 ? 1 : 0)
           )}
         />
       </Button>

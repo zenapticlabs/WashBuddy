@@ -44,7 +44,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onChange }) => {
     <div className="block lg:flex items-center gap-4 w-full px-4 relative">
       <AutoComplete onSelect={handleSelectAutoComplete} inputValue={inputValue} setInputValue={setInputValue} />
       {recentSearches.length > 0 && (
-        <div className="flex items-center gap-2 py-3 px-2 w-full overflow-hidden">
+        <div className="flex items-center gap-2 pt-3 lg:pt-0 px-2 w-full overflow-hidden">
           <div className="text-title-2 text-neutral-400">Recent</div>
           <div className="flex flex-1 gap-2 overflow-hidden relative">
             {recentSearches.map((search, index) => (
