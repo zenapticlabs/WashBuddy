@@ -44,13 +44,22 @@ export interface ICarWashCard {
 
 export interface CarWashResponse {
   id: number;
+
+  car_wash_name: string;
+  phone: string | null;
+  website: string | null;
+  email: string | null;
+
+  reviews_count: number;
+  reviews_average: string;
+
   wash_types: string[];
   amenities: string[];
   operating_hours: any[];
   packages: any[];
   images: any[];
+
   distance: number;
-  car_wash_name: string;
   street: string;
   city: string;
   state: string;
@@ -59,22 +68,20 @@ export interface CarWashResponse {
   country: string;
   country_code: string;
   formatted_address: string;
-  phone: string | null;
-  website: string | null;
-  email: string | null;
-  reviews_count: number;
-  reviews_average: string;
   location: {
     type: string;
     coordinates: [number, number];
   };
+
   automatic_car_wash: boolean;
   self_service_car_wash: boolean;
   open_24_hours: boolean;
   verified: boolean;
+
+  image_url: string;
+
   created_at: string;
   updated_at: string;
-  image_url: string;
 }
 
 export interface ICarWashPurchaseHistory {

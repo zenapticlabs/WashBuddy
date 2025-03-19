@@ -36,7 +36,7 @@ const CarWashAbout: React.FC<{ data: CarWashResponse }> = ({ data }) => {
               </span>
             </div>
           </div>
-          <Link href={`/edit?id=${data.id}`} className="bg-blue-500 text-title-2 text-white rounded-md px-4 py-2">Update Info</Link>
+          <Link href={`/carwash?id=${data.id}`} className="bg-blue-500 text-title-2 text-white rounded-md px-4 py-2">Update Info</Link>
         </div>
         <div className="text-body-3 text-neutral-500 pt-2">
           Wrong price? New photos? Upload a photo – earn points towards a free

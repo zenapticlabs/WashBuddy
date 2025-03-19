@@ -55,7 +55,12 @@ const Checkbox = React.forwardRef<
           </CheckboxPrimitive.Indicator>
         </CheckboxPrimitive.Root>
         {label && (
-          <span className="text-sm text-gray-700 cursor-pointer font-figtree">
+          <span
+            className={cn(
+              "text-sm text-gray-700 cursor-pointer font-figtree",
+              className
+            )}
+          >
             {label}
           </span>
         )}

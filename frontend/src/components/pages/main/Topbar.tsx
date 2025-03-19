@@ -40,7 +40,7 @@ const Topbar: React.FC<TopbarProps> = ({ filters, setFilters, sideBarAlwaysOpen 
   const [openSidebar, setOpenSidebar] = useState(false);
   const handleOpenCreateModal = () => {
     // setOpenCreateModal(true);
-    router.push("/create");
+    router.push("/carwash");
   }
 
   const handleSelectCarWashType = (value: boolean) => {
@@ -101,7 +101,7 @@ const Topbar: React.FC<TopbarProps> = ({ filters, setFilters, sideBarAlwaysOpen 
           />
           <Link
             className="rounded-full shadow-none text-title-2 text-blue-500 hover:text-blue-500 hidden md:block mr-4"
-            href="/create"
+            href="/carwash"
           >
             + Add a WashNearby
           </Link>

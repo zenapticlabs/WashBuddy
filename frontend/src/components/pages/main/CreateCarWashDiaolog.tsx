@@ -24,7 +24,7 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "@/components/ui/drawer"
+} from "@/components/ui/drawer";
 import ImageUploadZone from "@/components/ui/imageUploadZone";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -35,12 +35,12 @@ const OPERATING_HOURS = Array.from({ length: 7 }, (_, index) => ({
   day_of_week: index,
   is_closed: false,
   opening_time: "06:00",
-  closing_time: "18:00"
+  closing_time: "18:00",
 }));
 
 const DEFAULT_IMAGES = Array.from({ length: 8 }, (_, index) => ({
   image_type: index,
-  image_key: "string"
+  image_key: "string",
 }));
 
 const defaultPayload = {
@@ -52,7 +52,7 @@ const defaultPayload = {
   reviews_count: 0,
   reviews_average: 0,
   open_24_hours: true,
-  verified: false
+  verified: false,
 };
 
 const formConfig = [
@@ -75,8 +75,8 @@ const CreateCarWashDiaolog: React.FC<CreateCarWashDiaologProps> = ({
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const { locationData, error, loading, fetchLocationData } = useLocationData();
-  const [manualAddress, setManualAddress] = useState<RadarAddress | null>(null)
-  const [errorMessage, setErrorMessage] = useState<any>(null)
+  const [manualAddress, setManualAddress] = useState<RadarAddress | null>(null);
+  const [errorMessage, setErrorMessage] = useState<any>(null);
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [formData, setFormData] = useState<any>({
     car_wash_name: "",
@@ -85,7 +85,9 @@ const CreateCarWashDiaolog: React.FC<CreateCarWashDiaologProps> = ({
   });
   const [knowPhone, setKnowPhone] = useState(false);
   const [knowHours, setKnowHours] = useState(false);
-  const [activeTab, setActiveTab] = useState<"use_gps" | "enter_address">("use_gps");
+  const [activeTab, setActiveTab] = useState<"use_gps" | "enter_address">(
+    "use_gps"
+  );
 
   const handleChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -103,13 +105,13 @@ const CreateCarWashDiaolog: React.FC<CreateCarWashDiaologProps> = ({
         if (locationData) {
           setErrorMessage({
             ...errorMessage,
-            location: null
+            location: null,
           });
-          payload = { ...locationData, ...payload }
+          payload = { ...locationData, ...payload };
         } else {
           setErrorMessage({
             ...errorMessage,
-            location: "Location data not found"
+            location: "Location data not found",
           });
           return;
         }
@@ -117,7 +119,7 @@ const CreateCarWashDiaolog: React.FC<CreateCarWashDiaologProps> = ({
         if (manualAddress) {
           setErrorMessage({
             ...errorMessage,
-            location: null
+            location: null,
           });
           payload = {
             ...payload,
@@ -133,11 +135,11 @@ const CreateCarWashDiaolog: React.FC<CreateCarWashDiaologProps> = ({
               type: "Point",
               coordinates: [manualAddress?.longitude, manualAddress?.latitude],
             },
-          }
+          };
         } else {
           setErrorMessage({
             ...errorMessage,
-            location: "Manual address not found"
+            location: "Manual address not found",
           });
           return;
         }
@@ -172,7 +174,7 @@ const CreateCarWashDiaolog: React.FC<CreateCarWashDiaologProps> = ({
 
   const handleSelectAddress = (address: RadarAddress | null) => {
     if (address) {
-      setManualAddress(address)
+      setManualAddress(address);
     }
   };
 
@@ -181,9 +183,9 @@ const CreateCarWashDiaolog: React.FC<CreateCarWashDiaologProps> = ({
       <ScrollArea>
         <div className="border-b">
           <div className="text-body-2 text-neutral-900 px-6 py-2">
-            Upload the following and we will reimburse you for a basic wash
-            at this site. Your contributions help keep your community car
-            wash running!
+            Upload the following and we will reimburse you for a basic wash at
+            this site. Your contributions help keep your community car wash
+            running!
           </div>
           <div className="px-6 py-2 text-body-2 text-neutral-900">
             Would you like Paypal or Venmo to your email address or phone
@@ -204,7 +206,11 @@ const CreateCarWashDiaolog: React.FC<CreateCarWashDiaologProps> = ({
                 required={field.required}
                 className="p-3"
               />
-              {errorMessage && errorMessage[field.name] && <p className="text-body-2 mt-1 text-red-500">{errorMessage[field.name]}</p>}
+              {errorMessage && errorMessage[field.name] && (
+                <p className="text-body-2 mt-1 text-red-500">
+                  {errorMessage[field.name]}
+                </p>
+              )}
             </div>
           ))}
         </div>
@@ -254,7 +260,11 @@ const CreateCarWashDiaolog: React.FC<CreateCarWashDiaologProps> = ({
               <AddressAutoComplete onSelect={handleSelectAddress} />
             </TabsContent>
           </Tabs>
-          {errorMessage && errorMessage.location && <p className="text-body-2 mt-1 text-red-500">{errorMessage.location}</p>}
+          {errorMessage && errorMessage.location && (
+            <p className="text-body-2 mt-1 text-red-500">
+              {errorMessage.location}
+            </p>
+          )}
         </div>
         <div className="flex flex-col gap-2 mt-4 px-6">
           <Checkbox
@@ -297,7 +307,7 @@ const CreateCarWashDiaolog: React.FC<CreateCarWashDiaologProps> = ({
               <Label htmlFor="no">No</Label>
             </div>
           </RadioGroup>
-          {knowHours && <OperatingHoursRange />}
+          {/* {knowHours && <OperatingHoursRange  />} */}
           <div className="text-title-1 text-[#262626]">
             Do you know the phone number?
           </div>
@@ -342,8 +352,8 @@ const CreateCarWashDiaolog: React.FC<CreateCarWashDiaologProps> = ({
           <ImageUploadZone title="Amenitiy - such as changer, vending machines, vacuums" />
         </div>
       </ScrollArea>
-    )
-  }
+    );
+  };
 
   if (isMobile) {
     return (

@@ -13,8 +13,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { CarWashCard } from "@/components/organism/carWashCard";
 import CarWashDetail from "@/components/pages/main/about/CarWashDetail";
 import { SortBySelect } from "@/components/ui/sortBySelect";
-import { LoadingSpinner } from "@/components/ui/spinner";
-import { Skeleton } from "@/components/ui/skeleton";
 import { CarWashSkeleton } from "@/components/organism/carWashSkeleton";
 import { CustomPagination } from "@/components/molecule/CustomPagination";
 
