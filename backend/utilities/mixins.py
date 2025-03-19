@@ -1,3 +1,8 @@
+from django.db import models
+from django.utils import timezone
+
+from .constants import DEFAULT_STATUS_CHOICES
+
 class DynamicFieldsViewMixin(object):
     def get_serializer(self, *args, **kwargs):
         serializer_class = self.get_serializer_class()
@@ -29,3 +34,20 @@ class DynamicFieldsSerializerMixin(object):
             existing = set(self.fields.keys())
             for field_name in existing - allowed:
                 self.fields.pop(field_name)
+
+
+class CustomModelMixin(models.Model):
+    """
+    Mixin class for creating util details.
+    """
+
+    created_by = models.ForeignKey("carwash.UserProfile", null=True, blank=True,
+                                   on_delete=models.CASCADE, related_name="created_by_%(class)s")
+    updated_by = models.ForeignKey("carwash.UserProfile", null=True, blank=True,
+                                   on_delete=models.CASCADE, related_name="updated_by_%(class)s")
+    created_at = models.DateTimeField(auto_now_add=timezone.now)
+    updated_at = models.DateTimeField(auto_now=timezone.now)
+    status = models.CharField(max_length=100, choices=DEFAULT_STATUS_CHOICES, default="ACTIVE")
+
+    class Meta:
+        abstract = True
