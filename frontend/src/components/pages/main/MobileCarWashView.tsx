@@ -38,7 +38,7 @@ export function MobileCarWashView({
   const [openSortBy, setOpenSortBy] = useState(false);
   return (
     <div
-      className={`block md:hidden absolute bottom-0 left-0 right-0 w-full bg-white transition-all duration-300 ease-in-out ${
+      className={`block md:hidden absolute bottom-0 left-0 right-0 w-full bg-white transition-all z-10 duration-300 ease-in-out ${
         showMap ? "h-[300px] rounded-t-2xl" : "h-full"
       } px-5 flex flex-col`}
     >

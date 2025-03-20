@@ -5,19 +5,25 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { CarWashResponse } from "@/types/CarServices";
 import { extractCoordinates } from "@/utils/functions";
 interface RadarMapProps {
+  showMap: boolean;
   publishableKey: string;
   userId?: string;
   carWashes?: CarWashResponse[];
   onMapReady?: (map: maplibregl.Map) => void;
 }
 
-export function RadarMap({ publishableKey, userId, carWashes, onMapReady }: RadarMapProps) {
+export function RadarMap({
+  publishableKey,
+  userId,
+  carWashes,
+  onMapReady,
+}: RadarMapProps) {
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
 
   const getLngLat = (location: [number, number]): [number, number] => {
     return [location[0], location[1]] as [number, number];
-  }
+  };
 
   // Add fitToMarkers function
   const fitToMarkers = () => {
@@ -34,7 +40,7 @@ export function RadarMap({ publishableKey, userId, carWashes, onMapReady }: Rada
     mapRef.current.fitBounds(bounds, {
       padding: { top: 50, bottom: 50, left: 50, right: 50 },
       maxZoom: 15,
-      duration: 1000
+      duration: 1000,
     });
   };
 
@@ -51,7 +57,7 @@ export function RadarMap({ publishableKey, userId, carWashes, onMapReady }: Rada
     });
 
     // Add zoom controls
-    map.addControl(new maplibregl.NavigationControl(), 'top-right');
+    map.addControl(new maplibregl.NavigationControl(), "top-right");
 
     map.on("load", () => {
       onMapReady?.(map);
@@ -106,7 +112,7 @@ export function RadarMap({ publishableKey, userId, carWashes, onMapReady }: Rada
     if (!mapRef.current) return;
 
     // Clear existing markers
-    markersRef.current?.forEach(marker => marker.remove());
+    markersRef.current?.forEach((marker) => marker.remove());
     markersRef.current = [];
 
     // Add new markers

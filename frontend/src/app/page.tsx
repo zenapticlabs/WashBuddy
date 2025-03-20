@@ -22,7 +22,7 @@ export default function Home() {
   const [selectedCarWash, setSelectedCarWash] =
     useState<CarWashResponse | null>(null);
 
-  const [showMap, setShowMap] = useState(true);
+  const [showMap, setShowMap] = useState(false);
   const mapRef = useRef<maplibregl.Map | null>(null);
 
   const { filters, setFilters } = useCarWashFilters();
@@ -58,14 +58,6 @@ export default function Home() {
       />
       <div className="flex flex-1 overflow-hidden bg-neutral-100 relative">
         <div className="w-[550px] relative bg-white hidden md:flex flex-col">
-          <div className="px-4">
-            <CustomPagination
-              currentPage={filters.page}
-              totalItems={count}
-              pageSize={filters.page_size}
-              onPageChange={(page: number) => setFilters({ ...filters, page })}
-            />
-          </div>
           <div className="flex justify-end py-2 px-4">
             <SortBySelect filters={filters} setFilters={setFilters} />
           </div>
@@ -91,6 +83,14 @@ export default function Home() {
                 ))}
             </div>
           </ScrollArea>
+          <div className="px-4 py-4">
+            <CustomPagination
+              currentPage={filters.page}
+              totalItems={count}
+              pageSize={filters.page_size}
+              onPageChange={(page: number) => setFilters({ ...filters, page })}
+            />
+          </div>
           <CarWashDetail
             data={selectedCarWash}
             open={openAbout}
@@ -100,6 +100,7 @@ export default function Home() {
         </div>
         <div className="flex-1 flex items-center justify-center">
           <RadarMap
+            showMap={showMap}
             publishableKey={RADAR_KEY || ""}
             carWashes={carWashes}
             onMapReady={handleMapReady}
