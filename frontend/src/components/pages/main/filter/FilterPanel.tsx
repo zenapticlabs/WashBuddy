@@ -14,14 +14,12 @@ import OperatingHours from "../../../molecule/OperatingHoursCheckboxes";
 import { Button } from "../../../ui/button";
 import AmenitiesCheckboxes from "../../../molecule/AmenitiesCheckboxes";
 import { FilterState } from "@/types/filters";
-import { MockAmenities } from "@/mocks/amenities";
-import { MockWashTypes } from "@/mocks/washTypes";
 import { useEffect, useState } from "react";
-// import { getAmenities } from "@/services/AmenityService";
-import { Amenity, WashType } from "@/types";
+import { Amenity, CarServiceAmenity, CarServiceWashType, WashType } from "@/types";
 import { getWashTypes } from "@/services/WashType";
-import { Car_Wash_Type, SortBy } from "@/utils/constants";
+import { Car_Wash_Type, Car_Wash_Type_Value, SortBy } from "@/utils/constants";
 import useMediaQuery from "@/hooks/useMediaQuery";
+import { getAmenities } from "@/services/AmenityService";
 
 const initialFilterState: FilterState = {
   automaticCarWash: true,
@@ -53,26 +51,25 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   setFilters,
 }) => {
   const [inlineFilters, setInlineFilters] = useState<FilterState>(filters);
-  const [amenities, setAmenities] = useState<Amenity[]>([]);
-  const [washTypes, setWashTypes] = useState<WashType[]>([]);
   const isMobile = useMediaQuery("(max-width: 768px)");
-
+  const [amenities, setAmenities] = useState<CarServiceAmenity[]>([]);
+  const [washTypes, setWashTypes] = useState<CarServiceWashType[]>([]);
   useEffect(() => {
     setInlineFilters(filters);
   }, [filters]);
 
   useEffect(() => {
     const fetchAmenities = async () => {
-      // const amenities = await getAmenities();
-      // setAmenities(amenities);
+      const amenities = await getAmenities();
+      setAmenities(amenities);
     };
     fetchAmenities();
   }, []);
 
   useEffect(() => {
     const fetchWashTypes = async () => {
-      // const washTypes = await getWashTypes();
-      // setWashTypes(washTypes);
+      const washTypes = await getWashTypes();
+      setWashTypes(washTypes);
     };
     fetchWashTypes();
   }, []);
@@ -108,7 +105,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
             onChange={(value) =>
               setInlineFilters((prev) => ({ ...prev, amenities: value }))
             }
-            options={MockAmenities}
+            options={amenities.filter((amenity) => amenity.category == (filters.automaticCarWash ? Car_Wash_Type_Value.AUTOMATIC : Car_Wash_Type_Value.SELF_SERVICE))}
           />
           <Separator />
           <WashTypeCheckboxes
@@ -116,7 +113,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
             onChange={(value) =>
               setInlineFilters((prev) => ({ ...prev, washType: value }))
             }
-            options={MockWashTypes}
+            options={washTypes.filter((washType) => washType.category == (filters.automaticCarWash ? Car_Wash_Type_Value.AUTOMATIC : Car_Wash_Type_Value.SELF_SERVICE))}
           />
           <Separator />
           <Ratings

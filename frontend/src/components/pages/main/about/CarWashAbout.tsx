@@ -6,10 +6,12 @@ import { Button } from "@/components/ui/button";
 import car1_img from "@/assets/car1.png";
 import car2_img from "@/assets/car2.png";
 import { MockWashPackages } from "@/mocks";
+import Link from "next/link";
+import { CarWashResponse } from "@/types/CarServices";
 
 const photos: StaticImageData[] = [car1_img, car2_img, car2_img, car2_img];
 
-const CarWashAbout: React.FC = ({}) => {
+const CarWashAbout: React.FC<{ data: CarWashResponse }> = ({ data }) => {
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-3">
@@ -34,7 +36,7 @@ const CarWashAbout: React.FC = ({}) => {
               </span>
             </div>
           </div>
-          <Button className="w-fit h-10">Update Info</Button>
+          <Link href={`/carwash?id=${data.id}`} className="bg-blue-500 text-title-2 text-white rounded-md px-4 py-2">Update Info</Link>
         </div>
         <div className="text-body-3 text-neutral-500 pt-2">
           Wrong price? New photos? Upload a photo – earn points towards a free

@@ -61,7 +61,7 @@ const AmenitiesCheckboxes: React.FC<AmenitiesCheckboxesProps> = ({
             {options?.map((amenity) => (
               <Checkbox
                 key={amenity.id}
-                label={amenity.service_name}
+                label={amenity.name}
                 checked={
                   value
                     ? value.includes(amenity.id)

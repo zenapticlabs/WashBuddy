@@ -1,6 +1,7 @@
 export interface CarServiceAmenity {
   id: string;
-  service_name: string;
+  name: string;
+  category: string;
   description?: string;
   created_at: Date;
   updated_at: Date;
@@ -8,11 +9,10 @@ export interface CarServiceAmenity {
 
 export interface CarServiceWashType {
   id: string;
-  service_type: string;
-  service_name: string;
+  category: string;
+  name: string;
+  subclass: string;
   description?: string;
-  created_at: Date;
-  updated_at: Date;
 }
 
 export interface ICarServiceWashPackage {
@@ -44,11 +44,22 @@ export interface ICarWashCard {
 
 export interface CarWashResponse {
   id: number;
+
+  car_wash_name: string;
+  phone: string | null;
+  website: string | null;
+  email: string | null;
+
+  reviews_count: number;
+  reviews_average: string;
+
   wash_types: string[];
   amenities: string[];
-  carwashoperatinghours_set: any[]; // You might want to create a specific type for this
-  carwashimage_set: any[]; // You might want to create a specific type for this
-  car_wash_name: string;
+  operating_hours: any[];
+  packages: any[];
+  images: any[];
+
+  distance: number;
   street: string;
   city: string;
   state: string;
@@ -57,20 +68,20 @@ export interface CarWashResponse {
   country: string;
   country_code: string;
   formatted_address: string;
-  phone: string;
-  reviews_count: number;
-  reviews_average: string;
   location: {
     type: string;
     coordinates: [number, number];
   };
+
   automatic_car_wash: boolean;
   self_service_car_wash: boolean;
   open_24_hours: boolean;
   verified: boolean;
+
+  image_url: string;
+
   created_at: string;
   updated_at: string;
-  image_url: string;
 }
 
 export interface ICarWashPurchaseHistory {

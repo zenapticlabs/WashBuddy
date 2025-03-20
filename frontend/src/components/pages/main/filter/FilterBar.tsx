@@ -5,10 +5,10 @@ import PriceRange from "@/components/molecule/PriceRange";
 import OperatingHours from "@/components/molecule/OperatingHoursCheckboxes";
 import AmenitiesCheckboxes from "@/components/molecule/AmenitiesCheckboxes";
 import { Button } from "@/components/ui/button";
-import { FilterState } from "@/types";
+import { CarServiceAmenity, CarServiceWashType, FilterState } from "@/types";
 import { ChevronDown, Clock } from "lucide-react";
 import { ArrowUpDown, Droplet, House, Star, WalletCards } from "lucide-react";
-import { MockAmenities, MockWashTypes } from "@/mocks";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,6 +16,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
+import { getAmenities } from "@/services/AmenityService";
+import { getWashTypes } from "@/services/WashType";
+import { Car_Wash_Type_Value } from "@/utils/constants";
 interface FilterBarProps {
   filters: FilterState;
   setFilters: (filters: FilterState) => void;
@@ -23,6 +26,24 @@ interface FilterBarProps {
 
 const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
   const [inlineFilters, setInlineFilters] = useState<FilterState>(filters);
+  const [amenities, setAmenities] = useState<CarServiceAmenity[]>([]);
+  const [washTypes, setWashTypes] = useState<CarServiceWashType[]>([]);
+
+  useEffect(() => {
+    const fetchAmenities = async () => {
+      const amenities = await getAmenities();
+      setAmenities(amenities);
+    };
+    fetchAmenities();
+  }, []);
+
+  useEffect(() => {
+    const fetchWashTypes = async () => {
+      const washTypes = await getWashTypes();
+      setWashTypes(washTypes);
+    };
+    fetchWashTypes();
+  }, []);
 
   useEffect(() => {
     setInlineFilters(filters);
@@ -82,7 +103,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
         <WashTypeCheckboxes
           value={inlineFilters.washType}
           onChange={(value) => setInlineFilters({ ...inlineFilters, washType: value })}
-          options={MockWashTypes}
+          options={washTypes.filter((washType) => washType.category == (filters.automaticCarWash ? Car_Wash_Type_Value.AUTOMATIC : Car_Wash_Type_Value.SELF_SERVICE))}
         />
       ),
     },
@@ -95,7 +116,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
         <AmenitiesCheckboxes
           value={inlineFilters.amenities}
           onChange={(value) => setInlineFilters({ ...inlineFilters, amenities: value })}
-          options={MockAmenities}
+          options={amenities.filter((amenity) => amenity.category == (filters.automaticCarWash ? Car_Wash_Type_Value.AUTOMATIC : Car_Wash_Type_Value.SELF_SERVICE))}
         />
       ),
     },

@@ -25,14 +25,14 @@ const transformServicesToGroups = (
 ): WashTypeOption[] => {
   return services?.reduce((acc: WashTypeOption[], service) => {
     const existingGroup = acc.find(
-      (group) => group.detailed_type === service.service_type
+      (group) => group.detailed_type === service.subclass
     );
 
     if (existingGroup) {
       existingGroup.services.push(service);
     } else {
       acc.push({
-        detailed_type: service.service_type || "",
+        detailed_type: service.subclass || "",
         services: [service],
       });
     }
@@ -90,7 +90,7 @@ const WashTypeCheckboxes: React.FC<WashTypeCheckboxesProps> = ({
                 {option.services?.map((service) => (
                   <Checkbox
                     key={service.id}
-                    label={service.service_name}
+                    label={service.name}
                     checked={
                       value
                         ? value.includes(service.id)
