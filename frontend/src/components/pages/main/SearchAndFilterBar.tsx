@@ -64,7 +64,7 @@ export function SearchAndFilterBar({
         <FilterComponent filters={filters} setFilters={setFilters} />
         <Button
           variant="outline"
-          className="rounded-full shadow-none text-title-2 border-neutral-100"
+          className="rounded-full shadow-none text-title-2 border-neutral-100 md:hidden"
           onClick={() => setShowMap(!showMap)}
         >
           <input checked={showMap} readOnly id="disabled-checked-checkbox" type="checkbox" value="" className="w-4 h-4 text-blue-500 border-gray-300 rounded-md checked:bg-blue-500 checked:border-blue-500"></input>
