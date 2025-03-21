@@ -13,6 +13,15 @@ import CreateCarWashDiaolog from "./CreateCarWashDiaolog";
 import Sidebar from "./Sidebar";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useAuth } from '@/contexts/AuthContext';
 
 const FilterButtonConfigs = [
   {
@@ -33,7 +42,12 @@ interface TopbarProps {
   sideBarAlwaysOpen?: boolean;
 }
 
-const Topbar: React.FC<TopbarProps> = ({ filters, setFilters, sideBarAlwaysOpen }) => {
+const Topbar: React.FC<TopbarProps> = ({
+  filters,
+  setFilters,
+  sideBarAlwaysOpen,
+}) => {
+  const { signOut } = useAuth();
   const router = useRouter();
   const [notiCount, setNotiCount] = useState(2);
   // const [openCreateModal, setOpenCreateModal] = useState(false);
@@ -41,17 +55,38 @@ const Topbar: React.FC<TopbarProps> = ({ filters, setFilters, sideBarAlwaysOpen 
   const handleOpenCreateModal = () => {
     // setOpenCreateModal(true);
     router.push("/carwash");
-  }
+  };
 
   const handleSelectCarWashType = (value: boolean) => {
     if (filters && setFilters) {
-      setFilters({ ...filters, automaticCarWash: value, sortBy: [SortBy[value ? Car_Wash_Type.AUTOMATIC : Car_Wash_Type.SELF_SERVICE][0].value] });
+      setFilters({
+        ...filters,
+        automaticCarWash: value,
+        sortBy: [
+          SortBy[
+            value ? Car_Wash_Type.AUTOMATIC : Car_Wash_Type.SELF_SERVICE
+          ][0].value,
+        ],
+      });
     }
-  }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      router.push('/login'); // Redirect to login page after logout
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
 
   return (
     <div>
-      <div className={`flex gap-2 items-center justify-between px-4 h-[66px] ${sideBarAlwaysOpen || openSidebar ? 'border-b border-neutral-100' : ''}`}>
+      <div
+        className={`flex gap-2 items-center justify-between px-4 h-[66px] ${
+          sideBarAlwaysOpen || openSidebar ? "border-b border-neutral-100" : ""
+        }`}
+      >
         <div className="flex items-center gap-2">
           <div
             className="p-2 rounded-full cursor-pointer"
@@ -60,7 +95,13 @@ const Topbar: React.FC<TopbarProps> = ({ filters, setFilters, sideBarAlwaysOpen 
             <MenuIcon size={24} className="text-neutral-900" />
           </div>
           <Link href="/" className="flex items-center gap-2">
-            <Image src={logo} alt="logo" width={42} height={42} color="#ff0000" />
+            <Image
+              src={logo}
+              alt="logo"
+              width={42}
+              height={42}
+              color="#ff0000"
+            />
             <span className="hidden lg:block text-headline-4 font-bold pl-1">
               WashBuddy
             </span>
@@ -71,10 +112,11 @@ const Topbar: React.FC<TopbarProps> = ({ filters, setFilters, sideBarAlwaysOpen 
                 variant="outline"
                 key={config.label}
                 onClick={() => handleSelectCarWashType(config.value)}
-                className={`rounded-full shadow-none ${filters?.automaticCarWash === config.value
-                  ? "border-blue-500"
-                  : "border-neutral-100"
-                  }`}
+                className={`rounded-full shadow-none ${
+                  filters?.automaticCarWash === config.value
+                    ? "border-blue-500"
+                    : "border-neutral-100"
+                }`}
               >
                 <Image
                   src={config.icon}
@@ -113,20 +155,32 @@ const Topbar: React.FC<TopbarProps> = ({ filters, setFilters, sideBarAlwaysOpen 
               </span>
             )}
           </div>
-          <Image
-            src={user}
-            alt="user"
-            width={32}
-            height={32}
-            className="rounded-full"
-          />
+          <DropdownMenu>
+            <DropdownMenuTrigger>
+              <Image
+                src={user}
+                alt="user"
+                width={32}
+                height={32}
+                className="rounded-full"
+              />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuItem onClick={handleLogout}>Log out</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
       {/* <CreateCarWashDiaolog
         open={openCreateModal}
         onOpenChange={setOpenCreateModal}
       /> */}
-      <Sidebar open={openSidebar} onOpenChange={setOpenSidebar} sideBarAlwaysOpen={sideBarAlwaysOpen} />
+      <Sidebar
+        open={openSidebar}
+        onOpenChange={setOpenSidebar}
+        sideBarAlwaysOpen={sideBarAlwaysOpen}
+      />
     </div>
   );
 };

@@ -1,18 +1,82 @@
 "use client";
-
+import { Toaster, toast } from "sonner";
 import Image from "next/image";
 import logo from "@/assets/logo.png";
 import car from "@/assets/car.png";
 import { Button } from "@/components/ui/button";
-import { ChevronLeftIcon, MailIcon } from "lucide-react";
+import { ChevronLeftIcon, Loader2, MailIcon } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { InputOTP } from "@/components/molecule/InputOTP";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Page() {
+  const { signInWithOtp, verifyOtp } = useAuth();
   const [step, setStep] = useState(1);
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  useEffect(() => {
+    const isOTPComplete = otp.every((digit) => digit !== "");
+    if (isOTPComplete) {
+      handleVerifyOTP();
+    }
+  }, [otp]);
+
+  const handleSendOTP = async () => {
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) {
+      setEmailError("Email is required");
+      return;
+    }
+    if (!emailRegex.test(email)) {
+      setEmailError("Please enter a valid email address");
+      return;
+    }
+
+    setLoading(true);
+    setEmailError(null);
+    try {
+      const { error } = await signInWithOtp(email);
+
+      if (error) {
+        setError(error.message);
+        toast.error("An unexpected error occurred");
+        return;
+      }
+      toast.success("OTP sent successfully");
+      setStep(3);
+    } catch (error) {
+      setError("An unexpected error occurred");
+      toast.error("An unexpected error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOTP = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { error } = await verifyOtp(email, otp.join(""));
+
+      if (error) {
+        setError(error.message);
+        toast.error("An unexpected error occurred");
+        return;
+      }
+      toast.success("OTP verified successfully");
+      window.location.href = "/";
+    } catch (error) {
+      setError("An unexpected error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const firstPage = () => {
     return (
@@ -103,9 +167,19 @@ export default function Page() {
         <div className="text-headline-3 text-neutral-900 text-neutral-900">
           What is your email address?
         </div>
-        <Input placeholder="Enter your email address" className="p-2.5" />
-        <Button className="w-full" onClick={() => setStep(3)}>
-          Continue
+        <div className="flex flex-col gap-2">
+          <Input
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Enter your email address"
+            className="p-2.5"
+          />
+          {emailError && (
+            <span className="text-sm text-red-500">{emailError}</span>
+          )}
+        </div>
+        <Button className="w-full" onClick={handleSendOTP} disabled={loading}>
+          {loading ? "Loading..." : "Continue"}
         </Button>
       </div>
     );
@@ -132,10 +206,18 @@ export default function Page() {
 
         <div className="text-body-2 text-neutral-900 flex justify-center items-center gap-2">
           Can't find the email?
-          <span className="text-blue-500 cursor-pointer font-bold">
+          <span
+            className="text-blue-500 cursor-pointer font-bold"
+            onClick={handleSendOTP}
+          >
             Send a new code
           </span>
         </div>
+        {loading && (
+          <div className="absolute bottom-0 left-0 right-0 top-0 rounded-lg flex justify-center items-center bg-black/10">
+            <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+          </div>
+        )}
       </div>
     );
   };
@@ -153,7 +235,8 @@ export default function Page() {
   };
   return (
     <div className="w-full h-screen bg-[#00000066] flex justify-center pt-20">
-      <div className="w-[480px] h-fit bg-white rounded-lg p-6 flex flex-col gap-6">
+      <Toaster position="top-center" />
+      <div className="w-[480px] h-fit bg-white rounded-lg p-6 flex flex-col gap-6 relative">
         {renderContent()}
       </div>
     </div>
