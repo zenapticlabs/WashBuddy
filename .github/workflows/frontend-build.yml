@@ -11,6 +11,10 @@ on:
         required: true
       VERCEL_FRONTEND_PROJECT_ID:
         required: true
+      NEXT_PUBLIC_SUPABASE_URL:
+        required: true
+      NEXT_PUBLIC_SUPABASE_ANON_KEY:
+        required: true
   workflow_dispatch:
 
 jobs:
@@ -41,6 +45,9 @@ jobs:
           workingDir: frontend
 
       - name: Build the project (Frontend)
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
         run: npm run build
         working-directory: frontend
 
