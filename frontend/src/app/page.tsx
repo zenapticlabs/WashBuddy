@@ -15,6 +15,7 @@ import CarWashDetail from "@/components/pages/main/about/CarWashDetail";
 import { SortBySelect } from "@/components/ui/sortBySelect";
 import { CarWashSkeleton } from "@/components/organism/carWashSkeleton";
 import { CustomPagination } from "@/components/molecule/CustomPagination";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 export default function Home() {
   const RADAR_KEY = process.env.NEXT_PUBLIC_RADAR_API_KEY;
@@ -47,76 +48,80 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col h-screen">
-      <Topbar filters={filters} setFilters={setFilters} />
-      <SearchAndFilterBar
-        filters={filters}
-        setFilters={setFilters}
-        showMap={showMap}
-        setShowMap={setShowMap}
-        handleNavigateToLocation={handleNavigateToLocation}
-      />
-      <div className="flex flex-1 overflow-hidden bg-neutral-100 relative">
-        <div className="w-[550px] relative bg-white hidden md:flex flex-col">
-          <div className="flex justify-end py-2 px-4">
-            <SortBySelect filters={filters} setFilters={setFilters} />
-          </div>
-          <ScrollArea className="w-full flex-1">
-            <div className="flex flex-col gap-2 pr-4">
-              {isLoading && (
-                <div className="flex flex-col gap-2">
-                  <CarWashSkeleton />
-                  <CarWashSkeleton />
-                  <CarWashSkeleton />
-                  <CarWashSkeleton />
-                  <CarWashSkeleton />
-                  <CarWashSkeleton />
-                </div>
-              )}
-              {!isLoading &&
-                carWashes?.map((carWash) => (
-                  <CarWashCard
-                    key={carWash.id}
-                    data={carWash}
-                    onClick={() => handleOpenAbout(carWash)}
-                  />
-                ))}
-            </div>
-          </ScrollArea>
-          <div className="px-4 py-4">
-            <CustomPagination
-              currentPage={filters.page}
-              totalItems={count}
-              pageSize={filters.page_size}
-              onPageChange={(page: number) => setFilters({ ...filters, page })}
-            />
-          </div>
-          <CarWashDetail
-            data={selectedCarWash}
-            open={openAbout}
-            setOpen={setOpenAbout}
-            onNavigate={handleNavigateToLocation}
-          />
-        </div>
-        <div className="flex-1 flex items-center justify-center">
-          <RadarMap
-            showMap={showMap}
-            publishableKey={RADAR_KEY || ""}
-            carWashes={carWashes}
-            onMapReady={handleMapReady}
-          />
-        </div>
-        <MobileCarWashView
-          totalCount={count}
-          isLoading={isLoading}
-          showMap={showMap}
-          carWashes={carWashes}
-          selectedCarWash={selectedCarWash}
-          onCarWashSelect={handleOpenAbout}
+    <ProtectedRoute>
+      <div className="flex flex-col h-screen">
+        <Topbar filters={filters} setFilters={setFilters} />
+        <SearchAndFilterBar
           filters={filters}
           setFilters={setFilters}
+          showMap={showMap}
+          setShowMap={setShowMap}
+          handleNavigateToLocation={handleNavigateToLocation}
         />
+        <div className="flex flex-1 overflow-hidden bg-neutral-100 relative">
+          <div className="w-[550px] relative bg-white hidden md:flex flex-col">
+            <div className="flex justify-end py-2 px-4">
+              <SortBySelect filters={filters} setFilters={setFilters} />
+            </div>
+            <ScrollArea className="w-full flex-1">
+              <div className="flex flex-col gap-2 pr-4">
+                {isLoading && (
+                  <div className="flex flex-col gap-2">
+                    <CarWashSkeleton />
+                    <CarWashSkeleton />
+                    <CarWashSkeleton />
+                    <CarWashSkeleton />
+                    <CarWashSkeleton />
+                    <CarWashSkeleton />
+                  </div>
+                )}
+                {!isLoading &&
+                  carWashes?.map((carWash) => (
+                    <CarWashCard
+                      key={carWash.id}
+                      data={carWash}
+                      onClick={() => handleOpenAbout(carWash)}
+                    />
+                  ))}
+              </div>
+            </ScrollArea>
+            <div className="px-4 py-4">
+              <CustomPagination
+                currentPage={filters.page}
+                totalItems={count}
+                pageSize={filters.page_size}
+                onPageChange={(page: number) =>
+                  setFilters({ ...filters, page })
+                }
+              />
+            </div>
+            <CarWashDetail
+              data={selectedCarWash}
+              open={openAbout}
+              setOpen={setOpenAbout}
+              onNavigate={handleNavigateToLocation}
+            />
+          </div>
+          <div className="flex-1 flex items-center justify-center">
+            <RadarMap
+              showMap={showMap}
+              publishableKey={RADAR_KEY || ""}
+              carWashes={carWashes}
+              onMapReady={handleMapReady}
+            />
+          </div>
+          <MobileCarWashView
+            totalCount={count}
+            isLoading={isLoading}
+            showMap={showMap}
+            carWashes={carWashes}
+            selectedCarWash={selectedCarWash}
+            onCarWashSelect={handleOpenAbout}
+            filters={filters}
+            setFilters={setFilters}
+          />
+        </div>
       </div>
-    </div>
+    </ProtectedRoute>
   );
 }
