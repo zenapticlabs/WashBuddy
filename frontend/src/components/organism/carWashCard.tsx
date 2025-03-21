@@ -36,7 +36,7 @@ export function CarWashCard({ data, onClick }: CarWashCardProps) {
               <div>
                 {data.formatted_address}
                 <span className="px-1">·</span>
-                12 miles
+                {Number(data.distance).toFixed(2)} miles
               </div>
             </div>
           </div>
