@@ -1,9 +1,7 @@
 from django.urls import path, include
-from .views import CarWashRetrieveUpdateDestroyView, ListCarWashAPIView, CarWashViewSet, WashTypeListAPIView, AmenityListAPIView, CarWashCreateView
+from .views import CarWashRetrieveUpdateDestroyView, ListCarWashAPIView, WashTypeListAPIView, AmenityListAPIView, CarWashCreateView
 from rest_framework.routers import DefaultRouter
 
-# router = DefaultRouter()
-# router.register(r'carwashes', CarWashViewSet)
 
 urlpatterns = [
     path("<int:id>/", CarWashRetrieveUpdateDestroyView.as_view(), name="get-patch-delete-car-wash"),
