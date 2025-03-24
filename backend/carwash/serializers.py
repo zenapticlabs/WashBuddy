@@ -61,160 +61,6 @@ class CarWashPackageSerializer(serializers.ModelSerializer):
         model = CarWashPackage
         exclude = ('car_wash',)
 
-class CarWashSerializer(serializers.ModelSerializer):
-    operating_hours = CarWashOperatingHoursSerializer(many=True)
-    images = CarWashImageSerializer(many=True)
-    wash_types = serializers.PrimaryKeyRelatedField(many=True, queryset=WashType.objects.all())
-    amenities = serializers.PrimaryKeyRelatedField(many=True, queryset=Amenity.objects.all())
-    packages = CarWashPackageSerializer(many=True)
-    distance = serializers.SerializerMethodField(read_only=True)
-    location = serializers.SerializerMethodField()
-
-    class Meta:
-        model = CarWash
-        fields = '__all__'
-
-    def get_distance(self, obj):
-        if hasattr(obj, 'distance'):
-            return round(obj.distance.m / 1000, 2)
-        return None
-
-    def to_internal_value(self, data):
-        internal_value = super().to_internal_value(data)
-        
-        # Convert GeoJSON to Point
-        location_json = data.get('location')
-        if location_json and isinstance(location_json, dict):
-            try:
-                longitude, latitude = location_json['coordinates']
-                internal_value['location'] = Point(longitude, latitude, srid=4326)
-            except (KeyError, ValueError, TypeError):
-                raise serializers.ValidationError({
-                    'location': 'Invalid GeoJSON Point format'
-                })
-                
-        return internal_value
-
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        # Convert Point to GeoJSON
-        if instance.location:
-            representation['location'] = {
-                'type': 'Point',
-                'coordinates': [instance.location.x, instance.location.y]
-            }
-        return representation
-
-    def validate(self, data):
-        open_24_hours = data.get('open_24_hours')
-        operating_hours = data.get('operating_hours', [])
-
-        if open_24_hours:
-            for hours in operating_hours:
-                if (hours['is_closed'] or 
-                    hours['opening_time'].strftime('%H:%M') != '00:00' or 
-                    hours['closing_time'].strftime('%H:%M') != '23:59'):
-                    raise ValidationError(
-                        "When open_24_hours is True, all days must be open 00:00-23:59"
-                    )
-
-        if len(operating_hours) != 7:
-            raise ValidationError("Must provide exactly 7 days of operating hours")
-        
-        days = sorted(hour['day_of_week'] for hour in operating_hours)
-        if days != list(range(7)):
-            raise ValidationError("Must provide operating hours for all days 0-6 without duplicates")
-
-        return data
-
-    def validate_images(self, value):
-        if len(value) != 8:
-            raise ValidationError("Must provide exactly 8 images")
-            
-        image_types = sorted(image['image_type'] for image in value)
-        if image_types != list(range(8)):
-            raise ValidationError("Must provide exactly one image for each type 0-7")
-        
-        return value
-
-    @transaction.atomic
-    def create(self, validated_data):
-        operating_hours_data = validated_data.pop('operating_hours', [])
-        images_data = validated_data.pop('images', [])
-        wash_types = validated_data.pop('wash_types', [])
-        amenities = validated_data.pop('amenities', [])
-        packages_data = validated_data.pop('packages', [])
-
-        car_wash = CarWash.objects.create(**validated_data)
-
-        CarWashOperatingHours.objects.bulk_create([
-            CarWashOperatingHours(car_wash=car_wash, **hours_data) for hours_data in operating_hours_data
-        ])
-
-        CarWashImage.objects.bulk_create([
-            CarWashImage(car_wash=car_wash, **image_data) for image_data in images_data
-        ])
-
-        car_wash.wash_types.set(wash_types)
-        car_wash.amenities.set(amenities)
-
-        for package_data in packages_data:
-            wash_types_for_package = package_data.pop('wash_types', [])
-            amenities_for_package = package_data.pop('amenities', [])
-
-            package = CarWashPackage.objects.create(car_wash=car_wash, **package_data)
-            package.wash_types.set(wash_types_for_package)
-            package.amenities.set(amenities_for_package)
-
-        return car_wash
-
-    @transaction.atomic
-    def update(self, instance, validated_data):
-        operating_hours_data = validated_data.pop('operating_hours', [])
-        images_data = validated_data.pop('images', [])
-        wash_types = validated_data.pop('wash_types', None)
-        amenities = validated_data.pop('amenities', None)
-        packages_data = validated_data.pop('packages', [])
-
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
-
-        if operating_hours_data:
-            for hours_data in operating_hours_data:
-                obj, created = CarWashOperatingHours.objects.update_or_create(
-                    car_wash=instance, day_of_week=hours_data['day_of_week'], defaults=hours_data
-                )
-
-        if images_data:
-            for image_data in images_data:
-                obj, created = CarWashImage.objects.update_or_create(
-                    car_wash=instance, image_type=image_data['image_type'], defaults=image_data
-                )
-
-        if wash_types is not None:
-            instance.wash_types.set(wash_types)
-
-        if amenities is not None:
-            instance.amenities.set(amenities)
-
-        if packages_data:
-            for package_data in packages_data:
-                wash_types_for_package = package_data.pop('wash_types', [])
-                amenities_for_package = package_data.pop('amenities', [])
-
-                package, created = CarWashPackage.objects.update_or_create(
-                    car_wash=instance,
-                    name=package_data['name'],
-                    defaults=package_data
-                )
-
-                if not created:
-                    package.wash_types.set(wash_types_for_package)
-                    package.amenities.set(amenities_for_package)
-
-        return instance
-
 class CarWashTypeSerializer(serializers.ModelSerializer):    
     class Meta:
         model = WashType
@@ -274,6 +120,12 @@ class CarWashOperatingHoursPostPatchSerializer(serializers.ModelSerializer):
     class Meta:
         model = CarWashOperatingHours
         fields = ["day_of_week", "is_closed", "opening_time", "closing_time"]
+
+
+class CarWashImagesPostPatchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CarWashImage
+        fields = ["image_type", "image_url"]
     
 
 class CarWashPostPatchSerializer(serializers.ModelSerializer):
@@ -284,6 +136,7 @@ class CarWashPostPatchSerializer(serializers.ModelSerializer):
         queryset=Amenity.objects.all(), many=True, required=False
     )
     operating_hours = CarWashOperatingHoursPostPatchSerializer(many=True, required=False)
+    images = CarWashImagesPostPatchSerializer(many=True, required=False)
     location = GeometryField()
 
     class Meta:
@@ -293,7 +146,9 @@ class CarWashPostPatchSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         self.handle_location(validated_data)
         operating_hours = validated_data.pop("operating_hours", [])  
+        images = validated_data.pop("images", [])  
         self.handle_operating_hours(instance, operating_hours)
+        self.handle_images(instance, images)
 
         return super().update(instance, validated_data)
     
@@ -313,10 +168,22 @@ class CarWashPostPatchSerializer(serializers.ModelSerializer):
                 return
             existing_object.update(**operating_hour_object)
 
+    def handle_images(self, instance, images): 
+        for image_object in images:
+            existing_object = instance.images.filter(image_url=image_object["image_url"])
+            if not existing_object:
+                CarWashImage.objects.create(
+                    car_wash=instance,
+                    **image_object
+                )
+                return
+            existing_object.update(**image_object)
+
     def create(self, validated_data):
         wash_types = validated_data.pop("wash_types", [])
         amenities = validated_data.pop("amenities", [])
         operating_hours = validated_data.pop("operating_hours", [])  
+        images = validated_data.pop("images", [])  
 
         car_wash = CarWash.objects.create(**validated_data)
 
@@ -324,4 +191,5 @@ class CarWashPostPatchSerializer(serializers.ModelSerializer):
         car_wash.amenities.set(amenities)
 
         self.handle_operating_hours(car_wash, operating_hours)
+        self.handle_images(car_wash, images)
         return car_wash

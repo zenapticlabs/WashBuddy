@@ -12,3 +12,11 @@ DEFAULT_STATUS_CHOICES = (
     ("CLOSURE", "Closure"),
     ("COMPLETED", "Completed")
 )
+
+
+IMAGE_TYPE_CHOICES = (
+    ("Menu", "Menu"),
+    ("Station", "Station"),
+    ("Exterior", "Exterior"),
+    ("Interior", "Interior")
+)

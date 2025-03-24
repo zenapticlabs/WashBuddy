@@ -4,6 +4,8 @@ from django.contrib.gis.db import models as gis_models
 from django.contrib.gis.geos import Point
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.auth.models import User
+
+from utilities.constants import IMAGE_TYPE_CHOICES
 from .managers import ActiveManager
 from utilities.mixins import CustomModelMixin
 from phonenumber_field.modelfields import PhoneNumberField
@@ -132,19 +134,15 @@ class CarWashOperatingHours(CustomModelMixin):
 
 class CarWashImage(CustomModelMixin):
     car_wash = models.ForeignKey(CarWash, on_delete=models.CASCADE, related_name="images")
-    image_type = models.SmallIntegerField(
-        validators=[
-            MinValueValidator(0, "Image type must be at least 0"),
-            MaxValueValidator(7, "Image type must be at most 7")
-        ]
-    )
-    image_key = models.CharField(max_length=255)
+    image_type = models.CharField(max_length=100, choices=IMAGE_TYPE_CHOICES)
+    image_url = models.URLField(max_length=500, verbose_name="Image URL")
 
     objects = models.Manager()
     active_objects = ActiveManager()
 
     def __str__(self):
-        return f"{self.car_wash.car_wash_name} - {self.image_type}"
+        return f"{self.car_wash.car_wash_name} - {self.image_url}"
+
 
 class WashType(CustomModelMixin):
     CATEGORY_CHOICES = [
