@@ -1,3 +1,6 @@
+import { XIcon } from "lucide-react";
+import Image from "next/image";
+
 interface ImageUploadZoneProps {
   title?: string;
   required?: boolean;
@@ -16,34 +19,26 @@ const ImageUploadZone: React.FC<ImageUploadZoneProps> = ({
   };
 
   return (
-    <>
-      {title && (
-        <div className="text-body-2">
-          {title} {required && <span className="text-red-500">*</span>}
+    <div className="flex items-center justify-center w-full my-2">
+      <label
+        htmlFor={title}
+        className="flex flex-col items-center justify-center w-full rounded-lg cursor-pointer hover:bg-neutral-50 border-dashed border-neutral-100 border-2"
+      >
+        <div className="flex flex-col items-center justify-center py-4">
+          <p className="text-body-2 text-neutral-800">
+            Drag & drop or{" "}
+            <span className="text-blue-500 underline">Click here</span>
+          </p>
         </div>
-      )}
-      <div className="flex items-center justify-center w-full">
-        <label
-          htmlFor="dropzone-file"
-          className="flex flex-col items-center justify-center w-full rounded-lg cursor-pointer bg-neutral-50 hover:bg-neutral-100"
-        >
-          <div className="flex flex-col items-center justify-center py-8">
-            <p className="text-body-2 text-neutral-800">
-              Drag & drop or{" "}
-              <span className="text-blue-500 underline">Click here</span>
-            </p>
-            <p className="text-body-2 text-neutral-800">to upload your image</p>
-          </div>
-          <input
-            id="dropzone-file"
-            type="file"
-            className="hidden"
-            accept="image/*"
-            onChange={handleFileChange}
-          />
-        </label>
-      </div>
-    </>
+        <input
+          id={title}
+          type="file"
+          className="hidden"
+          accept="image/*"
+          onChange={handleFileChange}
+        />
+      </label>
+    </div>
   );
 };
 
