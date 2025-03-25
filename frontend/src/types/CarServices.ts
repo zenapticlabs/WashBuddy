@@ -18,11 +18,15 @@ export interface CarServiceWashType {
 export interface ICarServiceWashPackage {
   id: string;
   name: string;
-  price: number;
-  discount?: number;
+  wash_types: string[];
+  amenities: string[];
+  status: string;
   description?: string;
-  created_at: Date;
-  updated_at: Date;
+  price: number;
+  created_by: string | null;
+  updated_by: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface ICarWashCard {
