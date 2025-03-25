@@ -13,13 +13,16 @@ export interface CarServiceWashType {
   name: string;
   subclass: string;
   description?: string;
+  status: string;
+  created_by: string | null;
+  updated_by: string | null;
 }
 
 export interface ICarServiceWashPackage {
   id: string;
   name: string;
-  wash_types: string[];
-  amenities: string[];
+  wash_types: CarServiceWashType[];
+  amenities: CarServiceAmenity[];
   status: string;
   description?: string;
   price: number;
