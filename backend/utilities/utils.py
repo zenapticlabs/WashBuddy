@@ -3,6 +3,8 @@ from rest_framework import (
     pagination,
 )
 from rest_framework.response import Response
+import threading
+from supabase import create_client, Client
 
 class ResponseInfo(object):
     """
@@ -38,3 +40,15 @@ class CustomResponsePagination(pagination.PageNumberPagination):
                 }
             ]
         )
+
+class SupabaseSingleton:
+    _instance = None
+    _lock = threading.Lock()
+
+    @classmethod
+    def get_instance(cls, url, key):
+        if not cls._instance:
+            with cls._lock:
+                if not cls._instance:
+                    cls._instance = create_client(url, key)
+        return cls._instance

@@ -1,10 +1,11 @@
+import uuid
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from drf_spectacular.types import OpenApiTypes
 from rest_framework import viewsets, status, generics
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from .models import CarWash, WashType, Amenity
-from .serializers import CarWashListSerializer, CarWashPostPatchSerializer, WashTypeSerializer, AmenitySerializer
+from .serializers import CarWashListSerializer, CarWashPostPatchSerializer, PreSignedUrlSerializer, WashTypeSerializer, AmenitySerializer
 from django.db.models import Q
 from datetime import datetime
 from django.contrib.gis.geos import Point
@@ -13,13 +14,14 @@ from django.contrib.gis.measure import D
 from rest_framework.generics import ListAPIView
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
-from utilities.utils import ResponseInfo, CustomResponsePagination
+from utilities.utils import ResponseInfo, CustomResponsePagination, SupabaseSingleton
 from utilities.mixins import DynamicFieldsViewMixin
 from .filters import DynamicSearchFilter, ListCarWashFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models.functions import Coalesce
 from django.db.models import FloatField, Value
 from django.db import transaction
+from django.conf import settings
 
 class WashTypeListAPIView(generics.ListAPIView):
     queryset = WashType.objects.all()
@@ -116,3 +118,48 @@ class ListCarWashAPIView(DynamicFieldsViewMixin, ListAPIView):
         self.response_format["message"] = ["Success"]
 
         return Response(self.response_format)
+    
+
+class S3APIView(APIView):
+    permission_classes = (AllowAny, )
+
+    def __init__(self, **kwargs):
+        """
+        Constructor method for formatting web response to return.
+        """
+        self.pagination = False
+        self.response_format = ResponseInfo().response
+        super(S3APIView, self).__init__(**kwargs)
+
+    @extend_schema(
+        summary="Get Pre Signed Url",
+        description="Get Pre Signed Url to upload files to s3 bucket",
+        request=PreSignedUrlSerializer,
+        responses={200}
+    )
+    def post(self, request):
+        try:
+            serializer = PreSignedUrlSerializer(data=request.data)
+
+            if serializer.is_valid(raise_exception=True):
+                filename = serializer.validated_data.get('filename')
+            
+                unique_filename = f"{uuid.uuid4()}-{filename}"
+                file_path = f"carwash-image-uploads/{unique_filename}"
+
+                supabase_client = SupabaseSingleton.get_instance(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY)
+
+                signed_url_object = supabase_client.storage.from_(settings.S3_BUCKET_NAME).create_signed_upload_url(file_path)
+                self.response_format["data"] = {
+                    "signed_url_object": signed_url_object,
+                }
+
+                return Response(self.response_format)
+        except Exception as e:
+            print("Error in fetching pre signed url ", e)
+            self.response_format["error"] = str(e)
+            self.response_format["message"] = "Could not fetch presigned url"
+            self.response_format["status_code"] = status.HTTP_400_BAD_REQUEST
+            return Response(self.response_format, status=status.HTTP_400_BAD_REQUEST)
+
+        
