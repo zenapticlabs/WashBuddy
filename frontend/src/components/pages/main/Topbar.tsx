@@ -8,7 +8,7 @@ import { Car_Wash_Type, SortBy } from "@/utils/constants";
 import user from "@/assets/user.png";
 import { Bell, MapPin, Plus } from "lucide-react";
 import { FilterState } from "@/types/filters";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CreateCarWashDiaolog from "./CreateCarWashDiaolog";
 import Sidebar from "./Sidebar";
 import Link from "next/link";
@@ -21,7 +21,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from "@/contexts/AuthContext";
+import useLocationData from "@/hooks/useLocationData";
 
 const FilterButtonConfigs = [
   {
@@ -48,10 +49,16 @@ const Topbar: React.FC<TopbarProps> = ({
   sideBarAlwaysOpen,
 }) => {
   const { signOut } = useAuth();
+  const { locationData, fetchLocationData, error, loading } = useLocationData();
   const router = useRouter();
   const [notiCount, setNotiCount] = useState(2);
   // const [openCreateModal, setOpenCreateModal] = useState(false);
   const [openSidebar, setOpenSidebar] = useState(false);
+
+  useEffect(() => {
+    fetchLocationData();
+  }, [fetchLocationData]);
+
   const handleOpenCreateModal = () => {
     // setOpenCreateModal(true);
     router.push("/carwash");
@@ -74,9 +81,9 @@ const Topbar: React.FC<TopbarProps> = ({
   const handleLogout = async () => {
     try {
       await signOut();
-      router.push('/login'); // Redirect to login page after logout
+      router.push("/login"); // Redirect to login page after logout
     } catch (error) {
-      console.error('Error logging out:', error);
+      console.error("Error logging out:", error);
     }
   };
 
@@ -131,7 +138,9 @@ const Topbar: React.FC<TopbarProps> = ({
             ))}
             <span className="text-title-2 text-neutral-700 flex items-center gap-2">
               <MapPin size={24} />
-              Downtown, NY
+              {loading && <div>Loading...</div>}
+              {error && <div>Error: {error}</div>}
+              {locationData && `${locationData?.city}, ${locationData?.state}`}
             </span>
           </div>
         </div>
@@ -167,7 +176,9 @@ const Topbar: React.FC<TopbarProps> = ({
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuItem onClick={handleLogout}>Log out</DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout}>
+                Log out
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
