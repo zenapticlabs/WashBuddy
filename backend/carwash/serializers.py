@@ -193,3 +193,7 @@ class CarWashPostPatchSerializer(serializers.ModelSerializer):
         self.handle_operating_hours(car_wash, operating_hours)
         self.handle_images(car_wash, images)
         return car_wash
+    
+
+class PreSignedUrlSerializer(serializers.Serializer):
+    filename = serializers.CharField()

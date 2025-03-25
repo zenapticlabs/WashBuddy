@@ -173,3 +173,7 @@ UNFOLD = {
         "site_header": "WashBuddy Admin",
     }
 }
+
+S3_BUCKET_NAME = os.getenv('STORAGE_BUCKET_NAME')
+SUPABASE_SERVICE_ROLE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY')
+SUPABASE_URL = os.getenv('SUPABASE_URL')
