@@ -5,7 +5,6 @@ import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import car1_img from "@/assets/car1.png";
 import car2_img from "@/assets/car2.png";
-import { MockWashPackages } from "@/mocks";
 import Link from "next/link";
 import { CarWashResponse } from "@/types/CarServices";
 

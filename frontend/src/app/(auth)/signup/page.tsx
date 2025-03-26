@@ -13,6 +13,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useRouter } from "next/navigation";
 
 const formConfig = [
   {
@@ -71,11 +72,12 @@ const signupSchema = z
   });
 
 export default function Page() {
-  const { signUpWithOtp, verifyOtp, signInWithOtp } = useAuth();
+  const { signUpWithOtp, verifyOtp, signInWithOtp, user } = useAuth();
   const [step, setStep] = useState(1);
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const router = useRouter();
   // Initialize React Hook Form
   const {
     register,
@@ -85,6 +87,12 @@ export default function Page() {
     resolver: zodResolver(signupSchema),
     mode: "onBlur",
   });
+
+  useEffect(() => {
+    if (user && !loading) {
+      router.push("/");
+    }
+  }, [user, loading, router]);
 
   useEffect(() => {
     const isOTPComplete = otp.every((digit) => digit !== "");
@@ -305,7 +313,7 @@ export default function Page() {
   };
 
   return (
-    <div className="w-full h-screen bg-[#00000066] flex justify-center pt-20">
+    <div className="w-full min-h-screen bg-[#00000066] flex justify-center py-20">
       <Toaster position="top-center" />
       <div className="w-[480px] h-fit bg-white rounded-lg p-6 flex flex-col gap-6 relative">
         {renderContent()}

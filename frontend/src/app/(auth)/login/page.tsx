@@ -10,9 +10,11 @@ import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { InputOTP } from "@/components/molecule/InputOTP";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
 
 export default function Page() {
-  const { signInWithOtp, verifyOtp, signInWithGoogle } = useAuth();
+  const router = useRouter();
+  const { signInWithOtp, verifyOtp, signInWithGoogle, user } = useAuth();
   const [step, setStep] = useState(1);
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [email, setEmail] = useState("");
@@ -25,6 +27,13 @@ export default function Page() {
       handleVerifyOTP();
     }
   }, [otp]);
+
+  useEffect(() => {
+    // Redirect if user is already logged in
+    if (user && !loading) {
+      router.push('/');
+    }
+  }, [user, loading, router]);
 
   const handleSendOTP = async () => {
     // Email validation
@@ -261,7 +270,7 @@ export default function Page() {
     }
   };
   return (
-    <div className="w-full bg-[#00000066] flex justify-center pt-20 pb-20">
+    <div className="w-full bg-[#00000066] flex justify-center pt-20 pb-20 min-h-screen">
       <Toaster position="top-center" />
       <div className="w-[480px] h-fit bg-white rounded-lg p-6 flex flex-col gap-6 relative">
         {renderContent()}
