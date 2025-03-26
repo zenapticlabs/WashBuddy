@@ -1,12 +1,13 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from 'react';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { User } from '@supabase/supabase-js';
+import { createContext, useContext, useEffect, useState } from "react";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { User } from "@supabase/supabase-js";
 
 type AuthContextType = {
   user: User | null;
   loading: boolean;
+  signUpWithOtp: (email: string, password: string, firstName: string, lastName: string) => Promise<{ error: Error | null }>;
   signInWithOtp: (email: string) => Promise<{ error: Error | null }>;
   verifyOtp: (email: string, token: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -27,13 +28,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     // Listen for changes on auth state (logged in, signed out, etc.)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const signUpWithOtp = async (
+    email: string,
+    password: string,
+    firstName: string,
+    lastName: string
+  ) => {
+    try {
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            firstName,
+            lastName,
+          },
+        },
+      });
+      return { error };
+    } catch (error) {
+      return { error: error as Error };
+    }
+  };
 
   const signInWithOtp = async (email: string) => {
     try {
@@ -49,12 +75,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+
   const verifyOtp = async (email: string, token: string) => {
     try {
       const { error } = await supabase.auth.verifyOtp({
         email,
         token,
-        type: 'email',
+        type: "email",
       });
       return { error };
     } catch (error) {
@@ -69,6 +96,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const value = {
     user,
     loading,
+    signUpWithOtp,
     signInWithOtp,
     verifyOtp,
     signOut,
@@ -80,7 +108,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
-}; 
+};

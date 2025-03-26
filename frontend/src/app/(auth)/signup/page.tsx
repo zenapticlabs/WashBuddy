@@ -10,15 +10,82 @@ import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { InputOTP } from "@/components/molecule/InputOTP";
 import { useAuth } from "@/contexts/AuthContext";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+
+const formConfig = [
+  {
+    name: "firstName",
+    label: "First Name",
+    type: "text",
+    placeholder: "Enter your first name",
+  },
+  {
+    name: "lastName",
+    label: "Last Name",
+    type: "text",
+    placeholder: "Enter your last name",
+  },
+  {
+    name: "email",
+    label: "Email",
+    type: "email",
+    placeholder: "Enter your email",
+  },
+  {
+    name: "password",
+    label: "Password",
+    type: "password",
+    placeholder: "Enter your password",
+  },
+  {
+    name: "confirmPassword",
+    label: "Confirm Password",
+    type: "password",
+    placeholder: "Confirm your password",
+  },
+];
+
+// Define the base type first to avoid circular reference
+type SignupFormValues = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+};
+
+// Define validation schema using zod
+const signupSchema = z
+  .object({
+    firstName: z.string().min(1, "First name is required"),
+    lastName: z.string().min(1, "Last name is required"),
+    email: z.string().email("Please enter a valid email address"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    confirmPassword: z.string().min(8, "Please confirm your password"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
 
 export default function Page() {
-  const { signInWithOtp, verifyOtp } = useAuth();
+  const { signUpWithOtp, verifyOtp, signInWithOtp } = useAuth();
   const [step, setStep] = useState(1);
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [emailError, setEmailError] = useState<string | null>(null);
+  // Initialize React Hook Form
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<SignupFormValues>({
+    resolver: zodResolver(signupSchema),
+    mode: "onBlur",
+  });
+
   useEffect(() => {
     const isOTPComplete = otp.every((digit) => digit !== "");
     if (isOTPComplete) {
@@ -26,53 +93,60 @@ export default function Page() {
     }
   }, [otp]);
 
-  const handleSendOTP = async () => {
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email) {
-      setEmailError("Email is required");
-      return;
-    }
-    if (!emailRegex.test(email)) {
-      setEmailError("Please enter a valid email address");
-      return;
-    }
-
-    setLoading(true);
-    setEmailError(null);
-    try {
-      const { error } = await signInWithOtp(email);
-
-      if (error) {
-        setError(error.message);
-        toast.error(error.message);
-        return;
-      }
-      toast.success("OTP sent successfully");
-      setStep(3);
-    } catch (error) {
-      setError("An unexpected error occurred");
-      toast.error("An unexpected error occurred");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleVerifyOTP = async () => {
     setLoading(true);
-    setError(null);
     try {
       const { error } = await verifyOtp(email, otp.join(""));
 
       if (error) {
-        setError(error.message);
         toast.error("An unexpected error occurred");
         return;
       }
       toast.success("OTP verified successfully");
       window.location.href = "/";
     } catch (error) {
-      setError("An unexpected error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSendOTP = async () => {
+    setLoading(true);
+    try {
+      const { error } = await signInWithOtp(email);
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+      toast.success("Verification code sent successfully");
+    } catch (error) {
+      toast.error("Failed to send verification code");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onSubmit = async (data: SignupFormValues) => {
+    setLoading(true);
+    try {
+      // Store the email for OTP verification
+      setEmail(data.email);
+      const { error } = await signUpWithOtp(
+        data.email,
+        data.password,
+        data.firstName,
+        data.lastName
+      );
+      if (error) {
+        toast.error("Failed to create account");
+        return;
+      }
+
+      setStep(3);
+
+      toast.success("Account created! Please verify your email.");
+    } catch (error) {
+      toast.error("Failed to create account");
     } finally {
       setLoading(false);
     }
@@ -88,7 +162,7 @@ export default function Page() {
           </span>
         </div>
         <div className="text-headline-3 text-neutral-900 text-neutral-900">
-          Sign in or create an account
+          Create an account
         </div>
         <div className="flex justify-center items-center">
           <Image
@@ -100,44 +174,8 @@ export default function Page() {
           />
         </div>
         <div className="flex flex-col gap-4">
-          <Button className="w-full" onClick={() => setStep(2)}>
-            <MailIcon className="w-4 h-4" />
+          <Button onClick={() => setStep(2)} className="w-full">
             Continue with Email
-          </Button>
-          <div className="flex items-center gap-2">
-            <div className="h-[1px] w-full bg-neutral-100"></div>
-            <span className="text-body-2 text-[#2E2E2E]">Or</span>
-            <div className="h-[1px] w-full bg-neutral-100"></div>
-          </div>
-          <Button variant="outline" className="w-full border-neutral-100">
-            <Image
-              src="https://developers.google.com/identity/images/g-logo.png"
-              alt="Google logo"
-              width={18}
-              height={18}
-            />
-            Continue with Google
-          </Button>
-          <Button
-            variant="outline"
-            className="w-full border-neutral-100 flex items-center gap-2"
-          >
-            <Image
-              src="https://upload.wikimedia.org/wikipedia/commons/1/1b/Apple_logo_grey.svg"
-              alt="Apple logo"
-              width={18}
-              height={18}
-            />
-            Continue with Apple
-          </Button>
-          <Button variant="outline" className="w-full border-neutral-100">
-            <Image
-              src="https://upload.wikimedia.org/wikipedia/commons/5/51/Facebook_f_logo_%282019%29.svg"
-              alt="Facebook logo"
-              width={18}
-              height={18}
-            />
-            Continue with Facebook
           </Button>
         </div>
         <div className="text-body-2">
@@ -151,15 +189,16 @@ export default function Page() {
           </Link>
           .
         </div>
-        <div className="text-body-2 text-neutral-900">
-          Don't have an account?{" "}
-          <Link href="/signup" className="text-blue-500 underline">
-            Sign up
+        <div className="text-body-2 text-center">
+          Already have an account?{" "}
+          <Link href="/login" className="text-blue-500">
+            Log in
           </Link>
         </div>
       </>
     );
   };
+
   const secondPage = () => {
     return (
       <div className="flex flex-col gap-4">
@@ -170,26 +209,50 @@ export default function Page() {
           <ChevronLeftIcon className="w-4 h-4" />
           Back
         </div>
-        <div className="text-headline-3 text-neutral-900 text-neutral-900">
-          What is your email address?
+        <div className="text-headline-3 text-neutral-900">
+          Sign up with email
         </div>
-        <div className="flex flex-col gap-2">
-          <Input
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="Enter your email address"
-            className="p-2.5"
-          />
-          {emailError && (
-            <span className="text-sm text-red-500">{emailError}</span>
-          )}
+
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+          {formConfig.map((field) => (
+            <div key={field.label} className="flex flex-col gap-1">
+              <label className="text-body-2 text-neutral-700">
+                {field.label}
+              </label>
+              <Input
+                type={field.type}
+                placeholder={field.placeholder}
+                {...register(field.name as keyof SignupFormValues)}
+                className={
+                  errors[field.name as keyof SignupFormValues]
+                    ? "border-red-500"
+                    : ""
+                }
+              />
+              {errors[field.name as keyof SignupFormValues] && (
+                <p className="text-red-500 text-sm">
+                  {errors[field.name as keyof SignupFormValues]?.message}
+                </p>
+              )}
+            </div>
+          ))}
+
+          <Button className="w-full mt-2" disabled={loading} type="submit">
+            {loading && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+            Create Account
+          </Button>
+        </form>
+
+        <div className="text-body-2 text-center">
+          Already have an account?{" "}
+          <Link href="/login" className="text-blue-500">
+            Log in
+          </Link>
         </div>
-        <Button className="w-full" onClick={handleSendOTP} disabled={loading}>
-          {loading ? "Loading..." : "Continue"}
-        </Button>
       </div>
     );
   };
+
   const thirdPage = () => {
     return (
       <div className="flex flex-col gap-4">
@@ -227,6 +290,7 @@ export default function Page() {
       </div>
     );
   };
+
   const renderContent = () => {
     switch (step) {
       case 1:
@@ -239,8 +303,9 @@ export default function Page() {
         return null;
     }
   };
+
   return (
-    <div className="w-full bg-[#00000066] flex justify-center pt-20 pb-20">
+    <div className="w-full h-screen bg-[#00000066] flex justify-center pt-20">
       <Toaster position="top-center" />
       <div className="w-[480px] h-fit bg-white rounded-lg p-6 flex flex-col gap-6 relative">
         {renderContent()}
