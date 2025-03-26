@@ -12,7 +12,7 @@ import { InputOTP } from "@/components/molecule/InputOTP";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function Page() {
-  const { signInWithOtp, verifyOtp } = useAuth();
+  const { signInWithOtp, verifyOtp, signInWithGoogle } = useAuth();
   const [step, setStep] = useState(1);
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [email, setEmail] = useState("");
@@ -78,6 +78,22 @@ export default function Page() {
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    try {
+      const { error } = await signInWithGoogle();
+      if (error) {
+        setError(error.message);
+        toast.error(error.message);
+      }
+    } catch (error) {
+      setError("An unexpected error occurred");
+      toast.error("An unexpected error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const firstPage = () => {
     return (
       <>
@@ -109,7 +125,12 @@ export default function Page() {
             <span className="text-body-2 text-[#2E2E2E]">Or</span>
             <div className="h-[1px] w-full bg-neutral-100"></div>
           </div>
-          <Button variant="outline" className="w-full border-neutral-100">
+          <Button 
+            variant="outline" 
+            className="w-full border-neutral-100"
+            onClick={handleGoogleSignIn}
+            disabled={loading}
+          >
             <Image
               src="https://developers.google.com/identity/images/g-logo.png"
               alt="Google logo"

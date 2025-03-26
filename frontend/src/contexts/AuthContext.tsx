@@ -10,6 +10,7 @@ type AuthContextType = {
   signUpWithOtp: (email: string, password: string, firstName: string, lastName: string) => Promise<{ error: Error | null }>;
   signInWithOtp: (email: string) => Promise<{ error: Error | null }>;
   verifyOtp: (email: string, token: string) => Promise<{ error: Error | null }>;
+  signInWithGoogle: () => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
 };
 
@@ -89,6 +90,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const signInWithGoogle = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      return { error };
+    } catch (error) {
+      return { error: error as Error };
+    }
+  };
+
   const signOut = async () => {
     await supabase.auth.signOut();
   };
@@ -99,6 +114,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signUpWithOtp,
     signInWithOtp,
     verifyOtp,
+    signInWithGoogle,
     signOut,
   };
 
