@@ -2,12 +2,15 @@ import { Loader2 } from "lucide-react";
 
 import { useState } from "react";
 import ImageUploadZone from "../ui/imageUploadZone";
-import { uploadFileToS3 } from "@/services/UploadService";
+import { getPresignedUrl, uploadFile } from "@/services/UploadService";
 import { toast } from "sonner";
 import { XIcon } from "lucide-react";
 import Image from "next/image";
 import UploadedImageCard from "../ui/uploadedImageCard";
 
+const NEXT_PUBLIC_STORAGE_ENDPOINT = process.env.NEXT_PUBLIC_STORAGE_ENDPOINT;
+const NEXT_PUBLIC_STORAGE_BUCKET_NAME =
+  process.env.NEXT_PUBLIC_STORAGE_BUCKET_NAME;
 const MultiImageUploadZone = ({
   images,
   image_type,
@@ -33,10 +36,23 @@ const MultiImageUploadZone = ({
     if (!file) return;
     setUploading(true);
     setUploadingFile(file);
-    const fileName = await uploadFileToS3(file);
-    toast.success("File uploaded successfully!");
-    handleAddImage(image_type, fileName);
-    setUploading(false);
+    // const fileName = await uploadFileToS3(file);
+
+    try {
+      const presignedUrl = await getPresignedUrl(file.name);
+      const uploadResponse = await uploadFile(presignedUrl.signed_url, file);
+      const fileUrl = `${NEXT_PUBLIC_STORAGE_ENDPOINT}/object/public/${NEXT_PUBLIC_STORAGE_BUCKET_NAME}/${presignedUrl.path}`;
+
+      // Add the uploaded image to your application state
+      handleAddImage(image_type, fileUrl);
+      toast.success("File uploaded successfully!");
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      toast.error("Failed to upload file");
+    } finally {
+      setUploading(false);
+      setUploadingFile(null);
+    }
   };
 
   return (

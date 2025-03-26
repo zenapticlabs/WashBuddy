@@ -31,11 +31,14 @@ import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import ImageUploadZone from "@/components/ui/imageUploadZone";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import { uploadFileToS3 } from "@/services/UploadService";
+import { getPresignedUrl, uploadFile } from "@/services/UploadService";
 import Image from "next/image";
 import MultiImageUploadZone from "@/components/molecule/MultiImageUploadZone";
 import UploadedImageCard from "@/components/ui/uploadedImageCard";
 
+const NEXT_PUBLIC_STORAGE_ENDPOINT = process.env.NEXT_PUBLIC_STORAGE_ENDPOINT;
+const NEXT_PUBLIC_STORAGE_BUCKET_NAME =
+  process.env.NEXT_PUBLIC_STORAGE_BUCKET_NAME;
 const CarWashContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -149,13 +152,21 @@ const CarWashContent = () => {
   const handleUploadSitePhoto = async (file: File | null) => {
     if (!file) return;
     setUploadingSitePhoto(true);
-    const fileName = await uploadFileToS3(file);
-    toast.success("File uploaded successfully!");
-    setFormData((prevData: any) => ({
-      ...prevData,
-      image_url: fileName,
-    }));
-    setUploadingSitePhoto(false);
+    try {
+      const presignedUrl = await getPresignedUrl(file.name);
+      const uploadResponse = await uploadFile(presignedUrl.signed_url, file);
+      const fileName = `${NEXT_PUBLIC_STORAGE_ENDPOINT}/object/public/${NEXT_PUBLIC_STORAGE_BUCKET_NAME}/${presignedUrl.path}`;
+      toast.success("File uploaded successfully!");
+      setFormData((prevData: any) => ({
+        ...prevData,
+        image_url: fileName,
+      }));
+      setUploadingSitePhoto(false);
+    } catch (error) {
+      toast.error("Failed to upload file");
+    } finally {
+      setUploadingSitePhoto(false);
+    }
   };
 
   const handleDeleteSitePhoto = () => {
