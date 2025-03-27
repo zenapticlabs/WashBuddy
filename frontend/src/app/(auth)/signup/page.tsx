@@ -313,9 +313,9 @@ export default function Page() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#00000066] flex justify-center py-20">
+    <div className="w-full bg-[#00000066] flex justify-center md:py-20 min-h-screen">
       <Toaster position="top-center" />
-      <div className="w-[480px] h-fit bg-white rounded-lg p-6 flex flex-col gap-6 relative">
+      <div className="w-full md:w-[480px] h-screen md:h-fit bg-white md:rounded-lg p-6 flex flex-col gap-6 relative">
         {renderContent()}
       </div>
     </div>

@@ -195,18 +195,18 @@ const CarWashContent = () => {
       <Toaster position="top-center" />
       <div className="flex flex-col h-screen">
         <Topbar sideBarAlwaysOpen={true} />
-        <div className="flex flex-col ml-[210px] flex-1 overflow-hidden">
+        <div className="flex flex-col md:ml-[210px] flex-1 overflow-hidden">
           {fetchLoading ? (
             <div className="absolute inset-0 z-50 flex items-center justify-center">
               <Loader2 className="w-10 h-10 text-blue-500 animate-spin" />
             </div>
           ) : (
             <>
-              <div className="w-[750px] mx-auto text-headline-2 text-neutral-900 py-4 px-6">
+              <div className="w-full md:w-[750px] mx-auto text-headline-2 text-neutral-900 py-4 px-6">
                 {isEdit ? "Edit Carwash" : "Create Carwash"}
               </div>
               <ScrollArea className="w-full h-[calc(100vh-70px)] overflow-auto">
-                <div className="w-[750px] mx-auto">
+                <div className="w-full md:w-[750px] mx-auto">
                   <div className="">
                     <div className="text-body-2 text-neutral-900 px-6 py-2">
                       Upload the following and we will reimburse you for a basic
