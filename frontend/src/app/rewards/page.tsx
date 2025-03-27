@@ -43,28 +43,34 @@ export default function Rewards() {
   const [sortBy, setSortBy] = useState<string>(SortOptions[0].value);
   const [showMap, setShowMap] = useState<boolean>(false);
   return (
-    <div className="flex flex-col h-screen">
-      <Topbar sideBarAlwaysOpen={true} />
-      <div className="flex flex-row md:ml-[210px] h-[calc(100vh-66px)] relative">
-        <div className="w-[640px] px-3 md:flex hidden ">
-          <RewardList sortBy={sortBy} setSortBy={setSortBy} reviews={reviews} />
-        </div>
-        <div className="flex-1 flex items-center justify-center">
-          <RadarMap
+    <>
+      <div className="flex flex-col h-screen">
+        <Topbar sideBarAlwaysOpen={true} />
+        <div className="flex flex-row md:ml-[210px] h-[calc(100vh-66px)] relative">
+          <div className="w-[640px] px-3 md:flex hidden ">
+            <RewardList
+              sortBy={sortBy}
+              setSortBy={setSortBy}
+              reviews={reviews}
+            />
+          </div>
+          <div className="flex-1 flex items-center justify-center">
+            <RadarMap
+              showMap={showMap}
+              publishableKey={RADAR_KEY || ""}
+              carWashes={[]}
+              onMapReady={() => {}}
+            />
+          </div>
+          <MobileRewardView
             showMap={showMap}
-            publishableKey={RADAR_KEY || ""}
-            carWashes={[]}
-            onMapReady={() => {}}
+            setShowMap={setShowMap}
+            sortBy={sortBy}
+            setSortBy={setSortBy}
+            reviews={reviews}
           />
         </div>
-        <MobileRewardView
-          showMap={showMap}
-          setShowMap={setShowMap}
-          sortBy={sortBy}
-          setSortBy={setSortBy}
-          reviews={reviews}
-        />
       </div>
-    </div>
+    </>
   );
 }
