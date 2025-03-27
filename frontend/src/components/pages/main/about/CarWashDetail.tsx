@@ -18,7 +18,12 @@ import CreateCarWashReviewModal from "./CreateCarWashReviewModal";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import useMediaQuery from "@/hooks/useMediaQuery";
 import { extractCoordinates } from "@/utils/functions";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -39,9 +44,44 @@ const CarWashDetail: React.FC<CarWashDetailProps> = ({
   const [reviewOpen, setReviewOpen] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const [isOpen, setIsOpen] = useState(false);
+  const [closingTime, setClosingTime] = useState<string>("");
 
   useEffect(() => {
     setImageLoading(true);
+    if (data?.open_24_hours) {
+      setIsOpen(true);
+      setClosingTime("");
+      return;
+    }
+    if (data?.operating_hours) {
+      const now = new Date();
+      const currentDay = now.getDay(); // 0-6 (Sunday-Saturday)
+      const currentTime = now.toLocaleTimeString("en-US", { hour12: false });
+
+      const todayHours = data.operating_hours.find(
+        (hours) => hours.day_of_week === currentDay
+      );
+
+      if (todayHours && !todayHours.is_closed) {
+        const isCurrentlyOpen =
+          currentTime >= todayHours.opening_time &&
+          currentTime <= todayHours.closing_time;
+        setIsOpen(isCurrentlyOpen);
+
+        // Convert 24h time to 12h format for display
+        const closeTime = new Date(`1970-01-01T${todayHours.closing_time}`);
+        setClosingTime(
+          closeTime.toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+          })
+        );
+      } else {
+        setIsOpen(false);
+        setClosingTime("");
+      }
+    }
   }, [data]);
 
   const handleNavigate = () => {
@@ -97,13 +137,35 @@ const CarWashDetail: React.FC<CarWashDetailProps> = ({
               </button>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-body-2 text-accent-green">Open</span>
-              <span className="w-1 h-1 bg-[#D9D9D9] rounded-full"></span>
-              <span className="text-body-2 text-neutral-500">Closes 17:00</span>
+              <span
+                className={`text-body-2 ${
+                  isOpen ? "text-accent-green" : "text-accent-red"
+                }`}
+              >
+                {isOpen ? "Open" : "Closed"}
+              </span>
+              {data.open_24_hours && (
+                <>
+                  <span className="w-1 h-1 bg-[#D9D9D9] rounded-full"></span>
+                  <span className="text-body-2 text-neutral-500">
+                    24 hours
+                  </span>
+                </>
+              )}
+              {!data.open_24_hours && isOpen && (
+                <>
+                  <span className="w-1 h-1 bg-[#D9D9D9] rounded-full"></span>
+                  <span className="text-body-2 text-neutral-500">
+                    Closes {closingTime}
+                  </span>
+                </>
+              )}
               <Star className="w-4 h-4 text-accent-yellow fill-accent-yellow" />
               <span className="text-title-2 text-accent-yellow">
-                4.8
-                <span className="pl-1 text-body-3 text-neutral-300">(123)</span>
+                {data?.reviews_average}
+                <span className="pl-1 text-body-3 text-neutral-300">
+                  ({data.reviews_count || 0})
+                </span>
               </span>
             </div>
             <div className="flex flex-col gap-2 mb-2">
@@ -112,13 +174,13 @@ const CarWashDetail: React.FC<CarWashDetailProps> = ({
                 <div className="flex items-center gap-0.5 text-body-2 text-neutral-500">
                   {data?.formatted_address}
                   <Dot className="w-4 h-4 text-neutral-500" />
-                  12 miles
+                  {Number(data.distance).toFixed(2)} miles
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-neutral-500" />
                 <span className="text-body-2 text-neutral-500">
-                  {data?.phone}
+                  {data?.phone || "No phone number"}
                 </span>
               </div>
             </div>
@@ -133,7 +195,7 @@ const CarWashDetail: React.FC<CarWashDetailProps> = ({
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="about">
-                <CarWashAbout data={data}/>
+                <CarWashAbout data={data} />
               </TabsContent>
               <TabsContent value="reviews">
                 <CarWashReviews setReviewOpen={setReviewOpen} />

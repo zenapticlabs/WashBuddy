@@ -10,9 +10,11 @@ import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { InputOTP } from "@/components/molecule/InputOTP";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRouter } from "next/navigation";
 
 export default function Page() {
-  const { signInWithOtp, verifyOtp } = useAuth();
+  const router = useRouter();
+  const { signInWithOtp, verifyOtp, signInWithGoogle, user } = useAuth();
   const [step, setStep] = useState(1);
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [email, setEmail] = useState("");
@@ -25,6 +27,13 @@ export default function Page() {
       handleVerifyOTP();
     }
   }, [otp]);
+
+  useEffect(() => {
+    // Redirect if user is already logged in
+    if (user && !loading) {
+      router.push('/');
+    }
+  }, [user, loading, router]);
 
   const handleSendOTP = async () => {
     // Email validation
@@ -45,7 +54,7 @@ export default function Page() {
 
       if (error) {
         setError(error.message);
-        toast.error("An unexpected error occurred");
+        toast.error(error.message);
         return;
       }
       toast.success("OTP sent successfully");
@@ -73,6 +82,22 @@ export default function Page() {
       window.location.href = "/";
     } catch (error) {
       setError("An unexpected error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    try {
+      const { error } = await signInWithGoogle();
+      if (error) {
+        setError(error.message);
+        toast.error(error.message);
+      }
+    } catch (error) {
+      setError("An unexpected error occurred");
+      toast.error("An unexpected error occurred");
     } finally {
       setLoading(false);
     }
@@ -109,7 +134,12 @@ export default function Page() {
             <span className="text-body-2 text-[#2E2E2E]">Or</span>
             <div className="h-[1px] w-full bg-neutral-100"></div>
           </div>
-          <Button variant="outline" className="w-full border-neutral-100">
+          <Button 
+            variant="outline" 
+            className="w-full border-neutral-100"
+            onClick={handleGoogleSignIn}
+            disabled={loading}
+          >
             <Image
               src="https://developers.google.com/identity/images/g-logo.png"
               alt="Google logo"
@@ -150,6 +180,12 @@ export default function Page() {
             privacy policy
           </Link>
           .
+        </div>
+        <div className="text-body-2 text-neutral-900">
+          Don't have an account?{" "}
+          <Link href="/signup" className="text-blue-500 underline">
+            Sign up
+          </Link>
         </div>
       </>
     );
@@ -234,7 +270,7 @@ export default function Page() {
     }
   };
   return (
-    <div className="w-full h-screen bg-[#00000066] flex justify-center pt-20">
+    <div className="w-full bg-[#00000066] flex justify-center pt-20 pb-20 min-h-screen">
       <Toaster position="top-center" />
       <div className="w-[480px] h-fit bg-white rounded-lg p-6 flex flex-col gap-6 relative">
         {renderContent()}

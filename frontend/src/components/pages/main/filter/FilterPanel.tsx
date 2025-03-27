@@ -24,8 +24,8 @@ import { getAmenities } from "@/services/AmenityService";
 const initialFilterState: FilterState = {
   automaticCarWash: true,
   distance: 3,
-  amenities: [],
-  washType: [],
+  amenityName: [],
+  washTypeName: [],
   ratings: [],
   priceRange: 0,
   operatingHours: [],
@@ -101,17 +101,17 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
           />
           <Separator />
           <AmenitiesCheckboxes
-            value={inlineFilters.amenities}
+            value={inlineFilters.amenityName}
             onChange={(value) =>
-              setInlineFilters((prev) => ({ ...prev, amenities: value }))
+              setInlineFilters((prev) => ({ ...prev, amenityName: value }))
             }
             options={amenities.filter((amenity) => amenity.category == (filters.automaticCarWash ? Car_Wash_Type_Value.AUTOMATIC : Car_Wash_Type_Value.SELF_SERVICE))}
           />
           <Separator />
           <WashTypeCheckboxes
-            value={inlineFilters.washType}
+            value={inlineFilters.washTypeName}
             onChange={(value) =>
-              setInlineFilters((prev) => ({ ...prev, washType: value }))
+              setInlineFilters((prev) => ({ ...prev, washTypeName: value }))
             }
             options={washTypes.filter((washType) => washType.category == (filters.automaticCarWash ? Car_Wash_Type_Value.AUTOMATIC : Car_Wash_Type_Value.SELF_SERVICE))}
           />
