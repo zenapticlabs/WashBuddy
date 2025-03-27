@@ -46,7 +46,6 @@ export const getPresignedUrl = async (fileName: string) => {
         filename: fileName,
       }
     );
-    console.log(response.data);
     return response.data.data.signed_url_object;
   } catch (error) {
     console.error("Error getting presigned url:", error);
