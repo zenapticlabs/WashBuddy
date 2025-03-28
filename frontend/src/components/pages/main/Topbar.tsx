@@ -97,7 +97,7 @@ const Topbar: React.FC<TopbarProps> = ({
         <div className="flex items-center gap-2">
           <div
             className="p-2 rounded-full cursor-pointer"
-            onClick={() => setOpenSidebar(true)}
+            onClick={() => setOpenSidebar(!openSidebar)}
           >
             <MenuIcon size={24} className="text-neutral-900" />
           </div>
@@ -154,7 +154,7 @@ const Topbar: React.FC<TopbarProps> = ({
             className="rounded-full shadow-none text-title-2 text-blue-500 hover:text-blue-500 hidden md:block mr-4"
             href="/carwash"
           >
-            + Add a WashNearby
+            + Add your local carwash
           </Link>
           <div className="relative">
             <Bell size={24} className="text-neutral-900" />

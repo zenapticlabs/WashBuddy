@@ -11,7 +11,7 @@ interface DistanceRangeProps {
 const DistanceRange: React.FC<DistanceRangeProps> = ({
   value,
   minValue = 0,
-  maxValue = 100,
+  maxValue = 20,
   onChange,
 }) => {
   const [progressValue, setProgressValue] = useState(0);
