@@ -44,17 +44,35 @@ const Progress = React.forwardRef<
     setIsDragging(false);
   };
 
+  const handleTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    setIsDragging(true);
+    updateValue(event.touches[0].clientX);
+  };
+
+  const handleTouchMove = React.useCallback((event: TouchEvent) => {
+    if (!isDragging) return;
+    updateValue(event.touches[0].clientX);
+  }, [isDragging, updateValue]);
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+  };
+
   React.useEffect(() => {
     if (isDragging) {
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('mouseup', handleMouseUp);
+      window.addEventListener('touchmove', handleTouchMove);
+      window.addEventListener('touchend', handleTouchEnd);
     }
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('touchmove', handleTouchMove);
+      window.removeEventListener('touchend', handleTouchEnd);
     };
-  }, [isDragging, handleMouseMove]);
+  }, [isDragging, handleMouseMove, handleTouchMove]);
 
   React.useEffect(() => {
     setProgress(value || minValue);
@@ -67,6 +85,7 @@ const Progress = React.forwardRef<
         className="relative flex-1 cursor-pointer" 
         ref={progressBarRef} 
         onMouseDown={handleMouseDown}
+        onTouchStart={handleTouchStart}
       >
         <ProgressPrimitive.Root
           ref={ref}
