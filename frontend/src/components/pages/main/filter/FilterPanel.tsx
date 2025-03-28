@@ -23,6 +23,7 @@ import { getAmenities } from "@/services/AmenityService";
 
 const initialFilterState: FilterState = {
   automaticCarWash: true,
+  selfServiceCarWash: false,
   distance: 3,
   amenityName: [],
   washTypeName: [],

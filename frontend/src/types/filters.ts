@@ -1,5 +1,6 @@
 export interface FilterState {
   automaticCarWash: boolean;
+  selfServiceCarWash: boolean;
   distance: number;
   amenityName: string[];
   washTypeName: string[];
