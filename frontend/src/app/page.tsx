@@ -51,6 +51,17 @@ export default function Home() {
     }
   };
 
+  const handleSearchArea = (
+    center: { longitude: number; latitude: number },
+    radius: number
+  ) => {
+    setFilters({
+      ...filters,
+      distance: Number(radius.toFixed(2)),
+      userLat: center.latitude,
+      userLng: center.longitude,
+    });
+  };
   return (
     <ProtectedRoute>
       <div className="flex flex-col h-screen">
@@ -112,6 +123,7 @@ export default function Home() {
               publishableKey={RADAR_KEY || ""}
               carWashes={carWashes}
               onMapReady={handleMapReady}
+              onSearchArea={handleSearchArea}
             />
           </div>
           <MobileCarWashView

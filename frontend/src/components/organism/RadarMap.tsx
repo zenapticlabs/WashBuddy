@@ -4,12 +4,17 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { CarWashResponse } from "@/types/CarServices";
 import { extractCoordinates } from "@/utils/functions";
+import { Button } from "../ui/button";
+import { Search } from "lucide-react";
 interface RadarMapProps {
   showMap: boolean;
   publishableKey: string;
   userId?: string;
   carWashes?: CarWashResponse[];
   onMapReady?: (map: maplibregl.Map) => void;
+  onSearchArea?: (center: { longitude: number; latitude: number },
+    radius: number
+  ) => void;
 }
 
 export function RadarMap({
@@ -17,6 +22,7 @@ export function RadarMap({
   userId,
   carWashes,
   onMapReady,
+  onSearchArea,
 }: RadarMapProps) {
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
@@ -175,10 +181,94 @@ export function RadarMap({
     }
   }, [carWashes]);
 
+  // Example: Get center coordinates
+  const getMapCenter = () => {
+    if (!mapRef.current) return null;
+    const center = mapRef.current.getCenter();
+    return {
+      longitude: center.lng,
+      latitude: center.lat,
+    };
+  };
+
+  // You can also listen to move events to get center coordinates when the map moves
+  // useEffect(() => {
+  //   if (!mapRef.current) return;
+
+  //   mapRef.current.on("moveend", () => {
+  //     const center = mapRef.current?.getCenter();
+  //     console.log("Map center:", center?.lng, center?.lat);
+  //   });
+  // }, []);
+
+  const getMapRadius = () => {
+    if (!mapRef.current) return null;
+
+    // Get the bounds of the current map view
+    const bounds = mapRef.current.getBounds();
+
+    // Get center point
+    const center = bounds.getCenter();
+
+    // Get the northeast corner
+    const ne = bounds.getNorthEast();
+
+    // Calculate the radius in miles using the Haversine formula
+    const radius = calculateDistance(center.lat, center.lng, ne.lat, ne.lng);
+
+    return radius;
+  };
+
+  // Haversine formula to calculate distance between two points in miles
+  const calculateDistance = (
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number
+  ): number => {
+    const R = 3959; // Earth's radius in miles
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(lat1)) *
+        Math.cos(toRad(lat2)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c;
+
+    return distance;
+  };
+
+  // Helper function to convert degrees to radians
+  const toRad = (degrees: number): number => {
+    return degrees * (Math.PI / 180);
+  };
+
+  const handleSearchArea = () => {
+    const center = getMapCenter();
+    const radius = getMapRadius();
+    if (center && radius) {
+      onSearchArea?.(center, radius);
+    }
+  };
+
   return (
     <div
       id="radar-map"
-      className="w-full h-full min-h-[400px] rounded-lg overflow-hidden"
-    />
+      className="w-full h-full min-h-[400px] rounded-lg overflow-hidden relative"
+    >
+      <Button
+        variant="ghost"
+        className="absolute top-10 left-10 z-10 bg-white rounded-full shadow-lg"
+        onClick={handleSearchArea}
+      >
+        <Search size={20} />
+        Search this area
+      </Button>
+    </div>
   );
 }
