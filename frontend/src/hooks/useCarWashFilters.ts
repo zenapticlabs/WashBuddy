@@ -4,7 +4,8 @@ import { Car_Wash_Type, SortBy } from "@/utils/constants";
 
 function getFiltersFromParams(params: URLSearchParams): FilterState {
   return {
-    automaticCarWash: params.get("automaticCarWash") === "true" || true,    
+    automaticCarWash: params.get("automaticCarWash") === "true" || true,
+    selfServiceCarWash: params.get("selfServiceCarWash") === "true" || false,
     washTypeName: params.getAll("washTypeName").map(String),
     ratings: params.getAll("ratings").map(Number),
     distance: Number(params.get("distance")) || 3,
@@ -25,6 +26,7 @@ function getFiltersFromParams(params: URLSearchParams): FilterState {
 export function useCarWashFilters() {
   const [filters, setFilters] = useState<FilterState>({
     automaticCarWash: true,
+    selfServiceCarWash: false,
     washTypeName: [],
     ratings: [],
     distance: 3,

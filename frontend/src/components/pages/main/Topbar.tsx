@@ -69,6 +69,7 @@ const Topbar: React.FC<TopbarProps> = ({
       setFilters({
         ...filters,
         automaticCarWash: value,
+        selfServiceCarWash: !value,
         sortBy: [
           SortBy[
             value ? Car_Wash_Type.AUTOMATIC : Car_Wash_Type.SELF_SERVICE
