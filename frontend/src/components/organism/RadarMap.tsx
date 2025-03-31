@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Radar from "radar-sdk-js";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -12,9 +12,14 @@ interface RadarMapProps {
   userId?: string;
   carWashes?: CarWashResponse[];
   onMapReady?: (map: maplibregl.Map) => void;
-  onSearchArea?: (center: { longitude: number; latitude: number },
+  onSearchArea?: (
+    center: { longitude: number; latitude: number },
     radius: number
   ) => void;
+  presentCenter?: {
+    longitude: number;
+    latitude: number;
+  };
 }
 
 export function RadarMap({
@@ -23,9 +28,17 @@ export function RadarMap({
   carWashes,
   onMapReady,
   onSearchArea,
+  presentCenter,
 }: RadarMapProps) {
+  const [center, setCenter] = useState<{ longitude: number; latitude: number }>(
+    {
+      longitude: -89.4012,
+      latitude: 43.0731,
+    }
+  );
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
+  const [showSearchButton, setShowSearchButton] = useState<boolean>(false);
 
   const getLngLat = (location: [number, number]): [number, number] => {
     return [location[0], location[1]] as [number, number];
@@ -49,6 +62,12 @@ export function RadarMap({
       duration: 1000,
     });
   };
+
+  useEffect(() => {
+    if (presentCenter) {
+      setCenter(presentCenter);
+    }
+  }, [presentCenter]);
 
   // Initialize map only once
   useEffect(() => {
@@ -256,6 +275,36 @@ export function RadarMap({
     }
   };
 
+  // Add useEffect to check distance and control button visibility
+  useEffect(() => {
+    if (!mapRef.current || !presentCenter) return;
+
+    const updateButtonVisibility = () => {
+      const currentCenter = getMapCenter();
+      if (!currentCenter) return;
+
+      const distance = calculateDistance(
+        presentCenter.latitude,
+        presentCenter.longitude,
+        currentCenter.latitude,
+        currentCenter.longitude
+      );
+
+      setShowSearchButton(distance >= 3);
+    };
+
+    // Check initially
+    updateButtonVisibility();
+
+    // Add event listener for map moves
+    mapRef.current.on("moveend", updateButtonVisibility);
+
+    // Cleanup
+    return () => {
+      mapRef.current?.off("moveend", updateButtonVisibility);
+    };
+  }, [presentCenter]);
+
   return (
     <div
       id="radar-map"
@@ -263,7 +312,11 @@ export function RadarMap({
     >
       <Button
         variant="ghost"
-        className="absolute top-10 left-10 z-10 bg-white rounded-full shadow-lg"
+        className={`absolute top-10 left-10 z-10 bg-white rounded-full shadow-lg transition-all duration-300 ${
+          showSearchButton 
+            ? "opacity-100 transform translate-y-0" 
+            : "opacity-0 transform -translate-y-4 pointer-events-none"
+        }`}
         onClick={handleSearchArea}
       >
         <Search size={20} />

@@ -57,7 +57,7 @@ export default function Home() {
   ) => {
     setFilters({
       ...filters,
-      distance: Number(radius.toFixed(2)),
+      distance: Number(Math.ceil(radius / 2)),
       userLat: center.latitude,
       userLng: center.longitude,
     });
@@ -119,6 +119,10 @@ export default function Home() {
           </div>
           <div className="flex-1 flex items-center justify-center">
             <RadarMap
+              presentCenter={{
+                longitude: filters.userLng,
+                latitude: filters.userLat,
+              }}
               showMap={showMap}
               publishableKey={RADAR_KEY || ""}
               carWashes={carWashes}

@@ -7,8 +7,17 @@ import { User } from "@supabase/supabase-js";
 type AuthContextType = {
   user: User | null;
   loading: boolean;
-  signUpWithOtp: (email: string, password: string, firstName: string, lastName: string) => Promise<{ error: Error | null }>;
+  signUpWithOtp: (
+    email: string,
+    password: string,
+    firstName: string,
+    lastName: string
+  ) => Promise<{ error: Error | null }>;
   signInWithOtp: (email: string) => Promise<{ error: Error | null }>;
+  signinWithPassword: (
+    email: string,
+    password: string
+  ) => Promise<{ error: Error | null }>;
   verifyOtp: (email: string, token: string) => Promise<{ error: Error | null }>;
   signInWithGoogle: () => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -76,6 +85,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const signinWithPassword = async (email: string, password: string) => {
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      return { error };
+    } catch (error) {
+      return { error: error as Error };
+    }
+  };
 
   const verifyOtp = async (email: string, token: string) => {
     try {
@@ -93,7 +113,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signInWithGoogle = async () => {
     try {
       const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
+        provider: "google",
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
         },
@@ -113,6 +133,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loading,
     signUpWithOtp,
     signInWithOtp,
+    signinWithPassword,
     verifyOtp,
     signInWithGoogle,
     signOut,
