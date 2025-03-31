@@ -10,32 +10,49 @@ import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { InputOTP } from "@/components/molecule/InputOTP";
 import { useAuth } from "@/contexts/AuthContext";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function Page() {
   const router = useRouter();
-  const { signInWithOtp, verifyOtp, signInWithGoogle, user } = useAuth();
-  const [step, setStep] = useState(1);
+  const searchParams = useSearchParams();
+  const {
+    signInWithOtp,
+    verifyOtp,
+    signInWithGoogle,
+    user,
+    signinWithPassword,
+  } = useAuth();
+  
+  // Get email and step from URL query parameters
+  const email = searchParams.get('email') || '';
+  const urlStep = searchParams.get('step');
+  
+  // Initialize step from URL if available, otherwise default to 1
+  const [step, setStep] = useState(urlStep ? parseInt(urlStep) : 1);
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
-  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  
+  // Update URL when step changes
   useEffect(() => {
-    const isOTPComplete = otp.every((digit) => digit !== "");
-    if (isOTPComplete) {
-      handleVerifyOTP();
-    }
-  }, [otp]);
+    const params = new URLSearchParams(window.location.search);
+    params.set('step', step.toString());
+    if (email) params.set('email', email);
+    const newUrl = `${window.location.pathname}?${params.toString()}`;
+    window.history.pushState({}, '', newUrl);
+  }, [step, email]);
 
   useEffect(() => {
     // Redirect if user is already logged in
     if (user && !loading) {
-      router.push('/');
+      router.push("/");
     }
   }, [user, loading, router]);
 
-  const handleSendOTP = async () => {
+  const handleContinueWithEmail = () => {
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email) {
@@ -47,8 +64,39 @@ export default function Page() {
       return;
     }
 
-    setLoading(true);
     setEmailError(null);
+    // Move to auth options step
+    setStep(3);
+  };
+
+  const handlePasswordSignIn = async () => {
+    if (!password) {
+      setPasswordError("Password is required");
+      return;
+    }
+
+    setLoading(true);
+    setPasswordError(null);
+    try {
+      const { error } = await signinWithPassword(email, password);
+      if (error) {
+        setError(error.message);
+        toast.error(error.message);
+        return;
+      }
+      toast.success("Signed in successfully");
+      window.location.href = "/";
+    } catch (error) {
+      setError("An unexpected error occurred");
+      toast.error("An unexpected error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSendOTP = async () => {
+    setLoading(true);
+    setError(null);
     try {
       const { error } = await signInWithOtp(email);
 
@@ -58,7 +106,7 @@ export default function Page() {
         return;
       }
       toast.success("OTP sent successfully");
-      setStep(3);
+      setStep(4);
     } catch (error) {
       setError("An unexpected error occurred");
       toast.error("An unexpected error occurred");
@@ -134,8 +182,8 @@ export default function Page() {
             <span className="text-body-2 text-[#2E2E2E]">Or</span>
             <div className="h-[1px] w-full bg-neutral-100"></div>
           </div>
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             className="w-full border-neutral-100"
             onClick={handleGoogleSignIn}
             disabled={loading}
@@ -195,26 +243,43 @@ export default function Page() {
       <div className="flex flex-col gap-4">
         <div
           onClick={() => setStep(1)}
-          className="w-fit border-neutral-100 flex items-center gap-2 cursor-pointer flex items-center"
+          className="w-fit border-neutral-100 flex items-center gap-2 cursor-pointer"
         >
           <ChevronLeftIcon className="w-4 h-4" />
           Back
         </div>
-        <div className="text-headline-3 text-neutral-900 text-neutral-900">
+        <div className="text-headline-3 text-neutral-900">
           What is your email address?
         </div>
         <div className="flex flex-col gap-2">
           <Input
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              // Update URL with new email
+              const params = new URLSearchParams(window.location.search);
+              params.set('email', e.target.value);
+              params.set('step', step.toString());
+              const newUrl = `${window.location.pathname}?${params.toString()}`;
+              window.history.pushState({}, '', newUrl);
+            }}
             placeholder="Enter your email address"
             className="p-2.5"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleContinueWithEmail();
+              }
+            }}
           />
           {emailError && (
             <span className="text-sm text-red-500">{emailError}</span>
           )}
         </div>
-        <Button className="w-full" onClick={handleSendOTP} disabled={loading}>
+        <Button
+          className="w-full"
+          onClick={handleContinueWithEmail}
+          disabled={loading}
+        >
           {loading ? "Loading..." : "Continue"}
         </Button>
       </div>
@@ -225,12 +290,85 @@ export default function Page() {
       <div className="flex flex-col gap-4">
         <div
           onClick={() => setStep(2)}
-          className="w-fit border-neutral-100 flex items-center gap-2 cursor-pointer flex items-center"
+          className="w-fit border-neutral-100 flex items-center gap-2 cursor-pointer"
         >
           <ChevronLeftIcon className="w-4 h-4" />
           Back
         </div>
-        <div className="text-headline-3 text-neutral-900 text-neutral-900">
+        <div className="text-headline-3 text-neutral-900">
+          How would you like to sign in?
+        </div>
+
+        <div className="flex flex-col gap-6 mt-2">
+          <div className="border rounded-lg p-4">
+            <h3 className="font-medium mb-3">Sign in with password</h3>
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-2">
+                <Input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  className="p-2.5"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handlePasswordSignIn();
+                    }
+                  }}
+                />
+                {passwordError && (
+                  <span className="text-sm text-red-500">{passwordError}</span>
+                )}
+              </div>
+              <Button
+                className="w-full"
+                onClick={handlePasswordSignIn}
+                disabled={loading}
+              >
+                Sign In
+              </Button>
+              <div className="text-sm text-neutral-500 text-center">
+                <Link
+                  href="/forgot-password"
+                  className="text-blue-500 underline"
+                >
+                  Forgot password?
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          <div className="border rounded-lg p-4">
+            <h3 className="font-medium mb-3">Sign in with email code</h3>
+            <div className="text-sm text-neutral-600 mb-3">
+              We'll send a 6-digit code to your email that you can use to sign
+              in.
+            </div>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={handleSendOTP}
+              disabled={loading}
+            >
+              Send Code
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+  const fourthPage = () => {
+    return (
+      <div className="flex flex-col gap-4">
+        <div
+          onClick={() => setStep(3)}
+          className="w-fit border-neutral-100 flex items-center gap-2 cursor-pointer"
+        >
+          <ChevronLeftIcon className="w-4 h-4" />
+          Back
+        </div>
+        <div className="text-headline-3 text-neutral-900">
           Please verify your email address
         </div>
         <div className="text-body-2 text-neutral-900">
@@ -249,11 +387,6 @@ export default function Page() {
             Send a new code
           </span>
         </div>
-        {loading && (
-          <div className="absolute bottom-0 left-0 right-0 top-0 rounded-lg flex justify-center items-center bg-black/10">
-            <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
-          </div>
-        )}
       </div>
     );
   };
@@ -265,6 +398,8 @@ export default function Page() {
         return secondPage();
       case 3:
         return thirdPage();
+      case 4:
+        return fourthPage();
       default:
         return null;
     }
@@ -274,6 +409,11 @@ export default function Page() {
       <Toaster position="top-center" />
       <div className="w-full md:w-[480px] h-screen md:h-fit bg-white md:rounded-lg p-6 flex flex-col gap-6 relative">
         {renderContent()}
+        {loading && (
+          <div className="absolute bottom-0 left-0 right-0 top-0 rounded-lg flex justify-center items-center bg-black/10">
+            <Loader2 className="w-8 h-8 animate-spin text-white" />
+          </div>
+        )}
       </div>
     </div>
   );
