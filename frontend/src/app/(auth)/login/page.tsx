@@ -6,13 +6,14 @@ import car from "@/assets/car.png";
 import { Button } from "@/components/ui/button";
 import { ChevronLeftIcon, Loader2, MailIcon } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { Input } from "@/components/ui/input";
 import { InputOTP } from "@/components/molecule/InputOTP";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function Page() {
+// Separate component to use search params
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const {
@@ -416,5 +417,24 @@ export default function Page() {
         )}
       </div>
     </div>
+  );
+}
+
+// Loading fallback component
+function LoginLoading() {
+  return (
+    <div className="w-full bg-[#00000066] flex justify-center md:py-20 min-h-screen">
+      <div className="w-full md:w-[480px] h-screen md:h-fit bg-white md:rounded-lg p-6 flex justify-center items-center">
+        <Loader2 className="w-8 h-8 animate-spin text-black" />
+      </div>
+    </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<LoginLoading />}>
+      <LoginContent />
+    </Suspense>
   );
 }

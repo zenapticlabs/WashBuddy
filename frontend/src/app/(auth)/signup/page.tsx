@@ -6,7 +6,7 @@ import car from "@/assets/car.png";
 import { Button } from "@/components/ui/button";
 import { ChevronLeftIcon, Loader2, MailIcon } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, Suspense } from "react";
 import { Input } from "@/components/ui/input";
 import { InputOTP } from "@/components/molecule/InputOTP";
 import { useAuth } from "@/contexts/AuthContext";
@@ -76,7 +76,8 @@ const signupSchema = z
     path: ["confirmPassword"],
   });
 
-export default function Page() {
+// Separate component that uses searchParams
+function SignupContent() {
   const { signUpWithOtp, verifyOtp, signInWithOtp, signInWithGoogle, user } =
     useAuth();
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
@@ -412,5 +413,24 @@ export default function Page() {
         {renderContent()}
       </div>
     </div>
+  );
+}
+
+// Loading fallback component
+function SignupLoading() {
+  return (
+    <div className="w-full bg-[#00000066] flex justify-center md:py-20 min-h-screen">
+      <div className="w-full md:w-[480px] h-screen md:h-fit bg-white md:rounded-lg p-6 flex justify-center items-center">
+        <Loader2 className="w-8 h-8 animate-spin text-black" />
+      </div>
+    </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<SignupLoading />}>
+      <SignupContent />
+    </Suspense>
   );
 }
