@@ -11,6 +11,7 @@ from rest_framework_gis.fields import GeometryField
 from rest_framework.exceptions import PermissionDenied, AuthenticationFailed
 import jwt
 import os
+from django.db.models import Count, Avg, Q
 
 class WashTypeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -83,6 +84,15 @@ class CarWashImageSerializer(serializers.ModelSerializer):
         model = CarWashImage
         fields = '__all__'
 
+class ReviewStatsSerializer(serializers.Serializer):
+    total_reviews = serializers.IntegerField()
+    average_rating = serializers.FloatField()
+    rating_5 = serializers.IntegerField()
+    rating_4 = serializers.IntegerField()
+    rating_3 = serializers.IntegerField()
+    rating_2 = serializers.IntegerField()
+    rating_1 = serializers.IntegerField()
+
 class CarWashListSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
     wash_types = serializers.SerializerMethodField()
     amenities = serializers.SerializerMethodField()
@@ -91,6 +101,7 @@ class CarWashListSerializer(DynamicFieldsSerializerMixin, serializers.ModelSeria
     packages = serializers.SerializerMethodField()
     images = CarWashImageSerializer(many=True)
     distance = serializers.FloatField(read_only=True)
+    reviews_summary = serializers.SerializerMethodField()
 
     class Meta:
         model = CarWash
@@ -116,7 +127,18 @@ class CarWashListSerializer(DynamicFieldsSerializerMixin, serializers.ModelSeria
     def get_packages(self, instance):
         from .serializers import CarWashPackageSerializer
         return CarWashPackageSerializer(instance.packages.all(), many=True).data
-
+    
+    def get_reviews_summary(self, instance):
+        review_objects = instance.reviews.aggregate(
+            total_reviews=Count('id'),
+            average_rating=Avg('overall_rating'),
+            rating_5=Count('id', filter=Q(overall_rating=5)),
+            rating_4=Count('id', filter=Q(overall_rating=4)),
+            rating_3=Count('id', filter=Q(overall_rating=3)),
+            rating_2=Count('id', filter=Q(overall_rating=2)),
+            rating_1=Count('id', filter=Q(overall_rating=1)),
+        )
+        return ReviewStatsSerializer(review_objects).data
 
 class CarWashOperatingHoursPostPatchSerializer(serializers.ModelSerializer):
     class Meta:
@@ -254,7 +276,6 @@ class CarWashReviewPostPatchSerializer(serializers.ModelSerializer):
                 )
                 return
             existing_object.update(**image_object)
-
 
 class CarWashReviewListSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
 
