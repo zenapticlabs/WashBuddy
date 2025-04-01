@@ -147,9 +147,7 @@ const CarWashDetail: React.FC<CarWashDetailProps> = ({
               {data.open_24_hours && (
                 <>
                   <span className="w-1 h-1 bg-[#D9D9D9] rounded-full"></span>
-                  <span className="text-body-2 text-neutral-500">
-                    24 hours
-                  </span>
+                  <span className="text-body-2 text-neutral-500">24 hours</span>
                 </>
               )}
               {!data.open_24_hours && isOpen && (
@@ -207,6 +205,7 @@ const CarWashDetail: React.FC<CarWashDetailProps> = ({
       <CreateCarWashReviewModal
         open={reviewOpen}
         onOpenChange={setReviewOpen}
+        carWashId={data?.id || 0}
       />
     </>
   );

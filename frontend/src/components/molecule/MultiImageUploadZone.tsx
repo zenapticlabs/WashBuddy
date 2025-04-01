@@ -21,7 +21,7 @@ const MultiImageUploadZone = ({
 }: {
   images: any[];
   image_type: string;
-  title: string;
+  title?: string;
   required?: boolean;
   handleAddImage: (image_type: string, image_url: string) => void;
   handleDeleteImage: (image_url: string) => void;
