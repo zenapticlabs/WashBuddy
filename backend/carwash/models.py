@@ -267,3 +267,49 @@ class UserProfile(models.Model):
     
     def __str__(self):
         return f"{self.user.username}'s profile"
+    
+
+class CarWashReview(CustomModelMixin):
+    """
+        CarWash Review Model
+        Rating Not Applicable = 0 
+        Minimum rating = 1
+        Maximum rating = 5
+    """
+    car_wash = models.ForeignKey(CarWash, on_delete=models.CASCADE, related_name="reviews")
+    user_metadata = models.JSONField()
+    comment = models.TextField()
+    overall_rating = models.SmallIntegerField(validators=[
+            MinValueValidator(0, "Rating must be at least 0"),      
+            MaxValueValidator(5, "Rating must be at most 5")
+        ])
+    wash_quality_rating = models.SmallIntegerField(validators=[
+            MinValueValidator(0, "Rating must be at least 0"),      
+            MaxValueValidator(5, "Rating must be at most 5")
+        ])
+    price_value_rating = models.SmallIntegerField(validators=[
+            MinValueValidator(0, "Rating must be at least 0"),      
+            MaxValueValidator(5, "Rating must be at most 5")
+        ])
+    facility_cleanliness_rating = models.SmallIntegerField(validators=[
+            MinValueValidator(0, "Rating must be at least 0"),      
+            MaxValueValidator(5, "Rating must be at most 5")
+        ])
+    customer_service_rating = models.SmallIntegerField(validators=[
+            MinValueValidator(0, "Rating must be at least 0"),      
+            MaxValueValidator(5, "Rating must be at most 5")
+        ])
+    amenities_extra_rating = models.SmallIntegerField(validators=[
+            MinValueValidator(0, "Rating must be at least 0"),      
+            MaxValueValidator(5, "Rating must be at most 5")
+        ])
+    
+    def __str__(self):
+        return f"{self.car_wash.car_wash_name}"
+
+class CarWashReviewImage(CustomModelMixin):
+    carwash_review = models.ForeignKey(CarWashReview, on_delete=models.CASCADE, related_name="images")
+    image_url = models.URLField(max_length=500)
+
+    def __str__(self):
+        return f"{self.id}-{self.carwash_review.id}"

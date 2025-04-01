@@ -3,12 +3,15 @@ from rest_framework.exceptions import ValidationError
 from django.contrib.gis.geos import Point
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
 from .models import (
-    CarWash, CarWashOperatingHours, CarWashImage, 
+    CarWash, CarWashOperatingHours, CarWashImage, CarWashReview, CarWashReviewImage, 
     WashType, Amenity, CarWashPackage
 )
 from utilities.mixins import DynamicFieldsSerializerMixin
 from rest_framework_gis.fields import GeometryField
-from django.db import transaction
+from rest_framework.exceptions import PermissionDenied, AuthenticationFailed
+import jwt
+import os
+from django.db.models import Count, Avg, Q
 
 class WashTypeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -81,6 +84,15 @@ class CarWashImageSerializer(serializers.ModelSerializer):
         model = CarWashImage
         fields = '__all__'
 
+class ReviewStatsSerializer(serializers.Serializer):
+    total_reviews = serializers.IntegerField()
+    average_rating = serializers.FloatField()
+    rating_5 = serializers.IntegerField()
+    rating_4 = serializers.IntegerField()
+    rating_3 = serializers.IntegerField()
+    rating_2 = serializers.IntegerField()
+    rating_1 = serializers.IntegerField()
+
 class CarWashListSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
     wash_types = serializers.SerializerMethodField()
     amenities = serializers.SerializerMethodField()
@@ -89,6 +101,7 @@ class CarWashListSerializer(DynamicFieldsSerializerMixin, serializers.ModelSeria
     packages = serializers.SerializerMethodField()
     images = CarWashImageSerializer(many=True)
     distance = serializers.FloatField(read_only=True)
+    reviews_summary = serializers.SerializerMethodField()
 
     class Meta:
         model = CarWash
@@ -114,7 +127,18 @@ class CarWashListSerializer(DynamicFieldsSerializerMixin, serializers.ModelSeria
     def get_packages(self, instance):
         from .serializers import CarWashPackageSerializer
         return CarWashPackageSerializer(instance.packages.all(), many=True).data
-
+    
+    def get_reviews_summary(self, instance):
+        review_objects = instance.reviews.aggregate(
+            total_reviews=Count('id'),
+            average_rating=Avg('overall_rating'),
+            rating_5=Count('id', filter=Q(overall_rating=5)),
+            rating_4=Count('id', filter=Q(overall_rating=4)),
+            rating_3=Count('id', filter=Q(overall_rating=3)),
+            rating_2=Count('id', filter=Q(overall_rating=2)),
+            rating_1=Count('id', filter=Q(overall_rating=1)),
+        )
+        return ReviewStatsSerializer(review_objects).data
 
 class CarWashOperatingHoursPostPatchSerializer(serializers.ModelSerializer):
     class Meta:
@@ -126,6 +150,11 @@ class CarWashImagesPostPatchSerializer(serializers.ModelSerializer):
     class Meta:
         model = CarWashImage
         fields = ["image_type", "image_url"]
+
+class CarWashReviewImagesPostPatchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CarWashReviewImage
+        fields = ["image_url"]
     
 
 class CarWashPostPatchSerializer(serializers.ModelSerializer):
@@ -197,3 +226,59 @@ class CarWashPostPatchSerializer(serializers.ModelSerializer):
 
 class PreSignedUrlSerializer(serializers.Serializer):
     filename = serializers.CharField()
+
+
+class CarWashReviewPostPatchSerializer(serializers.ModelSerializer):
+    images = CarWashReviewImagesPostPatchSerializer(many=True, required=False)
+
+    class Meta:
+        model = CarWashReview
+        exclude = ["created_by", "updated_by", "status", "user_metadata"]
+
+    def create(self, validated_data):
+        images = validated_data.pop("images", [])  
+        authorization_header = self.context.get("authorization_header")
+        self.handle_user_meta_data(validated_data, authorization_header)
+
+        car_wash_review = CarWashReview.objects.create(**validated_data)
+
+        self.handle_images(car_wash_review, images)
+
+        return car_wash_review
+    
+    def handle_user_meta_data(self, validated_data, authorization_header): 
+        if not authorization_header or not authorization_header.startswith("Bearer "):
+            raise PermissionDenied({"message": "Invalid or missing token"})
+        
+        token = authorization_header.split(" ")[1]
+        try:
+            decoded_payload = jwt.decode(
+                token, 
+                os.getenv('JWT_SECRET'),
+                algorithms=["HS256"],
+                audience="authenticated"
+            )
+        except jwt.ExpiredSignatureError:
+            raise AuthenticationFailed("Token has expired")
+        except jwt.InvalidTokenError:
+            raise AuthenticationFailed("Invalid token")
+
+        user_metadata = decoded_payload.get("user_metadata", {})
+        validated_data["user_metadata"] = user_metadata
+
+    def handle_images(self, instance, images): 
+        for image_object in images:
+            existing_object = instance.images.filter(image_url=image_object["image_url"])
+            if not existing_object:
+                CarWashReviewImage.objects.create(
+                    carwash_review=instance,
+                    **image_object
+                )
+                return
+            existing_object.update(**image_object)
+
+class CarWashReviewListSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+
+    class Meta:
+        model = CarWashReview
+        fields = '__all__'

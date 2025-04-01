@@ -1,6 +1,6 @@
 from rest_framework import filters
 import django_filters
-from .models import CarWash
+from .models import CarWash, CarWashReview
 from django.contrib.gis.geos import Point
 from django.contrib.gis.db.models.functions import Distance
 from django.db.models import Sum, Value, DecimalField, FloatField, Q
@@ -15,7 +15,7 @@ class DynamicSearchFilter(filters.SearchFilter):
         else:
             return search_fields
 
-class CustomOrderingFilter(django_filters.OrderingFilter):
+class CustomOrderingCarWashFilter(django_filters.OrderingFilter):
     def filter(self, qs, value):
         if not value:
             return qs
@@ -56,7 +56,7 @@ class ListCarWashFilter(django_filters.FilterSet):
     washTypeCategory = django_filters.BaseInFilter(field_name="wash_types__category", lookup_expr='in')
     amenityName = django_filters.BaseInFilter(field_name="amenities__name", lookup_expr='in')
     amenityCategory = django_filters.BaseInFilter(field_name="amenities__category", lookup_expr='in')
-    sortBy = CustomOrderingFilter(fields=(
+    sortBy = CustomOrderingCarWashFilter(fields=(
             ('id', 'id'),
             ('car_wash_name', 'car_wash_name'),
             ('created_at', 'created_at'),
@@ -91,18 +91,51 @@ class ListCarWashFilter(django_filters.FilterSet):
         if value:
             return queryset.filter(min_price__lte=float(value[0]))
         return queryset
+
+    def filter_search(self, queryset, name, value):
+        return queryset.filter(
+            Q(street__icontains=value) |
+            Q(city__icontains=value) |
+            Q(state__icontains=value) |
+            Q(state_code__icontains=value) |
+            Q(postal_code__icontains=value) |
+            Q(country__icontains=value) |
+            Q(country_code__icontains=value) |
+            Q(formatted_address__icontains=value)
+        )
     
-    def filter_search(self, queryset, name, values):
-        q_objects = Q()
-        for value in values:
-            q_objects |= (
-                Q(street__icontains=value) |
-                Q(city__icontains=value) |
-                Q(state__icontains=value) |
-                Q(state_code__icontains=value) |
-                Q(postal_code__icontains=value) |
-                Q(country__icontains=value) |
-                Q(country_code__icontains=value) |
-                Q(formatted_address__icontains=value)
-            )
-        return queryset.filter(q_objects)
+
+class CustomOrderingCarWashReviewFilter(django_filters.OrderingFilter):
+    def filter(self, qs, value):
+        if not value:
+            return qs
+
+        custom_ordering = {
+            'newest': ['-created_at'],
+            'highest': ['-overall_rating'],
+            'lowest': ['overall_rating'],
+        }
+                
+        ordering = custom_ordering.get(value[0], value)
+        return qs.order_by(*ordering)
+
+class ListCarWashReviewFilter(django_filters.FilterSet):
+    """
+    Filter class for car wash review list.
+    """
+
+    carWashId = django_filters.BaseInFilter(field_name="car_wash__id")
+    carWashName = django_filters.BaseInFilter(field_name="car_wash__car_wash_name", lookup_expr='in')
+    searchText = django_filters.CharFilter(field_name="comment", lookup_expr='icontains')
+    sortBy = CustomOrderingCarWashReviewFilter(fields=(
+            ('id', 'id'),
+            ('relevance', 'relevance'),
+            ('newest', 'newest'),
+            ('highest', 'highest'),
+            ('lowest', 'lowest')
+        ))
+
+    class Meta:
+        model = CarWashReview
+        fields = ("carWashId", "carWashName", "overall_rating", "wash_quality_rating", "price_value_rating", "facility_cleanliness_rating", "customer_service_rating", 
+                  "amenities_extra_rating", "searchText", "sortBy")
