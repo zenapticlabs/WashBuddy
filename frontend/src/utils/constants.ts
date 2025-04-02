@@ -94,3 +94,22 @@ export const FORM_CONFIG = [
     placeholder: "Enter email",
   },
 ];
+
+export const ReviewSortBy = [
+  {
+    label: "Relevance",
+    value: "relevance",
+  },
+  {
+    label: "Newest",
+    value: "newest",
+  },
+  {
+    label: "Highest",
+    value: "highest",
+  },
+  {
+    label: "Lowest",
+    value: "lowest",
+  },
+];

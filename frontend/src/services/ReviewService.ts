@@ -16,3 +16,10 @@ export const createReview = async (review: IReviewCreate) => {
     throw error;
   }
 };
+
+export const getReviews = async (carwashId: string) => {
+  const response = await axiosInstance.get(
+    `${API_URL}/api/v1/carwash/reviews/search?carWashId=${carwashId}`
+  );
+  return response.data;
+};

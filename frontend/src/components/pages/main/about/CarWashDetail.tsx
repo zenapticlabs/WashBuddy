@@ -27,6 +27,7 @@ import {
 import useMediaQuery from "@/hooks/useMediaQuery";
 import { extractCoordinates } from "@/utils/functions";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getReviews } from "@/services/ReviewService";
 
 interface CarWashDetailProps {
   data?: CarWashResponse | null;
@@ -41,11 +42,13 @@ const CarWashDetail: React.FC<CarWashDetailProps> = ({
   open,
   setOpen,
 }) => {
+  const [reviews, setReviews] = useState<any[]>([]);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [isOpen, setIsOpen] = useState(false);
   const [closingTime, setClosingTime] = useState<string>("");
+  console.log("data", data)
 
   useEffect(() => {
     setImageLoading(true);
@@ -82,6 +85,13 @@ const CarWashDetail: React.FC<CarWashDetailProps> = ({
         setClosingTime("");
       }
     }
+  }, [data]);
+
+  useEffect(() => {
+    getReviews(data?.id.toString() || "").then((res: any) => {
+      console.log(res);
+      setReviews(res.data[0].results || []);
+    });
   }, [data]);
 
   const handleNavigate = () => {
@@ -160,9 +170,9 @@ const CarWashDetail: React.FC<CarWashDetailProps> = ({
               )}
               <Star className="w-4 h-4 text-accent-yellow fill-accent-yellow" />
               <span className="text-title-2 text-accent-yellow">
-                {data?.reviews_average}
+                {data?.reviews_summary?.average_rating}
                 <span className="pl-1 text-body-3 text-neutral-300">
-                  ({data.reviews_count || 0})
+                  ({data.reviews_summary?.total_reviews || 0})
                 </span>
               </span>
             </div>
@@ -196,7 +206,11 @@ const CarWashDetail: React.FC<CarWashDetailProps> = ({
                 <CarWashAbout data={data} />
               </TabsContent>
               <TabsContent value="reviews">
-                <CarWashReviews setReviewOpen={setReviewOpen} />
+                <CarWashReviews
+                  setReviewOpen={setReviewOpen}
+                  reviews={reviews}
+                  reviewsSummary={data?.reviews_summary}
+                />
               </TabsContent>
             </Tabs>
           </div>

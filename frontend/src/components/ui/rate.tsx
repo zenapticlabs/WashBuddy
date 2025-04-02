@@ -11,6 +11,7 @@ interface RateProps
   size?: string;
   fullWidth?: boolean;
   color?: string;
+  textColor?: string;
 }
 
 const Rate = React.forwardRef<HTMLDivElement, RateProps>(
@@ -22,6 +23,7 @@ const Rate = React.forwardRef<HTMLDivElement, RateProps>(
       size = "xs",
       fullWidth = false,
       color = "default-yellow",
+      textColor = "default-yellow",
       ...props
     },
     ref
@@ -35,7 +37,7 @@ const Rate = React.forwardRef<HTMLDivElement, RateProps>(
       if (index < Math.floor(value)) {
         return (
           <Star
-            className={`h-${starSize} w-${starSize} cursor-pointer fill-${color} text-${color} stroke-1`}
+            className={`h-${starSize} w-${starSize} cursor-pointer fill-${color} text-${textColor} stroke-1`}
           />
         );
       }
@@ -45,10 +47,10 @@ const Rate = React.forwardRef<HTMLDivElement, RateProps>(
         return (
           <div className="relative">
             <StarHalf
-              className={`h-${starSize} w-${starSize} cursor-pointer fill-${color} text-${color} stroke-1`}
+              className={`h-${starSize} w-${starSize} cursor-pointer fill-${color} text-${textColor} stroke-1`}
             />
             <Star
-              className={`h-${starSize} w-${starSize} cursor-pointer fill-none text-${color} absolute top-0 left-0 stroke-1`}
+              className={`h-${starSize} w-${starSize} cursor-pointer fill-none text-${textColor} absolute top-0 left-0 stroke-1`}
             />
           </div>
         );
@@ -57,7 +59,7 @@ const Rate = React.forwardRef<HTMLDivElement, RateProps>(
       // Empty star
       return (
         <Star
-          className={`h-${starSize} w-${starSize} cursor-pointer fill-none text-${color} stroke-1`}
+          className={`h-${starSize} w-${starSize} cursor-pointer fill-none text-${textColor} stroke-1`}
         />
       );
     };
