@@ -35,6 +35,10 @@ export default function Home() {
   const handleOpenAbout = (selectedCarWash: CarWashResponse) => {
     setSelectedCarWash(selectedCarWash);
     setOpenAbout(true);
+    handleNavigateToLocation({
+      lat: selectedCarWash.location.coordinates[1],
+      lng: selectedCarWash.location.coordinates[0],
+    });
   };
 
   const handleNavigateToLocation = (location: { lat: number; lng: number }) => {
@@ -47,6 +51,17 @@ export default function Home() {
     }
   };
 
+  const handleSearchArea = (
+    center: { longitude: number; latitude: number },
+    radius: number
+  ) => {
+    setFilters({
+      ...filters,
+      distance: Number(Math.ceil(radius / 2)),
+      userLat: center.latitude,
+      userLng: center.longitude,
+    });
+  };
   return (
     <ProtectedRoute>
       <div className="flex flex-col h-screen">
@@ -63,7 +78,7 @@ export default function Home() {
             <div className="flex justify-end py-2 px-4">
               <SortBySelect filters={filters} setFilters={setFilters} />
             </div>
-            <ScrollArea className="w-full flex-1">
+            <ScrollArea className="w-full flex-1 px-2">
               <div className="flex flex-col gap-2 pr-4">
                 {isLoading && (
                   <div className="flex flex-col gap-2">
@@ -104,10 +119,15 @@ export default function Home() {
           </div>
           <div className="flex-1 flex items-center justify-center">
             <RadarMap
+              presentCenter={{
+                longitude: filters.userLng,
+                latitude: filters.userLat,
+              }}
               showMap={showMap}
               publishableKey={RADAR_KEY || ""}
               carWashes={carWashes}
               onMapReady={handleMapReady}
+              onSearchArea={handleSearchArea}
             />
           </div>
           <MobileCarWashView

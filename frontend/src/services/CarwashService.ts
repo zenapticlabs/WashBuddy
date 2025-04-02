@@ -28,13 +28,14 @@ export const updateCarwash = async (id: string, formData: any) => {
 export const getCarwashes = async (filters: Record<string, any> = {}) => {
   try {
     const params = new URLSearchParams();
+
     // Add filters to the query string
     Object.entries(filters).forEach(([key, value]) => {
       if (value) {
         params.append(key, value.toString());
       }
     });
-
+    console.log(filters);
     const response = await axios.get(`${API_URL}/api/v1/carwash/search`, {
       params,
     });

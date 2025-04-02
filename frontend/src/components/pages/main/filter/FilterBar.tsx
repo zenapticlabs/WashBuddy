@@ -98,11 +98,11 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
       key: "washType",
       label: "Wash type",
       icon: <Droplet size={16} />,
-      isActive: inlineFilters.washType.length > 0,
+      isActive: inlineFilters.washTypeName.length > 0,
       content: (
         <WashTypeCheckboxes
-          value={inlineFilters.washType}
-          onChange={(value) => setInlineFilters({ ...inlineFilters, washType: value })}
+          value={inlineFilters.washTypeName}
+          onChange={(value) => setInlineFilters({ ...inlineFilters, washTypeName: value })}
           options={washTypes.filter((washType) => washType.category == (filters.automaticCarWash ? Car_Wash_Type_Value.AUTOMATIC : Car_Wash_Type_Value.SELF_SERVICE))}
         />
       ),
@@ -111,11 +111,11 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
       key: "amenities",
       label: "Amenities",
       icon: <House size={16} />,
-      isActive: inlineFilters.amenities.length > 0,
+      isActive: inlineFilters.amenityName.length > 0,
       content: (
         <AmenitiesCheckboxes
-          value={inlineFilters.amenities}
-          onChange={(value) => setInlineFilters({ ...inlineFilters, amenities: value })}
+          value={inlineFilters.amenityName}
+          onChange={(value) => setInlineFilters({ ...inlineFilters, amenityName: value })}
           options={amenities.filter((amenity) => amenity.category == (filters.automaticCarWash ? Car_Wash_Type_Value.AUTOMATIC : Car_Wash_Type_Value.SELF_SERVICE))}
         />
       ),

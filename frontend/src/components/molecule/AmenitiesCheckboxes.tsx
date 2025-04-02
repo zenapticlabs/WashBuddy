@@ -60,14 +60,14 @@ const AmenitiesCheckboxes: React.FC<AmenitiesCheckboxesProps> = ({
           <div className="flex flex-col gap-4">
             {options?.map((amenity) => (
               <Checkbox
-                key={amenity.id}
+                key={amenity.name}
                 label={amenity.name}
                 checked={
                   value
-                    ? value.includes(amenity.id)
-                    : selectedAmenities.includes(amenity.id)
+                    ? value.includes(amenity.name)
+                    : selectedAmenities.includes(amenity.name)
                 }
-                onChange={() => handleChange(amenity.id)}
+                onChange={() => handleChange(amenity.name)}
                 description={amenity.description}
               />
             ))}

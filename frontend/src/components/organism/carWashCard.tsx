@@ -12,7 +12,7 @@ const emptyImageURL =
 
 export function CarWashCard({ data, onClick }: CarWashCardProps) {
   return (
-    <div className="p-3 border border-neutral-50 rounded-lg">
+    <div className="p-3 border border-neutral-50 rounded-lg cursor-pointer hover:border-blue-500 transition-all duration-300" onClick={onClick}>
       <div className="flex gap-2 rounded-lg w-full">
         <Image
           src={data.image_url || emptyImageURL}
@@ -57,12 +57,6 @@ export function CarWashCard({ data, onClick }: CarWashCardProps) {
               </span>
             </div>
           </div>
-          <button
-            className="text-title-2 text-blue-600 p-0 w-fit md:hidden block"
-            onClick={onClick}
-          >
-            View Details
-          </button>
           {/* <Badge
             variant="green"
             className="text-title-3 text-white w-fit hidden md:block"
@@ -92,9 +86,6 @@ export function CarWashCard({ data, onClick }: CarWashCardProps) {
                 Number(pkg.price) < Number(lowest.price) ? pkg : lowest
               ).name}
           </div>
-          <button className="text-title-2 text-blue-600 p-0" onClick={onClick}>
-            View Details
-          </button>
         </div>
       </div>
       {/* <Badge

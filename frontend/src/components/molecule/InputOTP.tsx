@@ -55,7 +55,8 @@ export function InputOTP({ value, onChange, length = 6 }: InputOTPProps) {
       {Array.from({ length }).map((_, index) => (
         <input
           key={index}
-          type="text"
+          // type="text"
+          type="number"
           maxLength={1}
           value={value[index]}
           ref={(el) => {

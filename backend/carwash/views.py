@@ -66,6 +66,7 @@ class CarWashRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
 
 class ListCarWashAPIView(DynamicFieldsViewMixin, ListAPIView):
+    queryset = CarWash.active_objects.all()
     permission_classes = (AllowAny, )
     serializer_class = CarWashListSerializer
     pagination_class = CustomResponsePagination
@@ -90,7 +91,7 @@ class ListCarWashAPIView(DynamicFieldsViewMixin, ListAPIView):
         return None
 
     def get_queryset(self):
-        queryset = CarWash.active_objects.all()
+        queryset = super().get_queryset()
         user_lat = self.request.GET.get("userLat")
         user_lng = self.request.GET.get("userLng")
 

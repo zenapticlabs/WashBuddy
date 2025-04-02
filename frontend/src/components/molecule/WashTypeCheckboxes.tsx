@@ -89,14 +89,14 @@ const WashTypeCheckboxes: React.FC<WashTypeCheckboxesProps> = ({
               <div className="flex flex-col gap-4">
                 {option.services?.map((service) => (
                   <Checkbox
-                    key={service.id}
+                    key={service.name}
                     label={service.name}
                     checked={
                       value
-                        ? value.includes(service.id)
-                        : selectedWashTypes.includes(service.id)
+                        ? value.includes(service.name)
+                        : selectedWashTypes.includes(service.name)
                     }
-                    onChange={() => handleChange(service.id)}
+                    onChange={() => handleChange(service.name)}
                     description={service.description}
                   />
                 ))}

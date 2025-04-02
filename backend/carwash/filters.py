@@ -5,6 +5,7 @@ from django.contrib.gis.geos import Point
 from django.contrib.gis.db.models.functions import Distance
 from django.db.models import Sum, Value, DecimalField, FloatField, Q
 from django.db.models.functions import Coalesce
+from django.db.models import Min, DecimalField, Value
 
 class DynamicSearchFilter(filters.SearchFilter):
     def get_search_fields(self, view, request):
@@ -20,15 +21,17 @@ class CustomOrderingCarWashFilter(django_filters.OrderingFilter):
             return qs
 
         custom_ordering = {
-            'price_high_to_low': ['-price_rate', 'car_wash_name'],
-            'price_low_to_high': ['price_rate', 'car_wash_name'],
+            'price_high_to_low': ['-min_price', 'car_wash_name'],
+            'price_low_to_high': ['min_price', 'car_wash_name'],
             'recommended': ['-reviews_average'],
             "distance_near_to_far": ["distance"]
         }
 
         if value[0] in ['price_high_to_low', 'price_low_to_high']:
-            qs = qs.annotate(price_rate=Coalesce(Sum("wash_type_mapping__price_rate", output_field=DecimalField()), Value(0, output_field=DecimalField())))
-                
+            qs = qs.annotate(
+                min_price=Coalesce(Min("packages__price"), Value(0, output_field=DecimalField()))
+            )
+
         ordering = custom_ordering.get(value[0], value)
         return qs.order_by(*ordering)
 
@@ -82,9 +85,13 @@ class ListCarWashFilter(django_filters.FilterSet):
         return queryset
     
     def price(self, queryset, name, value):
-        queryset = queryset.annotate(price_rate=Coalesce(Sum("wash_type_mapping__price_rate", output_field=DecimalField()), Value(0, output_field=DecimalField())))
-        return queryset.filter(price_rate__lte=float(value[0]))
-    
+        queryset = queryset.annotate(
+            min_price=Coalesce(Min("packages__price"), Value(0, output_field=DecimalField()))
+        )
+        if value:
+            return queryset.filter(min_price__lte=float(value[0]))
+        return queryset
+
     def filter_search(self, queryset, name, value):
         return queryset.filter(
             Q(street__icontains=value) |

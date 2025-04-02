@@ -4,15 +4,24 @@ import { RadarAddress } from "radar-sdk-js/dist/types";
 
 interface SearchBarProps {
   onChange: (option: RadarAddress | null) => void;
+  currentLocation: any;
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ onChange }) => {
+const SearchBar: React.FC<SearchBarProps> = ({ onChange, currentLocation }) => {
   const [recentSearches, setRecentSearches] = useState<RadarAddress[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (currentLocation?.formatted_address) {
+      setInputValue(currentLocation.formatted_address);
+    } else {
+      setInputValue("");
+    }
+  }, [currentLocation]);
 
   useEffect(() => {
     const recentSearches = localStorage.getItem("recentSearches");
@@ -37,7 +46,10 @@ const SearchBar: React.FC<SearchBarProps> = ({ onChange }) => {
   };
 
   const handleRecentSearch = (search: RadarAddress) => {
-    if (!recentSearches.length || search.formattedAddress !== recentSearches[0].formattedAddress) {
+    if (
+      !recentSearches.length ||
+      search.formattedAddress !== recentSearches[0].formattedAddress
+    ) {
       const newRecentSearches = [search, ...recentSearches];
       if (newRecentSearches.length > 5) {
         newRecentSearches.pop();
@@ -68,26 +80,31 @@ const SearchBar: React.FC<SearchBarProps> = ({ onChange }) => {
 
   return (
     <div className="block lg:flex items-center gap-4 w-full px-4 relative">
-      <AutoComplete onSelect={handleSelectAutoComplete} inputValue={inputValue} setInputValue={setInputValue} />
+      <AutoComplete
+        onSelect={handleSelectAutoComplete}
+        inputValue={inputValue}
+        setInputValue={setInputValue}
+        currentLocation={currentLocation}
+      />
       {recentSearches.length > 0 && (
         <div className="flex items-center gap-2 pt-3 lg:pt-0 px-2 w-full overflow-hidden">
           <div className="text-title-2 text-neutral-400">Recent</div>
-          <div 
+          <div
             ref={containerRef}
             className="flex flex-1 gap-2 overflow-x-auto relative cursor-grab active:cursor-grabbing scrollbar-hide"
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
-            style={{ 
-              scrollBehavior: 'smooth',
-              msOverflowStyle: 'none',  /* IE and Edge */
-              scrollbarWidth: 'none',    /* Firefox */
+            style={{
+              scrollBehavior: "smooth",
+              msOverflowStyle: "none" /* IE and Edge */,
+              scrollbarWidth: "none" /* Firefox */,
             }}
           >
             <style jsx>{`
               div::-webkit-scrollbar {
-                display: none;  /* Chrome, Safari and Opera */
+                display: none; /* Chrome, Safari and Opera */
               }
             `}</style>
             {recentSearches.map((search, index) => (
