@@ -277,7 +277,14 @@ class CarWashReviewPostPatchSerializer(serializers.ModelSerializer):
                 return
             existing_object.update(**image_object)
 
+
+class CarWashReviewImagesGetSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CarWashReviewImage
+        fields = "__all__"
+
 class CarWashReviewListSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+    images = CarWashReviewImagesGetSerializer(many=True)
 
     class Meta:
         model = CarWashReview
