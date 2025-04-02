@@ -51,11 +51,11 @@ class ListCarWashFilter(django_filters.FilterSet):
     selfServiceCarWash = django_filters.BooleanFilter(field_name="self_service_car_wash")
     open24Hours = django_filters.BooleanFilter(field_name="open_24_hours")
     verified = django_filters.BooleanFilter(field_name="verified")
-    washTypeName = django_filters.BaseInFilter(field_name="wash_types__name", lookup_expr='in')
-    washTypeSubClass = django_filters.BaseInFilter(field_name="wash_types__subclass", lookup_expr='in')
-    washTypeCategory = django_filters.BaseInFilter(field_name="wash_types__category", lookup_expr='in')
-    amenityName = django_filters.BaseInFilter(field_name="amenities__name", lookup_expr='in')
-    amenityCategory = django_filters.BaseInFilter(field_name="amenities__category", lookup_expr='in')
+    washTypeName = django_filters.BaseInFilter(field_name="packages__wash_types__name", lookup_expr='in')
+    washTypeSubClass = django_filters.BaseInFilter(field_name="packages__wash_types__subclass", lookup_expr='in')
+    washTypeCategory = django_filters.BaseInFilter(field_name="packages__wash_types__category", lookup_expr='in')
+    amenityName = django_filters.BaseInFilter(field_name="packages__amenities__name", lookup_expr='in')
+    amenityCategory = django_filters.BaseInFilter(field_name="packages__amenities__category", lookup_expr='in')
     sortBy = CustomOrderingCarWashFilter(fields=(
             ('id', 'id'),
             ('car_wash_name', 'car_wash_name'),
@@ -70,6 +70,7 @@ class ListCarWashFilter(django_filters.FilterSet):
     userLat = django_filters.NumberFilter(method="filter_user_location", label="User's search Latitude")
     userLng = django_filters.NumberFilter(method="filter_user_location", label="User's search Longitude")
     distance = django_filters.NumberFilter(method="get_nearest_shops", label="Distance in miles of radius")
+    
     class Meta:
         model = CarWash
         fields = ("carWashName", "country", "countryCode", "state", "city", "stateCode", "reviewsCount", 

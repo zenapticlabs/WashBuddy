@@ -15,8 +15,6 @@ from .models import (
     CarWashImage, 
     WashType, 
     Amenity,
-    CarWashWashTypeMapping,
-    AmenityCarWashMapping,
     CarWashPackage,
 )
 
@@ -73,13 +71,6 @@ class CarWashImageInline(admin.TabularInline):
     model = CarWashImage
     extra = 0
 
-class CarWashWashTypeMappingInline(admin.TabularInline):
-    model = CarWashWashTypeMapping
-    extra = 1
-
-class AmenityCarWashMappingInline(admin.TabularInline):
-    model = AmenityCarWashMapping
-    extra = 1
 
 class PackageInline(admin.TabularInline):
     model = CarWashPackage
@@ -169,8 +160,6 @@ class CarWashAdmin(ImportExportModelAdmin, ModelAdmin):
     search_fields = ['car_wash_name', 'formatted_address', 'city']
     inlines = [
         CarWashOperatingHoursInline,
-        CarWashWashTypeMappingInline,
-        AmenityCarWashMappingInline,
         PackageInline,
         CarWashImageInline,
     ]

@@ -37,17 +37,6 @@ class CarWash(CustomModelMixin):
     open_24_hours = models.BooleanField()
     verified = models.BooleanField(default=False)
     
-    wash_types = models.ManyToManyField(
-        'WashType', 
-        through='CarWashWashTypeMapping',
-        related_name='car_washes'
-    )
-    amenities = models.ManyToManyField(
-        'Amenity', 
-        through='AmenityCarWashMapping',
-        related_name='car_washes'
-    )
-
     def __str__(self):
         return self.car_wash_name
 
@@ -173,19 +162,6 @@ class WashType(CustomModelMixin):
     def __str__(self):
         return f"{self.name} ({self.category} - {self.subclass})"
 
-class CarWashWashTypeMapping(CustomModelMixin):
-    car_wash = models.ForeignKey(CarWash, on_delete=models.CASCADE, related_name="wash_type_mapping")
-    wash_type = models.ForeignKey(WashType, on_delete=models.CASCADE, related_name="car_wash_mapping")
-
-    objects = models.Manager()
-    active_objects = ActiveManager()
-
-    class Meta:
-        unique_together = ('car_wash', 'wash_type')
-
-    def __str__(self):
-        return f"{self.car_wash.car_wash_name} - {self.wash_type.name}"
-
 class Amenity(CustomModelMixin):
     CATEGORY_CHOICES = [
         ('automatic', 'Automatic Car Wash'),
@@ -208,20 +184,6 @@ class Amenity(CustomModelMixin):
     
     class Meta:
         verbose_name_plural = "Amenities"
-
-
-class AmenityCarWashMapping(CustomModelMixin):
-    car_wash = models.ForeignKey(CarWash, on_delete=models.CASCADE, related_name="amenity_mapping")
-    amenity = models.ForeignKey(Amenity, on_delete=models.CASCADE, related_name="car_wash_mapping")
-
-    objects = models.Manager()
-    active_objects = ActiveManager()
-
-    class Meta:
-        unique_together = ('car_wash', 'amenity')
-
-    def __str__(self):
-        return f"{self.car_wash.car_wash_name} - {self.amenity.name}"
 
 class CarWashPackage(CustomModelMixin):
     car_wash = models.ForeignKey(CarWash, on_delete=models.CASCADE, related_name="packages")
