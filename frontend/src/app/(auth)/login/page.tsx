@@ -37,6 +37,13 @@ function LoginContent() {
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   
+  // Add effect to watch for OTP completion
+  useEffect(() => {
+    if (otp.every(digit => digit !== "") && otp.length === 6) {
+      handleVerifyOTP();
+    }
+  }, [otp]);
+
   // Update URL when step changes
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -53,6 +60,7 @@ function LoginContent() {
     }
   }, [user, loading, router]);
 
+  
   const handleContinueWithEmail = () => {
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
