@@ -36,6 +36,12 @@ class CarWash(CustomModelMixin):
     self_service_car_wash = models.BooleanField()
     open_24_hours = models.BooleanField()
     verified = models.BooleanField(default=False)
+
+    amenities = models.ManyToManyField(
+        'Amenity', 
+        through='AmenityCarWashMapping',
+        related_name='car_washes'
+    )
     
     def __str__(self):
         return self.car_wash_name
@@ -185,13 +191,25 @@ class Amenity(CustomModelMixin):
     class Meta:
         verbose_name_plural = "Amenities"
 
+class AmenityCarWashMapping(CustomModelMixin):
+    car_wash = models.ForeignKey(CarWash, on_delete=models.CASCADE, related_name="amenity_mapping")
+    amenity = models.ForeignKey(Amenity, on_delete=models.CASCADE, related_name="car_wash_mapping")
+
+    objects = models.Manager()
+    active_objects = ActiveManager()
+
+    class Meta:
+        unique_together = ('car_wash', 'amenity')
+
+    def __str__(self):
+        return f"{self.car_wash.car_wash_name} - {self.amenity.name}"
+
 class CarWashPackage(CustomModelMixin):
     car_wash = models.ForeignKey(CarWash, on_delete=models.CASCADE, related_name="packages")
     name = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     wash_types = models.ManyToManyField(WashType, related_name="packages", blank=True)
-    amenities = models.ManyToManyField(Amenity, related_name="packages", blank=True)
 
     objects = models.Manager()
     active_objects = ActiveManager()
@@ -199,29 +217,12 @@ class CarWashPackage(CustomModelMixin):
     def __str__(self):
         return f"{self.car_wash.car_wash_name} - {self.name}"
 
-    def clean(self):
-        if self.pk and self.car_wash:
-            car_wash_wash_types = list(self.car_wash.wash_types.values_list('id', flat=True))
-            car_wash_amenities = list(self.car_wash.amenities.values_list('id', flat=True))
-
-            if car_wash_wash_types:
-                invalid_wash_types = self.wash_types.exclude(id__in=car_wash_wash_types)
-                if invalid_wash_types.exists():
-                    raise ValidationError(f"Invalid wash types: {', '.join(invalid_wash_types.values_list('name', flat=True))}")
-
-            if car_wash_amenities:
-                invalid_amenities = self.amenities.exclude(id__in=car_wash_amenities)
-                if invalid_amenities.exists():
-                    raise ValidationError(f"Invalid amenities: {', '.join(invalid_amenities.values_list('name', flat=True))}")
-
     def save(self, *args, **kwargs):
-        self.clean()
         is_new = self.pk is None
         super().save(*args, **kwargs)
 
         if is_new:
             self.wash_types.set(self.wash_types.all())
-            self.amenities.set(self.amenities.all())
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)

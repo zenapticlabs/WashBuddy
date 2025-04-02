@@ -16,6 +16,7 @@ from .models import (
     WashType, 
     Amenity,
     CarWashPackage,
+    AmenityCarWashMapping
 )
 
 @admin.register(WashType)
@@ -71,6 +72,9 @@ class CarWashImageInline(admin.TabularInline):
     model = CarWashImage
     extra = 0
 
+class AmenityCarWashMappingInline(admin.TabularInline):
+    model = AmenityCarWashMapping
+    extra = 1
 
 class PackageInline(admin.TabularInline):
     model = CarWashPackage
@@ -162,4 +166,5 @@ class CarWashAdmin(ImportExportModelAdmin, ModelAdmin):
         CarWashOperatingHoursInline,
         PackageInline,
         CarWashImageInline,
+        AmenityCarWashMappingInline
     ]

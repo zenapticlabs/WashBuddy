@@ -94,6 +94,7 @@ class ReviewStatsSerializer(serializers.Serializer):
     rating_1 = serializers.IntegerField()
 
 class CarWashListSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+    amenities = serializers.SerializerMethodField()
     location = serializers.SerializerMethodField()
     operating_hours = CarWashOperatingHoursSerializer(many=True)
     packages = serializers.SerializerMethodField()
@@ -105,6 +106,9 @@ class CarWashListSerializer(DynamicFieldsSerializerMixin, serializers.ModelSeria
     class Meta:
         model = CarWash
         fields = '__all__'
+
+    def get_amenities(self, instance):
+        return AmenitySerializer(instance.amenities, many=True, context={"car_wash": instance}).data
     
     def get_location(self, instance):
         if instance.location:
@@ -149,15 +153,15 @@ class CarWashPackagesPostPatchSerializer(serializers.ModelSerializer):
     wash_types = serializers.PrimaryKeyRelatedField(
         queryset=WashType.objects.all(), many=True, required=False
     )
-    amenities = serializers.PrimaryKeyRelatedField(
-        queryset=Amenity.objects.all(), many=True, required=False
-    )
     class Meta:
         model = CarWashPackage
-        fields = ["name", "description", "price", "wash_types", "amenities"]
+        fields = ["name", "description", "price", "wash_types"]
     
 
 class CarWashPostPatchSerializer(serializers.ModelSerializer):
+    amenities = serializers.PrimaryKeyRelatedField(
+        queryset=Amenity.objects.all(), many=True, required=False
+    )
     operating_hours = CarWashOperatingHoursPostPatchSerializer(many=True, required=False)
     images = CarWashImagesPostPatchSerializer(many=True, required=False)
     location = GeometryField()
@@ -211,7 +215,6 @@ class CarWashPostPatchSerializer(serializers.ModelSerializer):
         for package_object in packages:
             existing_object = instance.packages.filter(name=package_object["name"])
             wash_types = package_object.pop("wash_types", [])
-            amenities = package_object.pop("amenities", [])
             if not existing_object:
                 existing_object = CarWashPackage.objects.create(
                     car_wash=instance,
@@ -222,15 +225,17 @@ class CarWashPostPatchSerializer(serializers.ModelSerializer):
                 existing_object = existing_object.first()
 
             existing_object.wash_types.set(wash_types)
-            existing_object.amenities.set(amenities)
 
 
     def create(self, validated_data):
+        amenities = validated_data.pop("amenities", [])
         operating_hours = validated_data.pop("operating_hours", [])  
         images = validated_data.pop("images", [])  
         packages = validated_data.pop("packages", [])  
 
         car_wash = CarWash.objects.create(**validated_data)
+
+        car_wash.amenities.set(amenities)
 
         self.handle_operating_hours(car_wash, operating_hours)
         self.handle_images(car_wash, images)
