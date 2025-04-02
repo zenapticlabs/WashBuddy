@@ -47,3 +47,50 @@ export const SortBy = {
     },
   ],
 };
+
+export const OPERATING_HOURS = Array.from({ length: 7 }, (_, index) => ({
+  day_of_week: index,
+  is_closed: false,
+  opening_time: "06:00",
+  closing_time: "18:00",
+}));
+
+export const DEFAULT_PAYLOAD = {
+  operating_hours: OPERATING_HOURS,
+  images: [],
+  wash_types: [],
+  amenities: [],
+  phone: "",
+  reviews_count: 0,
+  reviews_average: 0,
+  open_24_hours: true,
+  verified: false,
+};
+
+export const FORM_CONFIG = [
+  {
+    name: "car_wash_name",
+    label: "Name",
+    type: "text",
+    placeholder: "Enter car wash name",
+    required: true,
+  },
+  {
+    name: "phone",
+    label: "Phone",
+    type: "text",
+    placeholder: "Enter phone number",
+  },
+  {
+    name: "website",
+    label: "Website",
+    type: "text",
+    placeholder: "Enter website",
+  },
+  {
+    name: "email",
+    label: "Email",
+    type: "text",
+    placeholder: "Enter email",
+  },
+];

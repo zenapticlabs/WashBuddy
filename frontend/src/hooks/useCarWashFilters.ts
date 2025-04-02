@@ -4,12 +4,13 @@ import { Car_Wash_Type, SortBy } from "@/utils/constants";
 
 function getFiltersFromParams(params: URLSearchParams): FilterState {
   return {
-    automaticCarWash: params.get("automaticCarWash") === "true" || true,    
-    washType: params.getAll("washType").map(String),
+    automaticCarWash: params.get("automaticCarWash") === "true" || true,
+    selfServiceCarWash: params.get("selfServiceCarWash") === "true" || false,
+    washTypeName: params.getAll("washTypeName").map(String),
     ratings: params.getAll("ratings").map(Number),
     distance: Number(params.get("distance")) || 3,
     priceRange: Number(params.get("priceRange")) || 0,
-    amenities: params.getAll("amenities").map(String),
+    amenityName: params.getAll("amenityName").map(String),
     operatingHours: params.getAll("operatingHours").map(String),
     sortBy: params.getAll("sortBy").map(String).length > 0 
       ? params.getAll("sortBy").map(String)
@@ -25,11 +26,12 @@ function getFiltersFromParams(params: URLSearchParams): FilterState {
 export function useCarWashFilters() {
   const [filters, setFilters] = useState<FilterState>({
     automaticCarWash: true,
-    washType: [],
+    selfServiceCarWash: false,
+    washTypeName: [],
     ratings: [],
     distance: 3,
     priceRange: 0,
-    amenities: [],
+    amenityName: [],
     operatingHours: [],
     sortBy: [SortBy[Car_Wash_Type.AUTOMATIC][0].value],
     pagination: true,

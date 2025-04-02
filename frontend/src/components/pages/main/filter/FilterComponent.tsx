@@ -27,8 +27,8 @@ const FilterComponent: React.FC<FilterComponentProps> = ({
         Filters
         <CircleBadge
           text={String(
-            filters.amenities.length +
-              filters.washType.length +
+            filters.amenityName.length +
+              filters.washTypeName.length +
               filters.ratings.length +
               filters.operatingHours.length +
               (filters.distance > 0 ? 1 : 0) +

@@ -16,7 +16,7 @@ interface PriceRangeProps {
 const PriceRange: React.FC<PriceRangeProps> = ({
   value,
   minValue = 0,
-  maxValue = 100,
+  maxValue = 35,
   onChange,
 }) => {
   const [progressValue, setProgressValue] = useState(0);
