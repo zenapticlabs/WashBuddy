@@ -126,36 +126,34 @@ export function CarwashPackage({
 
   return (
     <div className="p-4">
-      {carwashPackages.length > 0 && (
-        <div className="mb-4 flex gap-2">
-          {carwashPackages.map((pkg) => (
-            <div
-              key={pkg.id}
-              onClick={() => {
-                setSelectedPackage(pkg);
-                setIsSheetOpen(true);
-              }}
-              className="w-[80px] h-24 flex flex-col items-center p-4 rounded-lg border border-neutral-200 hover:border-blue-500 transition-all cursor-pointer"
-            >
-              <div className="text-title-2 font-semibold text-neutral-900 pb-4 flex-1 overflow-hidden">
-                {pkg.name}
-              </div>
-              <div className="text-headline-5 font-semibold text-neutral-900 flex-1">
-                ${pkg.price}
-              </div>
-            </div>
-          ))}
-          <button
+      <div className="mb-4 flex gap-2">
+        {carwashPackages.map((pkg) => (
+          <div
+            key={pkg.id}
             onClick={() => {
-              setSelectedPackage(null);
+              setSelectedPackage(pkg);
               setIsSheetOpen(true);
             }}
-            className="w-[80px] h-24 flex items-center justify-center rounded-lg bg-blue-500 text-white"
+            className="w-[80px] h-24 flex flex-col items-center p-4 rounded-lg border border-neutral-200 hover:border-blue-500 transition-all cursor-pointer"
           >
-            <PlusIcon size={36} />
-          </button>
-        </div>
-      )}
+            <div className="text-title-2 font-semibold text-neutral-900 pb-4 flex-1 overflow-hidden">
+              {pkg.name}
+            </div>
+            <div className="text-headline-5 font-semibold text-neutral-900 flex-1">
+              ${pkg.price}
+            </div>
+          </div>
+        ))}
+        <button
+          onClick={() => {
+            setSelectedPackage(null);
+            setIsSheetOpen(true);
+          }}
+          className="w-[80px] h-24 flex items-center justify-center rounded-lg bg-blue-500 text-white"
+        >
+          <PlusIcon size={36} />
+        </button>
+      </div>
 
       {/* Create/Edit Form */}
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
