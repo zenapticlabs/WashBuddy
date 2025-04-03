@@ -48,7 +48,6 @@ const CarWashDetail: React.FC<CarWashDetailProps> = ({
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [isOpen, setIsOpen] = useState(false);
   const [closingTime, setClosingTime] = useState<string>("");
-  console.log("data", data)
 
   useEffect(() => {
     setImageLoading(true);
@@ -89,7 +88,6 @@ const CarWashDetail: React.FC<CarWashDetailProps> = ({
 
   useEffect(() => {
     getReviews(data?.id.toString() || "").then((res: any) => {
-      console.log(res);
       setReviews(res.data[0].results || []);
     });
   }, [data]);

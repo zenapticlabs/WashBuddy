@@ -1,7 +1,7 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Crosshair, Loader2, MapPin, XIcon } from "lucide-react";
+import { CheckIcon, Crosshair, Loader2, MapPin, XIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { OperatingHoursRange } from "@/components/molecule/OperatingHoursRange";
 import { Input } from "@/components/ui/input";
@@ -35,6 +35,8 @@ import { getPresignedUrl, uploadFile } from "@/services/UploadService";
 import Image from "next/image";
 import MultiImageUploadZone from "@/components/molecule/MultiImageUploadZone";
 import UploadedImageCard from "@/components/ui/uploadedImageCard";
+import { IconToggle } from "@/components/ui/iconToggle";
+import { CarwashPackage } from "@/components/organism/carwashPackage";
 
 const NEXT_PUBLIC_STORAGE_ENDPOINT = process.env.NEXT_PUBLIC_STORAGE_ENDPOINT;
 const NEXT_PUBLIC_STORAGE_BUCKET_NAME =
@@ -300,7 +302,31 @@ const CarWashContent = () => {
                     <div className="text-title-1 text-[#262626] py-5">
                       Select Carwash Type
                     </div>
-                    <SelectCarwashType
+                    <div className="flex gap-2">
+                      <IconToggle
+                        label="Automatic car wash"
+                        icon={<CheckIcon size={10} />}
+                        checked={formData.automatic_car_wash}
+                        onChange={(checked) =>
+                          setFormData({
+                            ...formData,
+                            automatic_car_wash: !!checked,
+                          })
+                        }
+                      />
+                      <IconToggle
+                        label="Self-service car wash"
+                        icon={<CheckIcon size={10} />}
+                        checked={formData.self_service_car_wash}
+                        onChange={(checked) =>
+                          setFormData({
+                            ...formData,
+                            self_service_car_wash: !!checked,
+                          })
+                        }
+                      />
+                    </div>
+                    {/* <SelectCarwashType
                       label="Automatic car wash"
                       checked={formData.automatic_car_wash}
                       onChange={(checked) =>
@@ -350,6 +376,45 @@ const CarWashContent = () => {
                       }
                       setWashTypes={(washTypes) =>
                         setFormData({ ...formData, wash_types: washTypes })
+                      }
+                    /> */}
+                  </div>
+                  <div className="flex flex-col px-6 gap-2  py-10">
+                    <div className="text-title-1 text-[#262626] py-5">
+                      Select Amenities
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {amenities.map((amenity) => (
+                        <IconToggle
+                          label={amenity.name}
+                          icon={<CheckIcon size={10} />}
+                          checked={formData.amenities.includes(amenity.id)}
+                          onChange={(checked) =>
+                            setFormData({
+                              ...formData,
+                              amenities: checked
+                                ? [...formData.amenities, amenity.id]
+                                : formData.amenities.filter(
+                                    (id: any) => id !== amenity.id
+                                  ),
+                            })
+                          }
+                        />
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex flex-col px-6 gap-2  py-10">
+                    <div className="text-title-1 text-[#262626] py-5">
+                      Carwash Packages
+                    </div>
+                    <CarwashPackage
+                      washTypes={washTypes}
+                      carwashPackages={formData.carwash_packages}
+                      setCarwashPackages={(carwashPackages) =>
+                        setFormData({
+                          ...formData,
+                          carwash_packages: carwashPackages,
+                        })
                       }
                     />
                   </div>

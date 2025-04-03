@@ -65,16 +65,9 @@ export interface OperatingHour {
 
 export interface CarWashPackage {
   id: number;
-  wash_types: CarServiceWashType[];
-  amenities: CarServiceAmenity[];
-  created_at: string;
-  updated_at: string;
-  status: string;
   name: string;
-  description: string;
-  price: string;
-  created_by: string | null;
-  updated_by: string | null;
+  price: number;
+  washTypes: number[];
 }
 
 export interface CarWashImage {

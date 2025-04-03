@@ -63,6 +63,7 @@ export const DEFAULT_PAYLOAD = {
   phone: "",
   reviews_count: 0,
   reviews_average: 0,
+  carwash_packages: [],
   open_24_hours: true,
   verified: false,
 };
@@ -113,3 +114,10 @@ export const ReviewSortBy = [
     value: "lowest",
   },
 ];
+
+export interface CarwashPackage {
+  id?: number;
+  name: string;
+  price: number;
+  washTypes: number[];
+}
