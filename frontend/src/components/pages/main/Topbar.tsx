@@ -177,6 +177,9 @@ const Topbar: React.FC<TopbarProps> = ({
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuLabel>My Account</DropdownMenuLabel>
+              <DropdownMenuItem asChild>
+                <Link href="/profile">Profile Settings</Link>
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={handleLogout}>
                 Log out
               </DropdownMenuItem>

@@ -13,6 +13,19 @@ export const Car_Wash_Type_Value = {
   SELF_SERVICE: "selfservice",
 };
 
+export const CarWashTypes = [
+  {
+    id: 1,
+    name: "Automatic",
+    value: Car_Wash_Type_Value.AUTOMATIC,
+  },
+  {
+    id: 2,
+    name: "Self Service",
+    value: Car_Wash_Type_Value.SELF_SERVICE,
+  },
+];
+
 export const SortBy = {
   [Car_Wash_Type.AUTOMATIC]: [
     {
@@ -63,6 +76,7 @@ export const DEFAULT_PAYLOAD = {
   phone: "",
   reviews_count: 0,
   reviews_average: 0,
+  carwash_packages: [],
   open_24_hours: true,
   verified: false,
 };
@@ -94,3 +108,29 @@ export const FORM_CONFIG = [
     placeholder: "Enter email",
   },
 ];
+
+export const ReviewSortBy = [
+  {
+    label: "Relevance",
+    value: "relevance",
+  },
+  {
+    label: "Newest",
+    value: "newest",
+  },
+  {
+    label: "Highest",
+    value: "highest",
+  },
+  {
+    label: "Lowest",
+    value: "lowest",
+  },
+];
+
+export interface CarwashPackage {
+  id?: number;
+  name: string;
+  price: number;
+  washTypes: number[];
+}

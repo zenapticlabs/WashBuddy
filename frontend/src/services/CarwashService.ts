@@ -35,7 +35,6 @@ export const getCarwashes = async (filters: Record<string, any> = {}) => {
         params.append(key, value.toString());
       }
     });
-    console.log(filters);
     const response = await axios.get(`${API_URL}/api/v1/carwash/search`, {
       params,
     });

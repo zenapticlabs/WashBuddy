@@ -5,46 +5,42 @@ import { Input } from "@/components/ui/input";
 import { Rate } from "@/components/ui/rate";
 import { RateCountBar } from "@/components/ui/RateCountBar";
 import { Separator } from "@/components/ui/separator";
+import { ReviewsSummary } from "@/types";
 import { IReviewShow } from "@/types/Review";
 import { Search, SlidersVertical, Star, TextSearch } from "lucide-react";
 import { useState } from "react";
 
 const defaultAvatar =
   "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde";
-
-const review1: IReviewShow = {
-  id: "1",
-  username: "John Doe",
-  avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde",
-  reviewText:
-    "Error veniam velit aut non aut eligendi voluptatem non cupiditate. Quia quis inventore ad unde natus ab fugiat officia. Sunt assumenda necessitatibus explicabo sit officia. Voluptates tempore ipsa cumque amet nesciunt numquam. Voluptatem facilis quia laboriosam neque praesentium ut.",
-  reviewRating: 4.5,
-  photos: [],
-  createdAt: "2025-02-16",
-};
-
+  
 const orders = ["Relevance", "Newest", "Highest", "Lowest"];
 
 interface CarWashReviewsProps {
   setReviewOpen: (open: boolean) => void;
+  reviews: IReviewShow[];
+  reviewsSummary: ReviewsSummary;
 }
 
-const CarWashReviews: React.FC<CarWashReviewsProps> = ({ setReviewOpen }) => {
+const CarWashReviews: React.FC<CarWashReviewsProps> = ({
+  setReviewOpen,
+  reviews,
+  reviewsSummary,
+}) => {
   const [selectedOrder, setSelectedOrder] = useState<string>(orders[0]);
   return (
     <div className="flex flex-col gap-3">
       <div className="flex gap-2">
         <div className="flex-1 flex flex-col gap-1 items-center justify-center">
-          <div className="text-title-2 text-neutral-900 text-[32px]">4.8</div>
-          <Rate value={4.8} max={5} size="xs" />
-          <div className="text-body-3 text-neutral-400">(123 reviews)</div>
+          <div className="text-title-2 text-neutral-900 text-[32px]">{reviewsSummary?.average_rating}</div>
+          <Rate value={reviewsSummary?.average_rating} max={5} size="xs" />
+          <div className="text-body-3 text-neutral-400">({reviewsSummary?.total_reviews} reviews)</div>
         </div>
         <div className="flex flex-col gap-1 w-[240px]">
-          <RateCountBar mark={5} total={130} value={119} />
-          <RateCountBar mark={4} total={130} value={3} />
-          <RateCountBar mark={3} total={130} value={2} />
-          <RateCountBar mark={2} total={130} value={1} />
-          <RateCountBar mark={1} total={130} value={1} />
+          <RateCountBar mark={5} total={reviewsSummary?.total_reviews} value={reviewsSummary?.rating_5} />
+          <RateCountBar mark={4} total={reviewsSummary?.total_reviews} value={reviewsSummary?.rating_4} />
+          <RateCountBar mark={3} total={reviewsSummary?.total_reviews} value={reviewsSummary?.rating_3} />
+          <RateCountBar mark={2} total={reviewsSummary?.total_reviews} value={reviewsSummary?.rating_2} />
+          <RateCountBar mark={1} total={reviewsSummary?.total_reviews} value={reviewsSummary?.rating_1} />
         </div>
       </div>
       <Separator />
@@ -59,7 +55,7 @@ const CarWashReviews: React.FC<CarWashReviewsProps> = ({ setReviewOpen }) => {
             className="w-10 h-10 rounded-full"
           />
           <span onClick={() => setReviewOpen(true)}>
-            <Rate value={4.8} max={5} size="md" color="text-neutral-500" />
+            <Rate value={reviewsSummary?.average_rating} max={5} size="md" color="default-yellow"/>
           </span>
           <div className="flex items-center justify-center gap-1">
             <div className="h-6 w-6 rounded-full bg-gradient-to-t from-[#FFA100] to-[#FFC35C] flex items-center justify-center">
@@ -92,7 +88,9 @@ const CarWashReviews: React.FC<CarWashReviewsProps> = ({ setReviewOpen }) => {
           />
         ))}
       </div>
-      <ReviewShow data={review1} />
+      {reviews.map((review) => (
+        <ReviewShow key={review.id} data={review} />
+      ))}
     </div>
   );
 };
