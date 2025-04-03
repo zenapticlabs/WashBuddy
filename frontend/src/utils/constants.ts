@@ -13,6 +13,19 @@ export const Car_Wash_Type_Value = {
   SELF_SERVICE: "selfservice",
 };
 
+export const CarWashTypes = [
+  {
+    id: 1,
+    name: "Automatic",
+    value: Car_Wash_Type_Value.AUTOMATIC,
+  },
+  {
+    id: 2,
+    name: "Self Service",
+    value: Car_Wash_Type_Value.SELF_SERVICE,
+  },
+];
+
 export const SortBy = {
   [Car_Wash_Type.AUTOMATIC]: [
     {

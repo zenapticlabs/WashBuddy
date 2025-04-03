@@ -65,9 +65,11 @@ export interface OperatingHour {
 
 export interface CarWashPackage {
   id: number;
+  type: string;
   name: string;
   price: number;
   washTypes: number[];
+  minutes?: number;
 }
 
 export interface CarWashImage {
