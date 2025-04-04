@@ -12,7 +12,7 @@ import { useEffect, useState } from "react";
 import CreateCarWashDiaolog from "./CreateCarWashDiaolog";
 import Sidebar from "./Sidebar";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -51,6 +51,7 @@ const Topbar: React.FC<TopbarProps> = ({
   const { signOut } = useAuth();
   const { locationData, fetchLocationData, error, loading } = useLocationData();
   const router = useRouter();
+  const pathname = usePathname();
   const [notiCount, setNotiCount] = useState(2);
   // const [openCreateModal, setOpenCreateModal] = useState(false);
   const [openSidebar, setOpenSidebar] = useState(false);
@@ -65,7 +66,15 @@ const Topbar: React.FC<TopbarProps> = ({
   };
 
   const handleSelectCarWashType = (value: boolean) => {
-    if (filters && setFilters) {
+    if (pathname !== "/") {
+      // If not on dashboard, navigate to dashboard with filter params
+      const params = new URLSearchParams();
+      params.append("automaticCarWash", value.toString());
+      params.append("selfServiceCarWash", (!value).toString());
+      params.append("sortBy", SortBy[value ? Car_Wash_Type.AUTOMATIC : Car_Wash_Type.SELF_SERVICE][0].value);
+      router.push(`/?${params.toString()}`);
+    } else if (filters && setFilters) {
+      // If on dashboard, update filters directly
       setFilters({
         ...filters,
         automaticCarWash: value,

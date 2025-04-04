@@ -16,6 +16,7 @@ interface RadarMapProps {
     center: { longitude: number; latitude: number },
     radius: number
   ) => void;
+  onMarkerClick?: (carWash: CarWashResponse) => void;
   presentCenter?: {
     longitude: number;
     latitude: number;
@@ -28,6 +29,7 @@ export function RadarMap({
   carWashes,
   onMapReady,
   onSearchArea,
+  onMarkerClick,
   presentCenter,
 }: RadarMapProps) {
   const [center, setCenter] = useState<{ longitude: number; latitude: number }>(
@@ -157,7 +159,7 @@ export function RadarMap({
 
       // Create marker HTML
       customMarker.innerHTML = `
-        <div class="relative flex items-center justify-center ">
+        <div class="relative flex items-center justify-center cursor-pointer">
           <div class="absolute z-10 bottom-1 flex flex-col items-center">
             <div class="bg-accent-green rounded-full px-3 py-2 border-4 border-white flex items-center justify-center gap-1">
               <svg width="18" height="16" viewBox="0 0 18 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -171,24 +173,16 @@ export function RadarMap({
         </div>
       `;
 
+      // Add click handler to the marker element
+      customMarker.addEventListener('click', () => {
+        onMarkerClick?.(carWash);
+      });
+
       const marker = new maplibregl.Marker({
         element: customMarker,
         anchor: "bottom",
       })
         .setLngLat(offsetCoords)
-        .setPopup(
-          new maplibregl.Popup({
-            offset: 25,
-            className: "custom-popup",
-          }).setHTML(`
-            <div class="p-3">
-              <h3 class="font-bold text-lg mb-2">${carWash.car_wash_name}</h3>
-              <div class="flex items-center gap-2 mb-1">
-                <span class="text-yellow-500">⭐</span>
-              </div>
-            </div>
-          `)
-        )
         .addTo(mapRef.current!);
 
       markersRef.current.push(marker);
@@ -198,7 +192,7 @@ export function RadarMap({
     if (carWashes?.length) {
       fitToMarkers();
     }
-  }, [carWashes]);
+  }, [carWashes, onMarkerClick]);
 
   // Example: Get center coordinates
   const getMapCenter = () => {
