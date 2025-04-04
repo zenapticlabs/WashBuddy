@@ -154,8 +154,7 @@ class CarWashPackagesPostPatchSerializer(serializers.ModelSerializer):
     )
     class Meta:
         model = CarWashPackage
-        fields = ["name", "description", "price", "wash_types"]
-    
+        fields = ["name", "description", "price", "wash_types", "category", "rate_duration"]
 
 class CarWashPostPatchSerializer(serializers.ModelSerializer):
     amenities = serializers.PrimaryKeyRelatedField(
@@ -210,7 +209,8 @@ class CarWashPostPatchSerializer(serializers.ModelSerializer):
                 return
             existing_object.update(**image_object)
 
-    def handle_packages(self, instance, packages): 
+    def handle_packages(self, instance, packages):  
+        new_packages_ids = []         
         for package_object in packages:
             existing_object = instance.packages.filter(name=package_object["name"])
             wash_types = package_object.pop("wash_types", [])
@@ -219,12 +219,15 @@ class CarWashPostPatchSerializer(serializers.ModelSerializer):
                     car_wash=instance,
                     **package_object
                 )
+                new_packages_ids.append(existing_object.id)
             else:
                 existing_object.update(**package_object)
                 existing_object = existing_object.first()
+                new_packages_ids.append(existing_object.id)
 
             existing_object.wash_types.set(wash_types)
-
+        
+        instance.packages.filter(~Q(id__in=new_packages_ids)).delete()
 
     def create(self, validated_data):
         amenities = validated_data.pop("amenities", [])

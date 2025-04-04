@@ -53,7 +53,7 @@ class ListCarWashFilter(django_filters.FilterSet):
     verified = django_filters.BooleanFilter(field_name="verified")
     washTypeName = django_filters.BaseInFilter(field_name="packages__wash_types__name", lookup_expr='in')
     washTypeSubClass = django_filters.BaseInFilter(field_name="packages__wash_types__subclass", lookup_expr='in')
-    washTypeCategory = django_filters.BaseInFilter(field_name="packages__wash_types__category", lookup_expr='in')
+    washTypeCategory = django_filters.BaseInFilter(field_name="packages__category", lookup_expr='in')
     amenityName = django_filters.BaseInFilter(field_name="amenities__name", lookup_expr='in')
     amenityCategory = django_filters.BaseInFilter(field_name="amenities__category", lookup_expr='in')
     sortBy = CustomOrderingCarWashFilter(fields=(

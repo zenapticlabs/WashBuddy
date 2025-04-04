@@ -205,11 +205,17 @@ class AmenityCarWashMapping(CustomModelMixin):
         return f"{self.car_wash.car_wash_name} - {self.amenity.name}"
 
 class CarWashPackage(CustomModelMixin):
+    CATEGORY_CHOICES = [
+        ('automatic', 'Automatic Car Wash'),
+        ('selfservice', 'Self Service Car Wash')
+    ]
     car_wash = models.ForeignKey(CarWash, on_delete=models.CASCADE, related_name="packages")
     name = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     wash_types = models.ManyToManyField(WashType, related_name="packages", blank=True)
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='automatic')
+    rate_duration = models.PositiveIntegerField(default=0)
 
     objects = models.Manager()
     active_objects = ActiveManager()
