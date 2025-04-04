@@ -222,20 +222,21 @@ export function CarwashPackage({
                   {Object.entries(washTypesBySubclass).map(([key, value]) => (
                     <TableCell key={key} className="">
                       <div className="flex gap-2">
-                        {value
-                          .filter((washType) =>
-                            pkg.wash_types.includes(Number(washType.id))
-                          )
-                          .map((washType) => (
-                            <div key={washType.id}>
-                              <Image
-                                src={washType.icon}
-                                alt={washType.name}
-                                width={24}
-                                height={24}
-                              />
-                            </div>
-                          ))}
+                        {value.map((washType) => (
+                          <div key={washType.id}>
+                            <Image
+                              src={washType.icon}
+                              alt={washType.name}
+                              width={24}
+                              height={24}
+                              className={`${
+                                pkg.wash_types.includes(Number(washType.id))
+                                  ? "text-blue-500 opacity-100"
+                                  : "text-gray-300 opacity-30"
+                              }`}
+                            />
+                          </div>
+                        ))}
                       </div>
                     </TableCell>
                   ))}

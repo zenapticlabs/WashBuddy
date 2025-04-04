@@ -1,15 +1,25 @@
 import { CarWashPackage } from "@/types/CarServices";
-
-interface WashPackageProps {
-  data: CarWashPackage;
-}
-
+import { WashTypes } from "@/utils/constants";
+import Image from "next/image";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "../ui/separator";
+
+interface WashPackageProps {
+  data: CarWashPackage;
+}
+
+const washTypesBySubclass = WashTypes.reduce((acc, washType) => {
+  const subclass = washType.subclass;
+  if (!acc[subclass]) {
+    acc[subclass] = [];
+  }
+  acc[subclass].push(washType);
+  return acc;
+}, {} as Record<string, typeof WashTypes>);
 
 const WashPackage: React.FC<WashPackageProps> = ({ data }) => {
   return (
@@ -27,33 +37,41 @@ const WashPackage: React.FC<WashPackageProps> = ({ data }) => {
         </div>
       </PopoverTrigger>
 
-      <PopoverContent className="w-80 flex flex-col gap-2">
-        <div className="text-title-2 text-neutral-900">Wash Types</div>
-        <div className="flex flex-col gap-2 pl-2">
-          {/* {data.wash_types.map((wt) => (
-            <div key={wt.id} className="text-body-2 text-neutral-700">
-              {wt.name}
+      <PopoverContent className="w-80">
+        <div className="text-title-2 text-neutral-900 mb-4">Wash Types</div>
+        <div className="flex flex-col gap-4">
+          {Object.entries(washTypesBySubclass).map(([subclass, types]) => (
+            <div key={subclass} className="flex flex-col gap-2">
+              <div className="text-body-2 font-semibold text-neutral-900">
+                {subclass}
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                {types.map((washType) => (
+                  <div
+                    key={washType.id}
+                    className="flex flex-col items-center gap-1"
+                  >
+                    <Image
+                      src={washType.icon}
+                      alt={washType.name}
+                      width={24}
+                      height={24}
+                      className={`${
+                        data.wash_types
+                          .map((type: any) => type.id)
+                          .includes(Number(washType.id))
+                          ? "text-blue-500 opacity-100"
+                          : "text-gray-300 opacity-30"
+                      }`}
+                    />
+                    <span className="text-xs text-neutral-600 text-center max-w-[80px] line-clamp-2">
+                      {washType.name}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           ))}
-          {data.wash_types.length === 0 && (
-            <div className="text-body-2 text-neutral-500">
-              No wash types available
-            </div>
-          )}*/}
-        </div>
-        <Separator />
-        <div className="text-title-2 text-neutral-900">Amenities</div>
-        <div className="flex flex-col gap-2 pl-2">
-          {/* {data.amenities.map((amenity) => (
-            <div key={amenity.id} className="text-body-2 text-neutral-700">
-              {amenity.name}
-            </div>
-          ))}
-          {data.amenities.length === 0 && (
-            <div className="text-body-2 text-neutral-500">
-              No amenities available
-            </div>
-          )} */}
         </div>
       </PopoverContent>
     </Popover>
