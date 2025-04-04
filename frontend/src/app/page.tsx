@@ -16,9 +16,12 @@ import { SortBySelect } from "@/components/ui/sortBySelect";
 import { CarWashSkeleton } from "@/components/organism/carWashSkeleton";
 import { CustomPagination } from "@/components/molecule/CustomPagination";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { useSearchParams } from "next/navigation";
+import { Car_Wash_Type, SortBy } from "@/utils/constants";
 
 export default function Home() {
   const RADAR_KEY = process.env.NEXT_PUBLIC_RADAR_API_KEY;
+  const searchParams = useSearchParams();
   const [openAbout, setOpenAbout] = useState(false);
   const [selectedCarWash, setSelectedCarWash] =
     useState<CarWashResponse | null>(null);
@@ -31,6 +34,22 @@ export default function Home() {
   const { filters, setFilters } = useCarWashFilters();
   const { carWashes, isLoading, count, totalPages, currentPage } =
     useCarWashes(filters);
+
+  // Handle URL parameters for filters
+  useEffect(() => {
+    const automaticCarWash = searchParams.get("automaticCarWash");
+    const selfServiceCarWash = searchParams.get("selfServiceCarWash");
+    const sortBy = searchParams.get("sortBy");
+
+    if (automaticCarWash !== null || selfServiceCarWash !== null || sortBy !== null) {
+      setFilters(prev => ({
+        ...prev,
+        automaticCarWash: automaticCarWash === "true",
+        selfServiceCarWash: selfServiceCarWash === "true",
+        sortBy: sortBy ? [sortBy] : [SortBy[Car_Wash_Type.AUTOMATIC][0].value],
+      }));
+    }
+  }, [searchParams, setFilters]);
 
   const handleMapReady = (map: maplibregl.Map) => (mapRef.current = map);
 

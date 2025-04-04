@@ -127,6 +127,7 @@ const CarWashContent = () => {
           ? "Car wash updated successfully!"
           : "Car wash created successfully!"
       );
+      router.push(`/`);
     } catch (error) {
       toast.error(
         isEdit
@@ -449,7 +450,9 @@ const CarWashContent = () => {
                       variant="outline"
                       className="w-full"
                       size="lg"
-                      onClick={() => {}}
+                      onClick={() => {
+                        router.push(`/`);
+                      }}
                       disabled={isLoading}
                     >
                       Cancel
