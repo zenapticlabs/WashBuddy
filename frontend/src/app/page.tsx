@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import type maplibregl from "maplibre-gl";
 import { MobileCarWashView } from "@/components/pages/main/MobileCarWashView";
 import { SearchAndFilterBar } from "@/components/pages/main/SearchAndFilterBar";
@@ -18,8 +18,23 @@ import { CustomPagination } from "@/components/molecule/CustomPagination";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useSearchParams } from "next/navigation";
 import { Car_Wash_Type, SortBy } from "@/utils/constants";
+import { Loader2 } from "lucide-react";
 
 export default function Home() {
+  return (
+    <Suspense
+      fallback={
+        <div className="absolute inset-0 z-50 flex items-center justify-center">
+          <Loader2 className="w-10 h-10 text-blue-500 animate-spin" />
+        </div>
+      }
+    >
+      <HomeContent />
+    </Suspense>
+  );
+}
+
+function HomeContent() {
   const RADAR_KEY = process.env.NEXT_PUBLIC_RADAR_API_KEY;
   const searchParams = useSearchParams();
   const [openAbout, setOpenAbout] = useState(false);
@@ -41,8 +56,12 @@ export default function Home() {
     const selfServiceCarWash = searchParams.get("selfServiceCarWash");
     const sortBy = searchParams.get("sortBy");
 
-    if (automaticCarWash !== null || selfServiceCarWash !== null || sortBy !== null) {
-      setFilters(prev => ({
+    if (
+      automaticCarWash !== null ||
+      selfServiceCarWash !== null ||
+      sortBy !== null
+    ) {
+      setFilters((prev) => ({
         ...prev,
         automaticCarWash: automaticCarWash === "true",
         selfServiceCarWash: selfServiceCarWash === "true",
@@ -57,8 +76,8 @@ export default function Home() {
     const cardElement = cardRefs.current.get(carWashId);
     if (cardElement && scrollAreaRef.current) {
       cardElement.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center'
+        behavior: "smooth",
+        block: "center",
       });
     }
   };
