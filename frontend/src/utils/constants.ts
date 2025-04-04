@@ -1,3 +1,14 @@
+import AirDryerIcon from "@/assets/wash-type-icons/Air dryer.svg";
+import DryerIcon from "@/assets/wash-type-icons/dryer.svg";
+import GraphineIcon from "@/assets/wash-type-icons/Graphine Sealant.svg";
+import HotWaxIcon from "@/assets/wash-type-icons/Hot wax.svg";
+import RainRepellantIcon from "@/assets/wash-type-icons/Rain Repellant.svg";
+import TireShineIcon from "@/assets/wash-type-icons/Tire Shine.svg";
+import TouchlessWashIcon from "@/assets/wash-type-icons/Touchless wash.svg";
+import TripleFoamIcon from "@/assets/wash-type-icons/Triple foam.svg";
+import UnderBodyFlushIcon from "@/assets/wash-type-icons/Underbody flush.svg";
+import UnderBodySprayIcon from "@/assets/wash-type-icons/Underbody spray.svg";
+
 export const CAR_SERVICES_TYPE = {
   WASH_TYPE: "Wash Type",
   AMENITIES: "Amenities",
@@ -76,7 +87,7 @@ export const DEFAULT_PAYLOAD = {
   phone: "",
   reviews_count: 0,
   reviews_average: 0,
-  carwash_packages: [],
+  packages: [],
   open_24_hours: true,
   verified: false,
 };
@@ -134,3 +145,105 @@ export interface CarwashPackage {
   price: number;
   washTypes: number[];
 }
+
+export const WashTypes = [
+  {
+    id: 1,
+    status: "ACTIVE",
+    name: "Touchless wash",
+    description: "",
+    category: "automatic",
+    subclass: "Clean",
+    created_by: null,
+    updated_by: null,
+    icon: TouchlessWashIcon,
+  },
+  {
+    id: 2,
+    status: "ACTIVE",
+    name: "Tire soak",
+    description: "",
+    category: "automatic",
+    subclass: "Clean",
+    created_by: null,
+    updated_by: null,
+    icon: TireShineIcon,
+  },
+  {
+    id: 3,
+    status: "ACTIVE",
+    name: "Underbody flush",
+    description: "",
+    category: "automatic",
+    subclass: "Clean",
+    created_by: null,
+    updated_by: null,
+    icon: UnderBodyFlushIcon,
+  },
+  {
+    id: 5,
+    status: "ACTIVE",
+    name: "Triple foam / clear coat foam",
+    description: "",
+    category: "automatic",
+    subclass: "Polish",
+    created_by: null,
+    updated_by: null,
+    icon: TripleFoamIcon,
+  },
+  {
+    id: 6,
+    status: "ACTIVE",
+    name: "Tire Shine",
+    description: "",
+    category: "automatic",
+    subclass: "Polish",
+    created_by: null,
+    updated_by: null,
+    icon: TireShineIcon,
+  },
+  {
+    id: 7,
+    status: "ACTIVE",
+    name: "Wax Treatment",
+    description: "",
+    category: "automatic",
+    subclass: "Polish",
+    created_by: null,
+    updated_by: null,
+    icon: HotWaxIcon,
+  },
+  {
+    id: 8,
+    status: "ACTIVE",
+    name: "Ceramic/Graphine Sealant",
+    description: "",
+    category: "automatic",
+    subclass: "Polish",
+    created_by: null,
+    updated_by: null,
+    icon: GraphineIcon,
+  },
+  {
+    id: 9,
+    status: "ACTIVE",
+    name: "Rain Repellant",
+    description: "",
+    category: "automatic",
+    subclass: "Polish",
+    created_by: null,
+    updated_by: null,
+    icon: RainRepellantIcon,
+  },
+  {
+    id: 10,
+    status: "ACTIVE",
+    name: "Dryer",
+    description: "",
+    category: "automatic",
+    subclass: "Shine/Dry",
+    created_by: null,
+    updated_by: null,
+    icon: DryerIcon,
+  },
+];

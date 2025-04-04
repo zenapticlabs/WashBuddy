@@ -12,7 +12,6 @@ import useLocationData from "@/hooks/useLocationData";
 import {
   createCarwash,
   getCarwashById,
-  getCarwashes,
   updateCarwash,
 } from "@/services/CarwashService";
 import AddressAutoComplete from "@/components/molecule/AddressAutoComplete";
@@ -20,19 +19,12 @@ import { RadarAddress } from "radar-sdk-js/dist/types";
 import Topbar from "@/components/pages/main/Topbar";
 import { useAmenities } from "@/hooks/useAmenities";
 import { useWashTypes } from "@/hooks/useWashTypes";
-import {
-  Car_Wash_Type_Value,
-  DEFAULT_PAYLOAD,
-  FORM_CONFIG,
-} from "@/utils/constants";
-import SelectCarwashType from "@/components/molecule/SelectCarwashType";
+import { DEFAULT_PAYLOAD, FORM_CONFIG } from "@/utils/constants";
 import { Switch } from "@/components/ui/switch";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import ImageUploadZone from "@/components/ui/imageUploadZone";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getPresignedUrl, uploadFile } from "@/services/UploadService";
-import Image from "next/image";
 import MultiImageUploadZone from "@/components/molecule/MultiImageUploadZone";
 import UploadedImageCard from "@/components/ui/uploadedImageCard";
 import { IconToggle } from "@/components/ui/iconToggle";
@@ -116,6 +108,7 @@ const CarWashContent = () => {
       if (isEdit) {
         response = await updateCarwash(carwashId || "", payload);
       } else {
+        console.log(payload);
         response = await createCarwash(payload);
       }
       toast.success(
@@ -326,58 +319,6 @@ const CarWashContent = () => {
                         }
                       />
                     </div>
-                    {/* <SelectCarwashType
-                      label="Automatic car wash"
-                      checked={formData.automatic_car_wash}
-                      onChange={(checked) =>
-                        setFormData({
-                          ...formData,
-                          automatic_car_wash: !!checked,
-                        })
-                      }
-                      amenitiyOptions={amenities.filter(
-                        (amenity) =>
-                          amenity.category == Car_Wash_Type_Value.AUTOMATIC
-                      )}
-                      washTypeOptions={washTypes.filter(
-                        (washType) =>
-                          washType.category == Car_Wash_Type_Value.AUTOMATIC
-                      )}
-                      amenities={formData.amenities}
-                      washTypes={formData.wash_types}
-                      setAmenities={(amenities) =>
-                        setFormData({ ...formData, amenities })
-                      }
-                      setWashTypes={(washTypes) =>
-                        setFormData({ ...formData, wash_types: washTypes })
-                      }
-                    />
-                    <SelectCarwashType
-                      label="Self-service car wash"
-                      checked={formData.self_service_car_wash}
-                      onChange={(checked) =>
-                        setFormData({
-                          ...formData,
-                          self_service_car_wash: !!checked,
-                        })
-                      }
-                      amenitiyOptions={amenities.filter(
-                        (amenity) =>
-                          amenity.category == Car_Wash_Type_Value.SELF_SERVICE
-                      )}
-                      washTypeOptions={washTypes.filter(
-                        (washType) =>
-                          washType.category == Car_Wash_Type_Value.SELF_SERVICE
-                      )}
-                      amenities={formData.amenities}
-                      washTypes={formData.wash_types}
-                      setAmenities={(amenities) =>
-                        setFormData({ ...formData, amenities })
-                      }
-                      setWashTypes={(washTypes) =>
-                        setFormData({ ...formData, wash_types: washTypes })
-                      }
-                    /> */}
                   </div>
                   <div className="flex flex-col px-6 gap-2  py-10">
                     <div className="text-title-1 text-[#262626] py-5">
@@ -386,6 +327,7 @@ const CarWashContent = () => {
                     <div className="flex flex-wrap gap-2">
                       {amenities.map((amenity) => (
                         <IconToggle
+                          key={amenity.id}
                           label={amenity.name}
                           icon={<CheckIcon size={10} />}
                           checked={formData.amenities.includes(amenity.id)}
@@ -408,12 +350,11 @@ const CarWashContent = () => {
                       Carwash Packages
                     </div>
                     <CarwashPackage
-                      washTypes={washTypes}
-                      carwashPackages={formData.carwash_packages}
+                      carwashPackages={formData.packages}
                       setCarwashPackages={(carwashPackages) =>
                         setFormData({
                           ...formData,
-                          carwash_packages: carwashPackages,
+                          packages: carwashPackages,
                         })
                       }
                     />
