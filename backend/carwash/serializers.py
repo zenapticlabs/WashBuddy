@@ -59,7 +59,6 @@ class CarWashImageSerializer(serializers.ModelSerializer):
 
 class CarWashPackageSerializer(serializers.ModelSerializer):
     wash_types = WashTypeSerializer(many=True)
-    amenities = AmenitySerializer(many=True)
     class Meta:
         model = CarWashPackage
         exclude = ('car_wash',)
