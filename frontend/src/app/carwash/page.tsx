@@ -70,7 +70,18 @@ const CarWashContent = () => {
       setFetchLoading(true);
       getCarwashById(carwashId)
         .then((data) => {
-          setFormData(data);
+          const modifiedData = {
+            ...data,
+            packages: data.packages.map(
+              (pkg: { id: number; wash_types: any[] }) => ({
+                ...pkg,
+                wash_types: pkg.wash_types.map(
+                  (wash_type: any) => wash_type.id
+                ),
+              })
+            ),
+          };
+          setFormData(modifiedData);
           setIsEdit(true);
           setFetchLoading(false);
         })
@@ -213,7 +224,7 @@ const CarWashContent = () => {
                       phone number?
                     </div>
                   </div>
-                  <div className="flex flex-col gap-4 px-6 py-10 ">
+                  <div className="flex flex-col gap-4 px-6 py-4 ">
                     {FORM_CONFIG.map((field) => (
                       <div className="" key={field.name}>
                         <div className="text-title-1 text-[#262626] pb-2">
@@ -238,7 +249,7 @@ const CarWashContent = () => {
                       </div>
                     ))}
                   </div>
-                  <div className="px-6 py-10 ">
+                  <div className="px-6 py-4 ">
                     <div className="text-title-1 text-[#262626]">Location</div>
                     <Tabs defaultValue="use_gps" className="w-full">
                       <TabsList className="bg-transparent w-full">
@@ -291,7 +302,7 @@ const CarWashContent = () => {
                       </p>
                     )}
                   </div>
-                  <div className="flex flex-col px-6 gap-2  py-10">
+                  <div className="flex flex-col px-6 gap-2  py-4">
                     <div className="text-title-1 text-[#262626] py-5">
                       Select Carwash Type
                     </div>
@@ -320,7 +331,7 @@ const CarWashContent = () => {
                       />
                     </div>
                   </div>
-                  <div className="flex flex-col px-6 gap-2  py-10">
+                  <div className="flex flex-col px-6 gap-2  py-4">
                     <div className="text-title-1 text-[#262626] py-5">
                       Select Amenities
                     </div>
@@ -345,7 +356,7 @@ const CarWashContent = () => {
                       ))}
                     </div>
                   </div>
-                  <div className="flex flex-col px-6 gap-2  py-10">
+                  <div className="flex flex-col px-6 gap-2  py-4">
                     <div className="text-title-1 text-[#262626] py-5">
                       Carwash Packages
                     </div>
@@ -359,7 +370,7 @@ const CarWashContent = () => {
                       }
                     />
                   </div>
-                  <div className="px-6 flex flex-col py-10">
+                  <div className="px-6 flex flex-col py-4">
                     <div className="text-title-1 text-[#262626] pb-6">
                       Operating Hours
                     </div>

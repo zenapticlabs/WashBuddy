@@ -68,7 +68,7 @@ export interface CarWashPackage {
   type: string;
   name: string;
   price: number;
-  washTypes: number[];
+  wash_types: number[];
   minutes?: number;
 }
 

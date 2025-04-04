@@ -66,7 +66,7 @@ export function CarwashPackage({
       setPackageName(selectedPackage.name);
       setPrice(selectedPackage.price.toString());
       setMinutes(selectedPackage.minutes?.toString() || "");
-      setSelectedWashTypes(selectedPackage.washTypes || []);
+      setSelectedWashTypes(selectedPackage.wash_types || []);
     } else {
       setPackageName("");
       setPrice("");
@@ -96,7 +96,7 @@ export function CarwashPackage({
           selectedCarWashType === CarWashTypes[1].value
             ? Number(minutes)
             : undefined,
-        washTypes:
+        wash_types:
           selectedCarWashType === CarWashTypes[0].value
             ? selectedWashTypes
             : [],
@@ -117,7 +117,7 @@ export function CarwashPackage({
           selectedCarWashType === CarWashTypes[1].value
             ? Number(minutes)
             : undefined,
-        washTypes:
+        wash_types:
           selectedCarWashType === CarWashTypes[0].value
             ? selectedWashTypes
             : [],
@@ -172,11 +172,13 @@ export function CarwashPackage({
   };
 
   const getAutomaticPackages = () => {
-    return carwashPackages.filter((pkg) => pkg.type === CarWashTypes[0].value);
+    // return carwashPackages.filter((pkg) => pkg.type === CarWashTypes[0].value);
+    return carwashPackages;
   };
 
   const getSelfServicePackages = () => {
-    return carwashPackages.filter((pkg) => pkg.type === CarWashTypes[1].value);
+    // return carwashPackages.filter((pkg) => pkg.type === CarWashTypes[1].value);
+    return carwashPackages;
   };
   const handleDeletePackage = (id: number) => {
     setCarwashPackages(carwashPackages.filter((pkg) => pkg.id !== id));
@@ -222,7 +224,7 @@ export function CarwashPackage({
                       <div className="flex gap-2">
                         {value
                           .filter((washType) =>
-                            pkg.washTypes.includes(Number(washType.id))
+                            pkg.wash_types.includes(Number(washType.id))
                           )
                           .map((washType) => (
                             <div key={washType.id}>
@@ -282,7 +284,7 @@ export function CarwashPackage({
         </div>
       )}
 
-      <div className="text-title-1 font-semibold text-neutral-900 py-2">
+      {/* <div className="text-title-1 font-semibold text-neutral-900 py-2">
         Self-Service
       </div>
       {getSelfServicePackages().length > 0 ? (
@@ -317,7 +319,7 @@ export function CarwashPackage({
         <div className="text-body-2 text-neutral-500">
           No self-service packages found
         </div>
-      )}
+      )} */}
 
       {/* Create/Edit Form */}
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
