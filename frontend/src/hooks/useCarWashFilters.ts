@@ -47,22 +47,26 @@ export function useCarWashFilters() {
     setFilters(getFiltersFromParams(params));
   }, []);
 
-  // Update URL when filters change
+  // Update URL when filters change - with debounce
   useEffect(() => {
-    const updateUrlWithFilters = () => {
-      const params = new URLSearchParams();
-      Object.entries(filters)?.forEach(([key, value]) => {
-        if (Array.isArray(value)) {
-          value?.forEach((item) => params.append(key, item.toString()));
-        } else if (value !== undefined && value !== null) {
-          params.append(key, value.toString());
-        }
-      });
-      const queryString = params.toString();
-      const newUrl = `${window.location.pathname}?${queryString}`;
-      window.history.replaceState(null, "", newUrl);
-    };
-    updateUrlWithFilters();
+    const timeoutId = setTimeout(() => {
+      const updateUrlWithFilters = () => {
+        const params = new URLSearchParams();
+        Object.entries(filters)?.forEach(([key, value]) => {
+          if (Array.isArray(value)) {
+            value?.forEach((item) => params.append(key, item.toString()));
+          } else if (value !== undefined && value !== null) {
+            params.append(key, value.toString());
+          }
+        });
+        const queryString = params.toString();
+        const newUrl = `${window.location.pathname}?${queryString}`;
+        window.history.replaceState(null, "", newUrl);
+      };
+      updateUrlWithFilters();
+    }, 300); // Add a 300ms debounce
+
+    return () => clearTimeout(timeoutId);
   }, [filters]);
 
   // Handle browser navigation

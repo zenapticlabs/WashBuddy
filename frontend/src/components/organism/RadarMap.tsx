@@ -92,15 +92,30 @@ export function RadarMap({
       if (carWashes?.length) {
         fitToMarkers();
       }
+      // Move trackWithRateLimit here to ensure map is loaded
+      trackWithRateLimit();
     });
 
     if (userId) {
       Radar.setUserId(userId);
     }
 
-    // Track user location
-    Radar.trackOnce()
-      .then((result) => {
+    // Track user location with rate limiting and error handling
+    let lastTrackTime = 0;
+    const RATE_LIMIT_DELAY = 1000; // 1 second minimum between requests
+
+    const trackWithRateLimit = async () => {
+      const now = Date.now();
+      if (now - lastTrackTime < RATE_LIMIT_DELAY) {
+        console.warn('Rate limit cooldown in effect. Skipping tracking request.');
+        return;
+      }
+
+      try {
+        lastTrackTime = now;
+        console.log("Tracking user location...");
+        const result = await Radar.trackOnce();
+        console.log("User location tracked:", result);
         if (result.location) {
           const { latitude, longitude } = result.location;
 
@@ -121,10 +136,15 @@ export function RadarMap({
             essential: true,
           });
         }
-      })
-      .catch((err) => {
-        console.error("Error tracking location:", err);
-      });
+      } catch (err: any) {
+        if (err.name === 'RadarRateLimitError') {
+          console.warn('Radar rate limit exceeded. Will retry after cooldown period.');
+          // Optionally implement exponential backoff here
+        } else {
+          console.error("Error tracking location:", err);
+        }
+      }
+    };
 
     mapRef.current = map;
 

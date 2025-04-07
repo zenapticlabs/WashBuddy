@@ -50,25 +50,33 @@ function HomeContent() {
   const { carWashes, isLoading, count, totalPages, currentPage } =
     useCarWashes(filters);
 
-  // Handle URL parameters for filters
+  // Handle URL parameters for filters - only on initial mount
   useEffect(() => {
     const automaticCarWash = searchParams.get("automaticCarWash");
     const selfServiceCarWash = searchParams.get("selfServiceCarWash");
     const sortBy = searchParams.get("sortBy");
 
-    if (
-      automaticCarWash !== null ||
-      selfServiceCarWash !== null ||
-      sortBy !== null
-    ) {
-      setFilters((prev) => ({
-        ...prev,
-        automaticCarWash: automaticCarWash === "true",
-        selfServiceCarWash: selfServiceCarWash === "true",
-        sortBy: sortBy ? [sortBy] : [SortBy[Car_Wash_Type.AUTOMATIC][0].value],
-      }));
+    if (automaticCarWash !== null || selfServiceCarWash !== null || sortBy !== null) {
+      // Add a check to prevent unnecessary updates
+      const newAutomaticCarWash = automaticCarWash === "true";
+      const newSelfServiceCarWash = selfServiceCarWash === "true";
+      const newSortBy = sortBy ? [sortBy] : [SortBy[Car_Wash_Type.AUTOMATIC][0].value];
+      
+      if (
+        filters.automaticCarWash !== newAutomaticCarWash ||
+        filters.selfServiceCarWash !== newSelfServiceCarWash ||
+        JSON.stringify(filters.sortBy) !== JSON.stringify(newSortBy)
+      ) {
+        setFilters((prev) => ({
+          ...prev,
+          automaticCarWash: newAutomaticCarWash,
+          selfServiceCarWash: newSelfServiceCarWash,
+          sortBy: newSortBy,
+        }));
+      }
     }
-  }, [searchParams, setFilters]);
+  // Remove setFilters from dependencies array since it's stable
+  }, [searchParams]);
 
   const handleMapReady = (map: maplibregl.Map) => (mapRef.current = map);
 
