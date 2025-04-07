@@ -20,7 +20,20 @@ interface OperatingHoursRangeProps {
   operatingHours: OperatingHours;
   setOperatingHours: (operating_hours: OperatingHours) => void;
 }
+
 export function OperatingHoursRange({ open_24_hours, operatingHours, setOperatingHours }: OperatingHoursRangeProps) {
+  useEffect(() => {
+    // Initialize operating hours if empty
+    if (operatingHours.length === 0) {
+      const initialOperatingHours: OperatingHours = days.map((_, index) => ({
+        day_of_week: index,
+        is_closed: true,
+        opening_time: "09:00",
+        closing_time: "17:00"
+      }));
+      setOperatingHours(initialOperatingHours);
+    }
+  }, []);
 
   const handleToggleDay = (day: number, value: boolean) => {
     setOperatingHours(operatingHours.map(schedule =>
