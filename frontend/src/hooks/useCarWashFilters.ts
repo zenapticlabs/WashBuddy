@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { FilterState } from "@/types/filters";
 import { Car_Wash_Type, SortBy } from "@/utils/constants";
+import { useSearchParams } from 'next/navigation';
 
 function getFiltersFromParams(params: URLSearchParams): FilterState {
   return {
@@ -24,6 +25,7 @@ function getFiltersFromParams(params: URLSearchParams): FilterState {
 }
 
 export function useCarWashFilters() {
+  const searchParams = useSearchParams();
   const [filters, setFilters] = useState<FilterState>({
     automaticCarWash: true,
     selfServiceCarWash: false,
@@ -41,11 +43,10 @@ export function useCarWashFilters() {
     page: 1,
   });
   
-  // Initialize filters from URL
+  // Update filters whenever URL params change
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    setFilters(getFiltersFromParams(params));
-  }, []);
+    setFilters(getFiltersFromParams(new URLSearchParams(searchParams.toString())));
+  }, [searchParams]);
 
   // Update URL when filters change - with debounce
   useEffect(() => {
@@ -68,18 +69,6 @@ export function useCarWashFilters() {
 
     return () => clearTimeout(timeoutId);
   }, [filters]);
-
-  // Handle browser navigation
-  useEffect(() => {
-    const handlePopState = () => {
-      const params = new URLSearchParams(window.location.search);
-      setFilters(getFiltersFromParams(params));
-    };
-    window.addEventListener("popstate", handlePopState);
-    return () => {
-      window.removeEventListener("popstate", handlePopState);
-    };
-  }, []);
 
   return { filters, setFilters };
 } 
