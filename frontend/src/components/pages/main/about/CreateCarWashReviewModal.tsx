@@ -230,6 +230,7 @@ const CreateCarWashReviewModal: React.FC<{
                     key={image.image_url}
                     image_url={image.image_url}
                     handleDeleteImage={handleDeleteImage}
+                    canDelete={true}
                   />
                 ))}
                 {uploading && (

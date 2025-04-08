@@ -13,6 +13,7 @@ const NEXT_PUBLIC_STORAGE_BUCKET_NAME =
   process.env.NEXT_PUBLIC_STORAGE_BUCKET_NAME;
 const MultiImageUploadZone = ({
   images,
+  originalImages,
   image_type,
   title,
   required,
@@ -21,6 +22,7 @@ const MultiImageUploadZone = ({
 }: {
   images: any[];
   image_type: string;
+  originalImages: any[];
   title?: string;
   required?: boolean;
   handleAddImage: (image_type: string, image_url: string) => void;
@@ -39,7 +41,8 @@ const MultiImageUploadZone = ({
     // const fileName = await uploadFileToS3(file);
 
     try {
-      const presignedUrl = await getPresignedUrl(file.name);
+      const sanitizedFileName = file.name.replace(/\s+/g, '_');
+      const presignedUrl = await getPresignedUrl(sanitizedFileName);
       const uploadResponse = await uploadFile(presignedUrl.signed_url, file);
       const fileUrl = `${NEXT_PUBLIC_STORAGE_ENDPOINT}/object/public/${NEXT_PUBLIC_STORAGE_BUCKET_NAME}/${presignedUrl.path}`;
 
@@ -66,6 +69,7 @@ const MultiImageUploadZone = ({
         {image_urls?.map((image) => (
           <UploadedImageCard
             key={image}
+            canDelete={!originalImages.some((img) => img.image_url === image)}
             image_url={image}
             handleDeleteImage={handleDeleteImage}
           />
