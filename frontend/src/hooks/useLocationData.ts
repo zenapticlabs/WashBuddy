@@ -16,65 +16,118 @@ interface LocationData {
   };
 }
 
+const MAX_RETRIES = 3;
+const TIMEOUT_DURATION = 10000; // 10 seconds
+
 const useLocationData = () => {
   const [locationData, setLocationData] = useState<LocationData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [retryCount, setRetryCount] = useState(0);
 
-  const fetchLocationData = useCallback(() => {
-    if (navigator.geolocation) {
-      setLoading(true);
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
+  const fetchLocationData = useCallback(async () => {
+    if (!navigator.geolocation) {
+      setError("Geolocation is not supported by this browser.");
+      return;
+    }
 
-          try {
-            const response = await fetch(
-              `https://api.radar.io/v1/geocode/reverse?coordinates=${latitude},${longitude}`,
-              {
-                headers: {
-                  Authorization: process.env.NEXT_PUBLIC_RADAR_API_KEY || "",
-                },
-              }
-            );
+    setLoading(true);
+    setError(null);
 
-            if (!response.ok) {
-              throw new Error("Failed to fetch location data");
-            }
+    try {
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        const geolocationOptions: PositionOptions = {
+          enableHighAccuracy: true,
+          timeout: TIMEOUT_DURATION,
+          maximumAge: 0
+        };
 
-            const data = await response.json();
-            const address = data.addresses[0]; // Assuming the API returns an array of addresses
-            setLocationData({
-              address: address.addressLabel,
-              city: address.city,
-              state: address.state,
-              state_code: address.stateCode,
-              postal_code: address.postalCode,
-              country: address.country,
-              country_code: address.countryCode,
-              formatted_address: address.formattedAddress,
-              location: {
-                type: "Point",
-                coordinates: [longitude, latitude],
-              },
-            });
+        navigator.geolocation.getCurrentPosition(
+          (pos) => resolve(pos),
+          (err) => reject(err),
+          geolocationOptions
+        );
+      });
 
-            setError(null);
-          } catch (err) {
-            setError("Failed to fetch location data. Please try again.");
-          } finally {
-            setLoading(false);
-          }
-        },
-        (err) => {
-          setError("Failed to detect location. Please try again.");
-          setLoading(false);
+      const { latitude, longitude } = position.coords;
+
+      const response = await fetch(
+        `https://api.radar.io/v1/geocode/reverse?coordinates=${latitude},${longitude}`,
+        {
+          headers: {
+            Authorization: process.env.NEXT_PUBLIC_RADAR_API_KEY || "",
+          },
         }
       );
-    } else {
-      setError("Geolocation is not supported by this browser.");
+
+      if (!response.ok) {
+        throw new Error(`Radar API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (!data.addresses || !data.addresses[0]) {
+        throw new Error("No address data found");
+      }
+
+      const address = data.addresses[0];
+      setLocationData({
+        address: address.addressLabel,
+        city: address.city,
+        state: address.state,
+        state_code: address.stateCode,
+        postal_code: address.postalCode,
+        country: address.country,
+        country_code: address.countryCode,
+        formatted_address: address.formattedAddress,
+        location: {
+          type: "Point",
+          coordinates: [longitude, latitude],
+        },
+      });
+
+      setRetryCount(0);
+      setError(null);
+    } catch (err) {
+      console.error("Location error:", err);
+      
+      if (retryCount < MAX_RETRIES) {
+        setRetryCount(prev => prev + 1);
+        setError(`Retrying... Attempt ${retryCount + 1} of ${MAX_RETRIES}`);
+        // Retry after a short delay
+        setTimeout(() => {
+          fetchLocationData();
+        }, 1000);
+      } else {
+        let errorMessage = "Failed to fetch location data. ";
+        
+        if (err instanceof GeolocationPositionError) {
+          switch (err.code) {
+            case err.PERMISSION_DENIED:
+              errorMessage += "Please enable location permissions in your browser.";
+              break;
+            case err.POSITION_UNAVAILABLE:
+              errorMessage += "Location information is unavailable.";
+              break;
+            case err.TIMEOUT:
+              errorMessage += "Location request timed out.";
+              break;
+            default:
+              errorMessage += "Please try again.";
+          }
+        } else {
+          errorMessage += "Please check your internet connection and try again.";
+        }
+        
+        setError(errorMessage);
+        setRetryCount(0);
+      }
+    } finally {
+      if (retryCount >= MAX_RETRIES) {
+        setLoading(false);
+      }
     }
-  }, []);
+  }, [retryCount]);
 
   return { locationData, error, loading, fetchLocationData };
 };
