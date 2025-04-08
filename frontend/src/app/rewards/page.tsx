@@ -56,6 +56,7 @@ export default function Rewards() {
           </div>
           <div className="flex-1 flex items-center justify-center">
             <RadarMap
+              loading={false}
               showMap={showMap}
               publishableKey={RADAR_KEY || ""}
               carWashes={[]}

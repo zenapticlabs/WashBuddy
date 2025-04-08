@@ -19,6 +19,8 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { useSearchParams } from "next/navigation";
 import { Car_Wash_Type, SortBy } from "@/utils/constants";
 import { Loader2 } from "lucide-react";
+import useLocationData from "@/hooks/useLocationData";
+import { RadarAddress } from "radar-sdk-js/dist/types";
 
 export default function Home() {
   return (
@@ -40,28 +42,72 @@ function HomeContent() {
   const [openAbout, setOpenAbout] = useState(false);
   const [selectedCarWash, setSelectedCarWash] =
     useState<CarWashResponse | null>(null);
-
+  const [currentLocation, setCurrentLocation] = useState<any>(null);
   const [showMap, setShowMap] = useState(false);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const [address, setAddress] = useState<RadarAddress | null>(null);
+  const {
+    locationData,
+    error: locationError,
+    loading: locationLoading,
+    fetchLocationData: fetchLocationData,
+  } = useLocationData();
 
   const { filters, setFilters } = useCarWashFilters();
   const { carWashes, isLoading, count, totalPages, currentPage } =
     useCarWashes(filters);
 
+  useEffect(() => {
+    fetchLocationData();
+  }, []);
+
+
+  useEffect(() => {
+    if (locationData && !currentLocation) {
+      setCurrentLocation(locationData);
+    }
+    if (address) {
+      handleNavigateToLocation({
+        lat: address.latitude ?? 0,
+        lng: address.longitude ?? 0,
+      });
+      setFilters({
+        ...filters,
+        userLat: address.latitude,
+        userLng: address.longitude,
+      });
+    } else if (locationData) {
+      setFilters({
+        ...filters,
+        userLat: locationData.location.coordinates[1],
+        userLng: locationData.location.coordinates[0],
+      });
+      handleNavigateToLocation({
+        lat: locationData.location.coordinates[1],
+        lng: locationData.location.coordinates[0],
+      });
+    }
+  }, [locationData, address]);
   // Handle URL parameters for filters - only on initial mount
   useEffect(() => {
     const automaticCarWash = searchParams.get("automaticCarWash");
     const selfServiceCarWash = searchParams.get("selfServiceCarWash");
     const sortBy = searchParams.get("sortBy");
 
-    if (automaticCarWash !== null || selfServiceCarWash !== null || sortBy !== null) {
+    if (
+      automaticCarWash !== null ||
+      selfServiceCarWash !== null ||
+      sortBy !== null
+    ) {
       // Add a check to prevent unnecessary updates
       const newAutomaticCarWash = automaticCarWash === "true";
       const newSelfServiceCarWash = selfServiceCarWash === "true";
-      const newSortBy = sortBy ? [sortBy] : [SortBy[Car_Wash_Type.AUTOMATIC][0].value];
-      
+      const newSortBy = sortBy
+        ? [sortBy]
+        : [SortBy[Car_Wash_Type.AUTOMATIC][0].value];
+
       if (
         filters.automaticCarWash !== newAutomaticCarWash ||
         filters.selfServiceCarWash !== newSelfServiceCarWash ||
@@ -75,7 +121,7 @@ function HomeContent() {
         }));
       }
     }
-  // Remove setFilters from dependencies array since it's stable
+    // Remove setFilters from dependencies array since it's stable
   }, [searchParams]);
 
   const handleMapReady = (map: maplibregl.Map) => (mapRef.current = map);
@@ -124,13 +170,18 @@ function HomeContent() {
   return (
     <ProtectedRoute>
       <div className="flex flex-col h-screen">
-        <Topbar filters={filters} setFilters={setFilters} />
+        <Topbar
+          filters={filters}
+          setFilters={setFilters}
+          locationData={locationData}
+        />
         <SearchAndFilterBar
           filters={filters}
           setFilters={setFilters}
           showMap={showMap}
           setShowMap={setShowMap}
-          handleNavigateToLocation={handleNavigateToLocation}
+          currentLocation={currentLocation}
+          setAddress={setAddress}
         />
         <div className="flex flex-1 overflow-hidden bg-neutral-100 relative">
           <div className="w-[550px] relative bg-white hidden md:flex flex-col">
@@ -139,7 +190,7 @@ function HomeContent() {
             </div>
             <ScrollArea ref={scrollAreaRef} className="w-full flex-1 px-2">
               <div className="flex flex-col gap-2 pr-4">
-                {isLoading && (
+                {(isLoading || !locationData) && (
                   <div className="flex flex-col gap-2">
                     <CarWashSkeleton />
                     <CarWashSkeleton />
@@ -185,6 +236,7 @@ function HomeContent() {
           </div>
           <div className="flex-1 flex items-center justify-center">
             <RadarMap
+              loading={locationData === null}
               presentCenter={{
                 longitude: filters.userLng,
                 latitude: filters.userLat,

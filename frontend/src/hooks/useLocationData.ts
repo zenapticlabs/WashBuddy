@@ -22,12 +22,13 @@ const TIMEOUT_DURATION = 10000; // 10 seconds
 const useLocationData = () => {
   const [locationData, setLocationData] = useState<LocationData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [retryCount, setRetryCount] = useState(0);
 
   const fetchLocationData = useCallback(async () => {
     if (!navigator.geolocation) {
       setError("Geolocation is not supported by this browser.");
+      console.log("Geolocation is not supported by this browser.");
       return;
     }
 
@@ -35,19 +36,21 @@ const useLocationData = () => {
     setError(null);
 
     try {
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        const geolocationOptions: PositionOptions = {
-          enableHighAccuracy: true,
-          timeout: TIMEOUT_DURATION,
-          maximumAge: 0
-        };
+      const position = await new Promise<GeolocationPosition>(
+        (resolve, reject) => {
+          const geolocationOptions: PositionOptions = {
+            enableHighAccuracy: true,
+            timeout: TIMEOUT_DURATION,
+            maximumAge: 0,
+          };
 
-        navigator.geolocation.getCurrentPosition(
-          (pos) => resolve(pos),
-          (err) => reject(err),
-          geolocationOptions
-        );
-      });
+          navigator.geolocation.getCurrentPosition(
+            (pos) => resolve(pos),
+            (err) => reject(err),
+            geolocationOptions
+          );
+        }
+      );
 
       const { latitude, longitude } = position.coords;
 
@@ -65,7 +68,7 @@ const useLocationData = () => {
       }
 
       const data = await response.json();
-      
+
       if (!data.addresses || !data.addresses[0]) {
         throw new Error("No address data found");
       }
@@ -90,21 +93,22 @@ const useLocationData = () => {
       setError(null);
     } catch (err) {
       console.error("Location error:", err);
-      
+
       if (retryCount < MAX_RETRIES) {
-        setRetryCount(prev => prev + 1);
+        setRetryCount((prev) => prev + 1);
         setError(`Retrying... Attempt ${retryCount + 1} of ${MAX_RETRIES}`);
         // Retry after a short delay
         setTimeout(() => {
           fetchLocationData();
         }, 1000);
       } else {
-        let errorMessage = "Failed to fetch location data. ";
-        
+        let errorMessage = "";
+
         if (err instanceof GeolocationPositionError) {
           switch (err.code) {
             case err.PERMISSION_DENIED:
-              errorMessage += "Please enable location permissions in your browser.";
+              errorMessage +=
+                "Please enable location permissions in your browser.";
               break;
             case err.POSITION_UNAVAILABLE:
               errorMessage += "Location information is unavailable.";
@@ -116,9 +120,10 @@ const useLocationData = () => {
               errorMessage += "Please try again.";
           }
         } else {
-          errorMessage += "Please check your internet connection and try again.";
+          errorMessage +=
+            "Please check your internet connection and try again.";
         }
-        
+
         setError(errorMessage);
         setRetryCount(0);
       }

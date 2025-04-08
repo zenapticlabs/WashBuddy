@@ -12,7 +12,8 @@ interface SearchAndFilterBarProps {
   setFilters: React.Dispatch<React.SetStateAction<FilterState>>;
   showMap: boolean;
   setShowMap: (show: boolean) => void;
-  handleNavigateToLocation: (location: { lat: number; lng: number }) => void;
+  currentLocation: any;
+  setAddress: (address: RadarAddress | null) => void;
 }
 
 export function SearchAndFilterBar({
@@ -20,47 +21,9 @@ export function SearchAndFilterBar({
   setFilters,
   showMap,
   setShowMap,
-  handleNavigateToLocation,
+  currentLocation,
+  setAddress,
 }: SearchAndFilterBarProps) {
-  // const { latitude, longitude, loading, error, fetchLocationData } = useGeoLocationData();
-  const {
-    locationData,
-    error: locationError,
-    loading: locationLoading,
-    fetchLocationData: fetchLocationData,
-  } = useLocationData();
-  const [address, setAddress] = useState<RadarAddress | null>(null);
-  const [currentLocation, setCurrentLocation] = useState<any>(null);
-  useEffect(() => {
-    fetchLocationData();
-  }, []);
-  useEffect(() => {
-    if (locationData && !currentLocation) {
-      setCurrentLocation(locationData);
-    }
-    if (address) {
-      setFilters({
-        ...filters,
-        userLat: address.latitude,
-        userLng: address.longitude,
-      });
-      handleNavigateToLocation({
-        lat: address.latitude ?? 0,
-        lng: address.longitude ?? 0,
-      });
-    } else if (locationData) {
-      setFilters({
-        ...filters,
-        userLat: locationData.location.coordinates[1],
-        userLng: locationData.location.coordinates[0],
-      });
-      handleNavigateToLocation({
-        lat: locationData.location.coordinates[1],
-        lng: locationData.location.coordinates[0],
-      });
-    }
-  }, [locationData, address]);
-
   const handleChange = (address: RadarAddress | null) => {
     setAddress(address);
   };
@@ -69,9 +32,7 @@ export function SearchAndFilterBar({
       <div className="flex items-center gap-2">
         <SearchBar onChange={handleChange} currentLocation={currentLocation} />
       </div>
-      {locationError && (
-        <div className="text-red-500 text-sm px-4">{locationError}</div>
-      )}
+
       <div className="flex items-center justify-between px-4">
         <FilterComponent filters={filters} setFilters={setFilters} />
         <Button

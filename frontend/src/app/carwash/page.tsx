@@ -151,9 +151,7 @@ const CarWashContent = () => {
     try {
       setIsLoading(true);
       let payload = { ...DEFAULT_PAYLOAD, ...formData };
-      console.log(payload);
       payload = handleFilterOperatingHours(payload);
-      console.log(payload);
       if (!isEdit) {
         setErrorMessage({
           ...errorMessage,
@@ -167,7 +165,6 @@ const CarWashContent = () => {
       if (isEdit) {
         response = await updateCarwash(carwashId || "", payload);
       } else {
-        console.log(payload);
         response = await createCarwash(payload);
       }
       toast.success(
