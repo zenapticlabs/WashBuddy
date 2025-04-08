@@ -24,21 +24,26 @@ export function CarWashCard({ data, onClick, isSelected }: CarWashCardProps) {
 
   return (
     <>
-      <div 
+      <div
         className={`p-3 border rounded-lg cursor-pointer transition-all duration-300 ${
-          isSelected 
-            ? 'border-blue-500 bg-blue-50' 
-            : 'border-neutral-50 hover:border-blue-500'
-        }`} 
+          isSelected
+            ? "border-blue-500 bg-blue-50"
+            : "border-neutral-50 hover:border-blue-500"
+        }`}
         onClick={onClick}
       >
         <div className="flex gap-2 rounded-lg w-full">
-          <div 
+          <div
             className="relative cursor-pointer group"
             onClick={handleImageClick}
           >
             <Image
-              src={data.image_url || emptyImageURL}
+              src={
+                data.image_url ||
+                data.images.find((image) => image.image_type === "Site")
+                  ?.image_url ||
+                emptyImageURL
+              }
               alt={data.car_wash_name}
               className="w-16 h-16 md:w-24 md:h-24 object-cover rounded transition-transform group-hover:scale-105"
               width={100}
@@ -102,7 +107,9 @@ export function CarWashCard({ data, onClick, isSelected }: CarWashCardProps) {
             <div className="text-headline-4 py-1 text-neutral-900 text-right">
               $
               {data.packages?.length > 0
-                ? `${Math.min(...data.packages.map((pkg) => Number(pkg.price)))}`
+                ? `${Math.min(
+                    ...data.packages.map((pkg) => Number(pkg.price))
+                  )}`
                 : "N/A"}
             </div>
             <div className="flex-1 text-body-3 text-neutral-900 text-right">
@@ -124,7 +131,11 @@ export function CarWashCard({ data, onClick, isSelected }: CarWashCardProps) {
       <ImageModal
         isOpen={isImageModalOpen}
         onClose={() => setIsImageModalOpen(false)}
-        imageUrl={data.image_url || emptyImageURL}
+        imageUrl={
+          data.image_url ||
+          data.images.find((image) => image.image_type === "Site")?.image_url ||
+          emptyImageURL
+        }
         alt={data.car_wash_name}
       />
     </>
