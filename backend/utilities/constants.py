@@ -15,8 +15,9 @@ DEFAULT_STATUS_CHOICES = (
 
 
 IMAGE_TYPE_CHOICES = (
+    ("Site", "Site"),
+    ("Amenities", "Amenities"),
     ("Menu", "Menu"),
-    ("Station", "Station"),
-    ("Exterior", "Exterior"),
     ("Interior", "Interior")
+    ("Exterior", "Exterior")
 )
