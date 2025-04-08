@@ -23,16 +23,38 @@ import { DEFAULT_PAYLOAD, FORM_CONFIG } from "@/utils/constants";
 import { Switch } from "@/components/ui/switch";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
-import ImageUploadZone from "@/components/ui/imageUploadZone";
 import { getPresignedUrl, uploadFile } from "@/services/UploadService";
 import MultiImageUploadZone from "@/components/molecule/MultiImageUploadZone";
-import UploadedImageCard from "@/components/ui/uploadedImageCard";
 import { IconToggle } from "@/components/ui/iconToggle";
 import { CarwashPackage } from "@/components/organism/carwashPackage";
+import Image from "next/image";
 
 const NEXT_PUBLIC_STORAGE_ENDPOINT = process.env.NEXT_PUBLIC_STORAGE_ENDPOINT;
 const NEXT_PUBLIC_STORAGE_BUCKET_NAME =
   process.env.NEXT_PUBLIC_STORAGE_BUCKET_NAME;
+
+const UploadFormConfig = [
+  {
+    name: "Site",
+    label: "Site photo",
+  },
+  {
+    name: "Amenities",
+    label: "Amenities photo",
+  },
+  {
+    name: "Menu",
+    label: "Menu photo",
+  },
+  {
+    name: "Exterior",
+    label: "Exterior photo",
+  },
+  {
+    name: "Interior",
+    label: "Interior photo",
+  },
+];
 const CarWashContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -44,6 +66,7 @@ const CarWashContent = () => {
   const [errorMessage, setErrorMessage] = useState<any>(null);
   const [formData, setFormData] = useState<any>(DEFAULT_PAYLOAD);
   const [fetchLoading, setFetchLoading] = useState(true);
+  const [originalImages, setOriginalImages] = useState<any>([]);
   const [uploadingSitePhoto, setUploadingSitePhoto] = useState(false);
   const [activeTab, setActiveTab] = useState<"use_gps" | "enter_address">(
     "use_gps"
@@ -80,8 +103,10 @@ const CarWashContent = () => {
                 ),
               })
             ),
+            amenities: data.amenities.map((amenity: any) => amenity.id),
           };
           setFormData(modifiedData);
+          setOriginalImages(modifiedData.images);
           setIsEdit(true);
           setFetchLoading(false);
         })
@@ -417,7 +442,7 @@ const CarWashContent = () => {
                   </div>
                   <div className="px-6 flex flex-col gap-1">
                     <div className="text-title-1 text-[#262626]">Photos</div>
-                    <div className="text-title-2 text-neutral-900 py-3">
+                    {/* <div className="text-title-2 text-neutral-900 py-3">
                       Site Photo
                     </div>
 
@@ -437,35 +462,36 @@ const CarWashContent = () => {
                       title="Exterior photo of wash"
                       required={true}
                       onFileChange={(file) => handleUploadSitePhoto(file)}
-                    />
-                    <MultiImageUploadZone
-                      image_type="Menu"
-                      title="Menu photo"
-                      images={formData.images}
-                      handleAddImage={handleUploadImage}
-                      handleDeleteImage={handleDeleteImage}
-                    />
-                    <MultiImageUploadZone
-                      image_type="Station"
-                      title="Station photo"
-                      images={formData.images}
-                      handleAddImage={handleUploadImage}
-                      handleDeleteImage={handleDeleteImage}
-                    />
-                    <MultiImageUploadZone
-                      image_type="Exterior"
-                      title="Exterior photo"
-                      images={formData.images}
-                      handleAddImage={handleUploadImage}
-                      handleDeleteImage={handleDeleteImage}
-                    />
-                    <MultiImageUploadZone
-                      image_type="Interior"
-                      title="Interior photo"
-                      images={formData.images}
-                      handleAddImage={handleUploadImage}
-                      handleDeleteImage={handleDeleteImage}
-                    />
+                    /> */}
+                    <div className="text-body-2 text-neutral-900 py-3">
+                      Blog photo
+                    </div>
+                    {formData.image_url ? (
+                      <div className="p-2 bg-neutral-50 rounded-lg w-32 h-32 relative">
+                        <Image
+                          src={formData.image_url}
+                          alt="Uploaded"
+                          className="w-full h-full object-cover rounded-sm"
+                          width={1000}
+                          height={1000}
+                        />
+                      </div>
+                    ) : (
+                      <div className="text-body-2 text-neutral-900 py-3">
+                        There is no blog photo
+                      </div>
+                    )}
+                    {UploadFormConfig.map((config) => (
+                      <MultiImageUploadZone
+                        key={config.name}
+                        image_type={config.name}
+                        title={config.label}
+                        images={formData.images}
+                        originalImages={originalImages}
+                        handleAddImage={handleUploadImage}
+                        handleDeleteImage={handleDeleteImage}
+                      />
+                    ))}
                   </div>
                   <div className="px-6 pb-10 flex flex-col gap-2"></div>
                   <div className="px-6 pb-10 flex gap-2 flex-wrap">

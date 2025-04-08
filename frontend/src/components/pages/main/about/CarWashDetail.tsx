@@ -116,7 +116,12 @@ const CarWashDetail: React.FC<CarWashDetailProps> = ({
               </div>
             )}
             <Image
-              src={data?.image_url || emptyImageURL}
+              src={
+                data?.image_url ||
+                data.images.find((image) => image.image_type === "Site")
+                  ?.image_url ||
+                emptyImageURL
+              }
               alt={data?.car_wash_name || "car_wash_name"}
               className="w-full h-full object-cover"
               width={400}
