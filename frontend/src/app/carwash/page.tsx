@@ -36,23 +36,23 @@ const NEXT_PUBLIC_STORAGE_BUCKET_NAME =
 const UploadFormConfig = [
   {
     name: "Site",
-    label: "Site photo",
+    label: "Site",
   },
   {
     name: "Amenities",
-    label: "Amenities photo",
+    label: "Amenities",
   },
   {
     name: "Menu",
-    label: "Menu photo",
+    label: "Menu",
   },
   {
     name: "Exterior",
-    label: "Exterior photo",
+    label: "Exterior",
   },
   {
     name: "Interior",
-    label: "Interior photo",
+    label: "Interior",
   },
 ];
 const CarWashContent = () => {
@@ -463,24 +463,6 @@ const CarWashContent = () => {
                       required={true}
                       onFileChange={(file) => handleUploadSitePhoto(file)}
                     /> */}
-                    <div className="text-body-2 text-neutral-900 py-3">
-                      Blog photo
-                    </div>
-                    {formData.image_url ? (
-                      <div className="p-2 bg-neutral-50 rounded-lg w-32 h-32 relative">
-                        <Image
-                          src={formData.image_url}
-                          alt="Uploaded"
-                          className="w-full h-full object-cover rounded-sm"
-                          width={1000}
-                          height={1000}
-                        />
-                      </div>
-                    ) : (
-                      <div className="text-body-2 text-neutral-900 py-3">
-                        There is no blog photo
-                      </div>
-                    )}
                     {UploadFormConfig.map((config) => (
                       <MultiImageUploadZone
                         key={config.name}
