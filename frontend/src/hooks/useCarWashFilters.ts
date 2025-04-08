@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { FilterState } from "@/types/filters";
 import { Car_Wash_Type, SortBy } from "@/utils/constants";
+import { useSearchParams } from 'next/navigation';
 
 function getFiltersFromParams(params: URLSearchParams): FilterState {
   return {
@@ -24,6 +25,7 @@ function getFiltersFromParams(params: URLSearchParams): FilterState {
 }
 
 export function useCarWashFilters() {
+  const searchParams = useSearchParams();
   const [filters, setFilters] = useState<FilterState>({
     automaticCarWash: true,
     selfServiceCarWash: false,
@@ -41,41 +43,32 @@ export function useCarWashFilters() {
     page: 1,
   });
   
-  // Initialize filters from URL
+  // Update filters whenever URL params change
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    setFilters(getFiltersFromParams(params));
-  }, []);
+    setFilters(getFiltersFromParams(new URLSearchParams(searchParams.toString())));
+  }, [searchParams]);
 
-  // Update URL when filters change
+  // Update URL when filters change - with debounce
   useEffect(() => {
-    const updateUrlWithFilters = () => {
-      const params = new URLSearchParams();
-      Object.entries(filters)?.forEach(([key, value]) => {
-        if (Array.isArray(value)) {
-          value?.forEach((item) => params.append(key, item.toString()));
-        } else if (value !== undefined && value !== null) {
-          params.append(key, value.toString());
-        }
-      });
-      const queryString = params.toString();
-      const newUrl = `${window.location.pathname}?${queryString}`;
-      window.history.replaceState(null, "", newUrl);
-    };
-    updateUrlWithFilters();
+    const timeoutId = setTimeout(() => {
+      const updateUrlWithFilters = () => {
+        const params = new URLSearchParams();
+        Object.entries(filters)?.forEach(([key, value]) => {
+          if (Array.isArray(value)) {
+            value?.forEach((item) => params.append(key, item.toString()));
+          } else if (value !== undefined && value !== null) {
+            params.append(key, value.toString());
+          }
+        });
+        const queryString = params.toString();
+        const newUrl = `${window.location.pathname}?${queryString}`;
+        window.history.replaceState(null, "", newUrl);
+      };
+      updateUrlWithFilters();
+    }, 300); // Add a 300ms debounce
+
+    return () => clearTimeout(timeoutId);
   }, [filters]);
-
-  // Handle browser navigation
-  useEffect(() => {
-    const handlePopState = () => {
-      const params = new URLSearchParams(window.location.search);
-      setFilters(getFiltersFromParams(params));
-    };
-    window.addEventListener("popstate", handlePopState);
-    return () => {
-      window.removeEventListener("popstate", handlePopState);
-    };
-  }, []);
 
   return { filters, setFilters };
 } 
