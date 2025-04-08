@@ -4,7 +4,7 @@ const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export const createCarwash = async (formData: any) => {
   try {
-    const response = await axios.post(`${API_URL}/api/v1/carwash/`, formData);
+    const response = await axios.post(`${API_URL}/api/v1/carwash/create/`, formData);
     return response.data;
   } catch (error) {
     console.error("Error creating car wash:", error);

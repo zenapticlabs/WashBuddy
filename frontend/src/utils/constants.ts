@@ -81,6 +81,8 @@ export const OPERATING_HOURS = Array.from({ length: 7 }, (_, index) => ({
 
 export const DEFAULT_PAYLOAD = {
   operating_hours: OPERATING_HOURS,
+  automatic_car_wash: false,
+  self_service_car_wash: false,
   images: [],
   wash_types: [],
   amenities: [],
