@@ -5,14 +5,13 @@ import { CarWashResponse } from "@/types/CarServices";
 
 export function useCarWashes(filters: FilterState) {
   const [carWashes, setCarWashes] = useState<CarWashResponse[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [count, setCount] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   useEffect(() => {
     fetchData();
   }, [filters]);
-
 
   const fetchData = async () => {
     setIsLoading(true);

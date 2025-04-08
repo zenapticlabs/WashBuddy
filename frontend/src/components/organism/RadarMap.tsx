@@ -6,6 +6,7 @@ import { CarWashResponse } from "@/types/CarServices";
 import { extractCoordinates } from "@/utils/functions";
 import { Button } from "../ui/button";
 import { Search } from "lucide-react";
+import { Skeleton } from "../ui/skeleton";
 interface RadarMapProps {
   showMap: boolean;
   publishableKey: string;
@@ -21,6 +22,7 @@ interface RadarMapProps {
     longitude: number;
     latitude: number;
   };
+  loading: boolean;
 }
 
 export function RadarMap({
@@ -31,6 +33,7 @@ export function RadarMap({
   onSearchArea,
   onMarkerClick,
   presentCenter,
+  loading,
 }: RadarMapProps) {
   const [center, setCenter] = useState<{ longitude: number; latitude: number }>(
     {
@@ -73,6 +76,7 @@ export function RadarMap({
 
   // Initialize map only once
   useEffect(() => {
+    if (loading) return;
     Radar.initialize(publishableKey);
 
     const map = new maplibregl.Map({
@@ -102,20 +106,20 @@ export function RadarMap({
 
     // Track user location with rate limiting and error handling
     let lastTrackTime = 0;
-    const RATE_LIMIT_DELAY = 1000; // 1 second minimum between requests
+    const RATE_LIMIT_DELAY = 1; // 1 second minimum between requests
 
     const trackWithRateLimit = async () => {
       const now = Date.now();
       if (now - lastTrackTime < RATE_LIMIT_DELAY) {
-        console.warn('Rate limit cooldown in effect. Skipping tracking request.');
+        console.warn(
+          "Rate limit cooldown in effect. Skipping tracking request."
+        );
         return;
       }
 
       try {
         lastTrackTime = now;
-        console.log("Tracking user location...");
         const result = await Radar.trackOnce();
-        console.log("User location tracked:", result);
         if (result.location) {
           const { latitude, longitude } = result.location;
 
@@ -129,16 +133,12 @@ export function RadarMap({
               )
             )
             .addTo(map);
-
-          map.flyTo({
-            center: [longitude, latitude],
-            zoom: 12,
-            essential: true,
-          });
         }
       } catch (err: any) {
-        if (err.name === 'RadarRateLimitError') {
-          console.warn('Radar rate limit exceeded. Will retry after cooldown period.');
+        if (err.name === "RadarRateLimitError") {
+          console.warn(
+            "Radar rate limit exceeded. Will retry after cooldown period."
+          );
           // Optionally implement exponential backoff here
         } else {
           console.error("Error tracking location:", err);
@@ -152,7 +152,7 @@ export function RadarMap({
       map.remove();
       mapRef.current = null;
     };
-  }, [publishableKey, userId]); // Only depend on publishableKey and userId
+  }, [publishableKey, userId, loading]); // Only depend on publishableKey and userId
 
   // Handle car wash markers in a separate effect
   useEffect(() => {
@@ -194,7 +194,7 @@ export function RadarMap({
       `;
 
       // Add click handler to the marker element
-      customMarker.addEventListener('click', () => {
+      customMarker.addEventListener("click", () => {
         onMarkerClick?.(carWash);
       });
 
@@ -212,7 +212,7 @@ export function RadarMap({
     if (carWashes?.length) {
       fitToMarkers();
     }
-  }, [carWashes, onMarkerClick]);
+  }, [carWashes]);
 
   // Example: Get center coordinates
   const getMapCenter = () => {
@@ -324,18 +324,22 @@ export function RadarMap({
       id="radar-map"
       className="w-full h-full min-h-[400px] rounded-lg overflow-hidden relative"
     >
-      <Button
-        variant="ghost"
-        className={`absolute top-10 left-10 z-10 bg-white rounded-full shadow-lg transition-all duration-300 ${
-          showSearchButton 
-            ? "opacity-100 transform translate-y-0" 
-            : "opacity-0 transform -translate-y-4 pointer-events-none"
-        }`}
-        onClick={handleSearchArea}
-      >
-        <Search size={20} />
-        Search this area
-      </Button>
+      {loading ? (
+        <Skeleton className="w-full h-full min-h-[400px] rounded-lg" />
+      ) : (
+        <Button
+          variant="ghost"
+          className={`absolute top-10 left-10 z-10 bg-white rounded-full shadow-lg transition-all duration-300 ${
+            showSearchButton
+              ? "opacity-100 transform translate-y-0"
+              : "opacity-0 transform -translate-y-4 pointer-events-none"
+          }`}
+          onClick={handleSearchArea}
+        >
+          <Search size={20} />
+          Search this area
+        </Button>
+      )}
     </div>
   );
 }

@@ -41,24 +41,21 @@ interface TopbarProps {
   filters?: FilterState;
   setFilters?: (filters: FilterState) => void;
   sideBarAlwaysOpen?: boolean;
+  locationData?: any;
 }
 
 const Topbar: React.FC<TopbarProps> = ({
   filters,
   setFilters,
   sideBarAlwaysOpen,
+  locationData,
 }) => {
   const { signOut } = useAuth();
-  const { locationData, fetchLocationData, error, loading } = useLocationData();
   const router = useRouter();
   const pathname = usePathname();
   const [notiCount, setNotiCount] = useState(2);
   // const [openCreateModal, setOpenCreateModal] = useState(false);
   const [openSidebar, setOpenSidebar] = useState(false);
-
-  useEffect(() => {
-    fetchLocationData();
-  }, [fetchLocationData]);
 
   const handleOpenCreateModal = () => {
     // setOpenCreateModal(true);
@@ -71,7 +68,11 @@ const Topbar: React.FC<TopbarProps> = ({
       const params = new URLSearchParams();
       params.append("automaticCarWash", value.toString());
       params.append("selfServiceCarWash", (!value).toString());
-      params.append("sortBy", SortBy[value ? Car_Wash_Type.AUTOMATIC : Car_Wash_Type.SELF_SERVICE][0].value);
+      params.append(
+        "sortBy",
+        SortBy[value ? Car_Wash_Type.AUTOMATIC : Car_Wash_Type.SELF_SERVICE][0]
+          .value
+      );
       router.push(`/?${params.toString()}`);
     } else if (filters && setFilters) {
       // If on dashboard, update filters directly
@@ -148,8 +149,6 @@ const Topbar: React.FC<TopbarProps> = ({
             ))}
             <span className="text-title-2 text-neutral-700 flex items-center gap-2">
               <MapPin size={24} />
-              {loading && <div>Loading...</div>}
-              {error && <div>Error: {error}</div>}
               {locationData && `${locationData?.city}, ${locationData?.state}`}
             </span>
           </div>
