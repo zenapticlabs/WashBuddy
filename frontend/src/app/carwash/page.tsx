@@ -103,10 +103,32 @@ const CarWashContent = () => {
     }));
   };
 
+  const handleFilterOperatingHours = (payload: any) => {
+    const { operating_hours } = payload;
+    const isOpen24Hours = payload.open_24_hours;
+    if (isOpen24Hours) {
+      return {
+        ...payload,
+        operating_hours: null,
+      };
+    } else {
+      // Filter out operating hours where is_closed is true
+      const filteredOperatingHours =
+        operating_hours?.filter((hour: any) => !hour.is_closed) || [];
+      return {
+        ...payload,
+        operating_hours: filteredOperatingHours,
+      };
+    }
+  };
+
   const handleSubmit = async () => {
     try {
       setIsLoading(true);
       let payload = { ...DEFAULT_PAYLOAD, ...formData };
+      console.log(payload);
+      payload = handleFilterOperatingHours(payload);
+      console.log(payload);
       if (!isEdit) {
         setErrorMessage({
           ...errorMessage,
@@ -115,6 +137,7 @@ const CarWashContent = () => {
         if (!address) return;
         payload = { ...payload, ...address };
       }
+
       let response;
       if (isEdit) {
         response = await updateCarwash(carwashId || "", payload);
