@@ -307,7 +307,7 @@ const CarWashContent = () => {
                     <div className="text-title-1 text-[#262626] py-5">
                       Select Carwash Type
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap">
                       <IconToggle
                         label="Automatic car wash"
                         icon={<CheckIcon size={10} />}
@@ -445,7 +445,7 @@ const CarWashContent = () => {
                     />
                   </div>
                   <div className="px-6 pb-10 flex flex-col gap-2"></div>
-                  <div className="px-6 pb-10 flex gap-2">
+                  <div className="px-6 pb-10 flex gap-2 flex-wrap">
                     <Button
                       variant="outline"
                       className="w-full"
