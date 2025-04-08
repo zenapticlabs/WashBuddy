@@ -18,6 +18,6 @@ IMAGE_TYPE_CHOICES = (
     ("Site", "Site"),
     ("Amenities", "Amenities"),
     ("Menu", "Menu"),
-    ("Interior", "Interior")
+    ("Interior", "Interior"),
     ("Exterior", "Exterior")
 )
