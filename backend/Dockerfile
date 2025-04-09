@@ -17,7 +17,9 @@ RUN apk add --no-cache \
     libffi-dev \
     openssl-dev \
     py3-numpy \
-    py3-pip
+    py3-pip \
+    py3-setuptools \
+    py3-wheel
 
 # Set environment variables for GDAL
 ENV GDAL_LIBRARY_PATH=/usr/lib/libgdal.so
