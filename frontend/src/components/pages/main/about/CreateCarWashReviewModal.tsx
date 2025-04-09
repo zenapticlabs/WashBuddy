@@ -23,6 +23,8 @@ import { getPresignedUrl } from "@/services/UploadService";
 import { toast } from "sonner";
 import { createReview } from "@/services/ReviewService";
 import { IReviewCreate } from "@/types/Review";
+import { useAuth } from "@/hooks/useAuth";
+import Image from "next/image";
 
 const defaultAvatar =
   "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde";
@@ -36,10 +38,12 @@ const CreateCarWashReviewModal: React.FC<{
   carWashId: number;
 }> = ({ open, onOpenChange, carWashId }) => {
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const { user } = useAuth();
   const [comment, setComment] = useState("");
   const [wash_quality_rating, setWashQualityRating] = useState(0);
   const [price_value_rating, setPriceValueRating] = useState(0);
-  const [facility_cleanliness_rating, setFacilityCleanlinessRating] = useState(0);
+  const [facility_cleanliness_rating, setFacilityCleanlinessRating] =
+    useState(0);
   const [customer_service_rating, setCustomerServiceRating] = useState(0);
   const [amenities_extra_rating, setAmenitiesExtraRating] = useState(0);
   const [overall_rating, setOverallRating] = useState(0);
@@ -54,7 +58,7 @@ const CreateCarWashReviewModal: React.FC<{
     setUploadingFile(file);
 
     try {
-      const sanitizedFileName = file.name.replace(/\s+/g, '-');
+      const sanitizedFileName = file.name.replace(/\s+/g, "-");
       const presignedUrl = await getPresignedUrl(sanitizedFileName);
       const uploadResponse = await uploadFile(presignedUrl.signed_url, file);
       const fileUrl = `${NEXT_PUBLIC_STORAGE_ENDPOINT}/object/public/${NEXT_PUBLIC_STORAGE_BUCKET_NAME}/${presignedUrl.path}`;
@@ -91,11 +95,13 @@ const CreateCarWashReviewModal: React.FC<{
   };
 
   const handleSubmit = async () => {
+    console.log("submitting");
     if (!comment || !overall_rating) {
       toast.error("Please fill in all required fields");
+      console.log("Not Validation");
       return;
     }
-
+    console.log("Validatied");
     setIsSubmitting(true);
     try {
       const reviewData: IReviewCreate = {
@@ -137,10 +143,12 @@ const CreateCarWashReviewModal: React.FC<{
           <div className="px-6 py-4 text-body-2 text-neutral-500">
             <div className="flex flex-col md:flex-row gap-4  justify-between">
               <div className="flex gap-2 items-center">
-                <img
-                  src={defaultAvatar}
-                  alt={`${defaultAvatar}'s avatar`}
+                <Image
+                  src={user?.user_metadata?.avatar_url || defaultAvatar}
+                  alt={`${user?.user_metadata?.full_name}'s avatar`}
                   className="w-10 h-10 rounded-full"
+                  width={40}
+                  height={40}
                 />
                 <Rate value={overall_rating} max={5} size="md" />
               </div>
@@ -156,8 +164,8 @@ const CreateCarWashReviewModal: React.FC<{
                 </span>
               </div>
             </div>
-            <Textarea 
-              placeholder="Type your comment" 
+            <Textarea
+              placeholder="Type your comment"
               className="w-full mt-6"
               value={comment}
               onChange={(e) => setComment(e.target.value)}
@@ -175,7 +183,7 @@ const CreateCarWashReviewModal: React.FC<{
                   calculateOverallRating();
                 }}
               />
-              <SelectRate 
+              <SelectRate
                 title="Price & Value"
                 value={price_value_rating}
                 onChange={(value) => {
@@ -183,7 +191,7 @@ const CreateCarWashReviewModal: React.FC<{
                   calculateOverallRating();
                 }}
               />
-              <SelectRate 
+              <SelectRate
                 title="Facility Cleanliness & Safety"
                 value={facility_cleanliness_rating}
                 onChange={(value) => {
@@ -191,7 +199,7 @@ const CreateCarWashReviewModal: React.FC<{
                   calculateOverallRating();
                 }}
               />
-              <SelectRate 
+              <SelectRate
                 title="Customer Service"
                 value={customer_service_rating}
                 onChange={(value) => {
@@ -199,7 +207,7 @@ const CreateCarWashReviewModal: React.FC<{
                   calculateOverallRating();
                 }}
               />
-              <SelectRate 
+              <SelectRate
                 title="Amenities & Extras"
                 value={amenities_extra_rating}
                 onChange={(value) => {
@@ -273,8 +281,8 @@ const CreateCarWashReviewModal: React.FC<{
               >
                 Cancel
               </Button>
-              <Button 
-                className="w-full" 
+              <Button
+                className="w-full"
                 onClick={handleSubmit}
                 disabled={isSubmitting}
               >
@@ -301,8 +309,8 @@ const CreateCarWashReviewModal: React.FC<{
             >
               Cancel
             </Button>
-            <Button 
-              className="w-full" 
+            <Button
+              className="w-full"
               onClick={handleSubmit}
               disabled={isSubmitting}
             >

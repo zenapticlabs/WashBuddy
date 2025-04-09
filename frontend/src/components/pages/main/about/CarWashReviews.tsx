@@ -5,14 +5,16 @@ import { Input } from "@/components/ui/input";
 import { Rate } from "@/components/ui/rate";
 import { RateCountBar } from "@/components/ui/RateCountBar";
 import { Separator } from "@/components/ui/separator";
+import { useAuth } from "@/hooks/useAuth";
 import { ReviewsSummary } from "@/types";
 import { IReviewShow } from "@/types/Review";
 import { Search, SlidersVertical, Star, TextSearch } from "lucide-react";
+import Image from "next/image";
 import { useState } from "react";
 
 const defaultAvatar =
   "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde";
-  
+
 const orders = ["Relevance", "Newest", "Highest", "Lowest"];
 
 interface CarWashReviewsProps {
@@ -26,21 +28,46 @@ const CarWashReviews: React.FC<CarWashReviewsProps> = ({
   reviews,
   reviewsSummary,
 }) => {
+  const { user } = useAuth();
   const [selectedOrder, setSelectedOrder] = useState<string>(orders[0]);
   return (
     <div className="flex flex-col gap-3">
       <div className="flex gap-2">
-        <div className="flex-1 flex flex-col gap-1 items-center justify-center">
-          <div className="text-title-2 text-neutral-900 text-[32px]">{reviewsSummary?.average_rating}</div>
+        <div className="flex flex-col gap-1 items-center justify-center px-8">
+          <div className="text-title-2 text-neutral-900 text-[32px]">
+            {reviewsSummary?.average_rating}
+          </div>
           <Rate value={reviewsSummary?.average_rating} max={5} size="xs" />
-          <div className="text-body-3 text-neutral-400">({reviewsSummary?.total_reviews} reviews)</div>
+          <div className="text-body-3 text-neutral-400">
+            ({reviewsSummary?.total_reviews} reviews)
+          </div>
         </div>
-        <div className="flex flex-col gap-1 w-[240px]">
-          <RateCountBar mark={5} total={reviewsSummary?.total_reviews} value={reviewsSummary?.rating_5} />
-          <RateCountBar mark={4} total={reviewsSummary?.total_reviews} value={reviewsSummary?.rating_4} />
-          <RateCountBar mark={3} total={reviewsSummary?.total_reviews} value={reviewsSummary?.rating_3} />
-          <RateCountBar mark={2} total={reviewsSummary?.total_reviews} value={reviewsSummary?.rating_2} />
-          <RateCountBar mark={1} total={reviewsSummary?.total_reviews} value={reviewsSummary?.rating_1} />
+        <div className="flex flex-col gap-1 flex-1">
+          <RateCountBar
+            mark={5}
+            total={reviewsSummary?.total_reviews}
+            value={reviewsSummary?.rating_5}
+          />
+          <RateCountBar
+            mark={4}
+            total={reviewsSummary?.total_reviews}
+            value={reviewsSummary?.rating_4}
+          />
+          <RateCountBar
+            mark={3}
+            total={reviewsSummary?.total_reviews}
+            value={reviewsSummary?.rating_3}
+          />
+          <RateCountBar
+            mark={2}
+            total={reviewsSummary?.total_reviews}
+            value={reviewsSummary?.rating_2}
+          />
+          <RateCountBar
+            mark={1}
+            total={reviewsSummary?.total_reviews}
+            value={reviewsSummary?.rating_1}
+          />
         </div>
       </div>
       <Separator />
@@ -48,14 +75,21 @@ const CarWashReviews: React.FC<CarWashReviewsProps> = ({
         <div className="text-title-2 text-neutral-900 mb-2">
           Rate and review
         </div>
-        <div className="flex gap-2 items-center">
-          <img
-            src={defaultAvatar}
-            alt={`${defaultAvatar}'s avatar`}
+        <div className="flex gap-2 items-center flex-wrap">
+          <Image
+            src={user?.user_metadata?.avatar_url || defaultAvatar}
+            alt={`${user?.user_metadata?.full_name}'s avatar`}
             className="w-10 h-10 rounded-full"
+            width={40}
+            height={40}
           />
           <span onClick={() => setReviewOpen(true)}>
-            <Rate value={reviewsSummary?.average_rating} max={5} size="md" color="default-yellow"/>
+            <Rate
+              value={reviewsSummary?.average_rating}
+              max={5}
+              size="md"
+              color="default-yellow"
+            />
           </span>
           <div className="flex items-center justify-center gap-1">
             <div className="h-6 w-6 rounded-full bg-gradient-to-t from-[#FFA100] to-[#FFC35C] flex items-center justify-center">
@@ -78,7 +112,7 @@ const CarWashReviews: React.FC<CarWashReviewsProps> = ({
         />
         <SlidersVertical size={16} className="text-neutral-800 mx-1" />
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         {orders.map((order) => (
           <CheckTag
             key={order}

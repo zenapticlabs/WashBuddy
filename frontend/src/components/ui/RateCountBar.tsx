@@ -5,9 +5,12 @@ interface RateCountBarProps {
 }
 
 export function RateCountBar({ total, value, mark }: RateCountBarProps) {
-  const widthPercent = (value / total) * 100;
+  let widthPercent = (value / total) * 100;
+  if (total === 0) {
+    widthPercent = 0;
+  }
   return (
-    <div className={`flex items-center gap-2 min-w-[200px]`}>
+    <div className={`flex items-center gap-2`}>
       <div className="text-title-3 text-neutral-900">{mark}</div>
       <div className="w-full h-1 bg-neutral-200 rounded-full">
         <div

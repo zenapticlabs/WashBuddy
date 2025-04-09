@@ -23,6 +23,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
 import useLocationData from "@/hooks/useLocationData";
+const defaultAvatar =
+  "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde";
 
 const FilterButtonConfigs = [
   {
@@ -50,7 +52,7 @@ const Topbar: React.FC<TopbarProps> = ({
   sideBarAlwaysOpen,
   locationData,
 }) => {
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [notiCount, setNotiCount] = useState(2);
@@ -174,13 +176,13 @@ const Topbar: React.FC<TopbarProps> = ({
             )}
           </div>
           <DropdownMenu>
-            <DropdownMenuTrigger>
+            <DropdownMenuTrigger className="flex items-center gap-2">
               <Image
-                src={user}
-                alt="user"
-                width={32}
-                height={32}
-                className="rounded-full"
+                src={user?.user_metadata?.avatar_url || defaultAvatar}
+                alt={`${user?.user_metadata?.full_name}'s avatar`}
+                className="w-10 h-10 rounded-full"
+                width={40}
+                height={40}
               />
             </DropdownMenuTrigger>
             <DropdownMenuContent>

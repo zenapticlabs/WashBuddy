@@ -75,24 +75,27 @@ export function CarWashCard({ data, onClick, isSelected }: CarWashCardProps) {
                 <StarIcon className="w-3.5 h-3.5 text-accent-yellow fill-accent-yellow" />
                 <span className="text-title-2 text-accent-yellow">
                   {data.reviews_average}
-                </span>
-                <span className="text-body-3 text-neutral-300">
-                  ({data.reviews_count})
+
+                  <span className="text-body-3 text-neutral-300 pl-1">
+                    ({data.reviews_count})
+                  </span>
                 </span>
               </div>
-              <div className="text-headline-4 py-1 text-neutral-900 text-right">
-                $N/A
-                <span className="text-body-3 text-neutral-500 pl-1">
-                  Basic Wash
-                </span>
+              <div className="text-headline-4 py-1 text-neutral-900 text-right pl-4">
+                $
+                {data.packages?.length > 0
+                  ? `${Math.min(
+                      ...data.packages.map((pkg) => Number(pkg.price))
+                    )}`
+                  : "N/A"}
+              </div>
+              <div className="flex-1 text-body-3 text-neutral-900 text-right">
+                {data.packages?.length > 0 &&
+                  data.packages.reduce((lowest, pkg) =>
+                    Number(pkg.price) < Number(lowest.price) ? pkg : lowest
+                  ).name}
               </div>
             </div>
-            {/* <Badge
-              variant="green"
-              className="text-title-3 text-white w-fit hidden md:block"
-            >
-              Student Discount - 20% Off
-            </Badge> */}
           </div>
           <div className="hidden md:flex flex-col justify-end border-l border-neutral-50 pl-4">
             <div className="flex items-center gap-0.5 justify-end">

@@ -304,7 +304,7 @@ export function RadarMap({
         currentCenter.longitude
       );
 
-      setShowSearchButton(distance >= 3);
+      setShowSearchButton(distance >= 0.5);
     };
 
     // Check initially

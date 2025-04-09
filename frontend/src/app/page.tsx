@@ -63,7 +63,6 @@ function HomeContent() {
     fetchLocationData();
   }, []);
 
-
   useEffect(() => {
     if (locationData && !currentLocation) {
       setCurrentLocation(locationData);
@@ -183,7 +182,7 @@ function HomeContent() {
           currentLocation={currentLocation}
           setAddress={setAddress}
         />
-        <div className="flex flex-1 overflow-hidden bg-neutral-100 relative">
+        <div className="flex flex-1 overflow-hidden bg-neutral-100 relative md:flex-row flex-col">
           <div className="w-[550px] relative bg-white hidden md:flex flex-col">
             <div className="flex justify-end py-2 px-4">
               <SortBySelect filters={filters} setFilters={setFilters} />
@@ -249,6 +248,7 @@ function HomeContent() {
               onMarkerClick={handleOpenAbout}
             />
           </div>
+          <div className="md:hidden h-[300px]"></div>
           <MobileCarWashView
             totalCount={count}
             isLoading={isLoading}

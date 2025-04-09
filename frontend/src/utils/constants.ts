@@ -103,12 +103,6 @@ export const FORM_CONFIG = [
     required: true,
   },
   {
-    name: "phone",
-    label: "Phone",
-    type: "text",
-    placeholder: "Enter phone number",
-  },
-  {
     name: "website",
     label: "Website",
     type: "text",
