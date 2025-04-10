@@ -8,6 +8,8 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { CircleBadge } from "../ui/circleBadge";
+import { CustomIconToggle } from "../ui/customIconToggle";
+import Image from "next/image";
 
 interface AmenitiesCheckboxesProps {
   value?: string[];
@@ -57,18 +59,14 @@ const AmenitiesCheckboxes: React.FC<AmenitiesCheckboxesProps> = ({
           </div>
         </AccordionTrigger>
         <AccordionContent>
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-row flex-wrap gap-2">
             {options?.map((amenity) => (
-              <Checkbox
+              <CustomIconToggle
                 key={amenity.name}
                 label={amenity.name}
-                checked={
-                  value
-                    ? value.includes(amenity.name)
-                    : selectedAmenities.includes(amenity.name)
-                }
+                checked={value?.includes(amenity.name)}
                 onChange={() => handleChange(amenity.name)}
-                description={amenity.description}
+                icon={<Image src={amenity.icon} alt={amenity.name} width={20} height={20} />}
               />
             ))}
           </div>

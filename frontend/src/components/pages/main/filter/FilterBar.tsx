@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { getAmenities } from "@/services/AmenityService";
 import { getWashTypes } from "@/services/WashType";
-import { Car_Wash_Type_Value } from "@/utils/constants";
+import { Amenities, Car_Wash_Type_Value, WashTypes } from "@/utils/constants";
 interface FilterBarProps {
   filters: FilterState;
   setFilters: (filters: FilterState) => void;
@@ -100,11 +100,13 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
       icon: <Droplet size={16} />,
       isActive: inlineFilters.washTypeName.length > 0,
       content: (
-        <WashTypeCheckboxes
-          value={inlineFilters.washTypeName}
-          onChange={(value) => setInlineFilters({ ...inlineFilters, washTypeName: value })}
-          options={washTypes.filter((washType) => washType.category == (filters.automaticCarWash ? Car_Wash_Type_Value.AUTOMATIC : Car_Wash_Type_Value.SELF_SERVICE))}
-        />
+        <div className="w-[500px] pt-2">
+          <WashTypeCheckboxes
+            value={inlineFilters.washTypeName}
+            onChange={(value) => setInlineFilters({ ...inlineFilters, washTypeName: value })}
+            options={WashTypes.filter((washType) => washType.category == (filters.automaticCarWash ? Car_Wash_Type_Value.AUTOMATIC : Car_Wash_Type_Value.SELF_SERVICE))}
+          />
+        </div>
       ),
     },
     {
@@ -113,11 +115,13 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
       icon: <House size={16} />,
       isActive: inlineFilters.amenityName.length > 0,
       content: (
-        <AmenitiesCheckboxes
-          value={inlineFilters.amenityName}
-          onChange={(value) => setInlineFilters({ ...inlineFilters, amenityName: value })}
-          options={amenities.filter((amenity) => amenity.category == (filters.automaticCarWash ? Car_Wash_Type_Value.AUTOMATIC : Car_Wash_Type_Value.SELF_SERVICE))}
-        />
+        <div className="w-[500px] pt-2">
+          <AmenitiesCheckboxes
+            value={inlineFilters.amenityName}
+            onChange={(value) => setInlineFilters({ ...inlineFilters, amenityName: value })}
+            options={Amenities.filter((amenity) => amenity.category == (filters.automaticCarWash ? Car_Wash_Type_Value.AUTOMATIC : Car_Wash_Type_Value.SELF_SERVICE))}
+          />
+        </div>
       ),
     },
     {
