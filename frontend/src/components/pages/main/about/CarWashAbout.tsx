@@ -40,7 +40,7 @@ export default function CarWashAbout({ data }: { data: CarWashResponse }) {
         </div>
         <Separator />
         <div className="p-3 border border-neutral-100 rounded-xl">
-          <div className="flex items-center justify-between w-full">
+          <div className="flex items-center justify-between w-full flex-wrap gap-2">
             <div className="flex items-center gap-2">
               <div className="bg-accent-yellow w-6 h-6 rounded-full flex items-center justify-center">
                 <Star className="w-4 h-4 text-white" />

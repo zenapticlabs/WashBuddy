@@ -52,12 +52,12 @@ const SelectCarwashType: React.FC<SelectCarwashTypeProps> = ({
                                         key={amenity.id}
                                         label={amenity.name}
                                         checked={
-                                            amenities?.includes(amenity.id)
+                                            amenities?.includes(amenity.id.toString())
                                         }
                                         onChange={() => {
-                                            const newAmenities = amenities?.includes(amenity.id)
-                                                ? amenities.filter(id => id !== amenity.id)
-                                                : [...amenities, amenity.id];
+                                            const newAmenities = amenities?.includes(amenity.id.toString())
+                                                ? amenities.filter(id => id !== amenity.id.toString())
+                                                : [...amenities, amenity.id.toString()];
                                             setAmenities(newAmenities);
                                         }}
                                         description={amenity.description}
@@ -73,12 +73,12 @@ const SelectCarwashType: React.FC<SelectCarwashTypeProps> = ({
                                         key={washType.id}
                                         label={washType.name}
                                         checked={
-                                            washTypes?.includes(washType.id)
+                                            washTypes?.includes(washType.id.toString())
                                         }
                                         onChange={() => {
-                                            const newWashTypes = washTypes?.includes(washType.id)
-                                                ? washTypes?.filter(id => id !== washType.id)
-                                                : [...washTypes, washType.id];
+                                            const newWashTypes = washTypes?.includes(washType.id.toString())
+                                                ? washTypes?.filter(id => id !== washType.id.toString())
+                                                : [...washTypes, washType.id.toString()];
                                             setWashTypes(newWashTypes);
                                         }}
                                         description={washType.description}

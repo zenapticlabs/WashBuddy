@@ -8,6 +8,18 @@ import TouchlessWashIcon from "@/assets/wash-type-icons/Touchless wash.svg";
 import TripleFoamIcon from "@/assets/wash-type-icons/Triple foam.svg";
 import UnderBodyFlushIcon from "@/assets/wash-type-icons/Underbody flush.svg";
 import UnderBodySprayIcon from "@/assets/wash-type-icons/Underbody spray.svg";
+import { CarServiceAmenity, CarServiceWashType } from "@/types/CarServices";
+import FreeVacuumsIcon from "@/assets/amenities-icons/free-vacuums.svg";
+import AirgunIcon from "@/assets/amenities-icons/air-gun.svg";
+import MatWashStationIcon from "@/assets/amenities-icons/mat-wash-station.svg";
+import Open24HoursIcon from "@/assets/amenities-icons/open-24-hours.svg";
+import FreeTireAirStationIcon from "@/assets/amenities-icons/free-tire-air-station.svg";
+import FragrantDispenserIcon from "@/assets/amenities-icons/fragrant-dispenser.svg";
+import RugMatMachineIcon from "@/assets/amenities-icons/rug-mat-machine.svg";
+import CarpetShampooMachineIcon from "@/assets/amenities-icons/carpet-shampoo-machine.svg";
+import InBayVacuumIcon from "@/assets/amenities-icons/in-bay-vacuum.svg";
+import CreditCardsAcceptedIcon from "@/assets/amenities-icons/credit-cards-accepted.svg";
+
 
 export const CAR_SERVICES_TYPE = {
   WASH_TYPE: "Wash Type",
@@ -81,7 +93,7 @@ export const OPERATING_HOURS = Array.from({ length: 7 }, (_, index) => ({
 
 export const DEFAULT_PAYLOAD = {
   operating_hours: OPERATING_HOURS,
-  automatic_car_wash: false,
+  automatic_car_wash: true,
   self_service_car_wash: false,
   images: [],
   wash_types: [],
@@ -101,12 +113,6 @@ export const FORM_CONFIG = [
     type: "text",
     placeholder: "Enter car wash name",
     required: true,
-  },
-  {
-    name: "phone",
-    label: "Phone",
-    type: "text",
-    placeholder: "Enter phone number",
   },
   {
     name: "website",
@@ -143,12 +149,19 @@ export const ReviewSortBy = [
 
 export interface CarwashPackage {
   id?: number;
-  name: string;
-  price: number;
-  washTypes: number[];
+  wash_types: any[];
+  created_at?: string;
+  updated_at?: string;
+  status?: string;
+  name?: string;
+  description?: string;
+  price?: number;
+  category?: string;
+  created_by?: any;
+  updated_by?: any;
 }
 
-export const WashTypes = [
+export const WashTypes: CarServiceWashType[] = [
   {
     id: 1,
     status: "ACTIVE",
@@ -249,3 +262,138 @@ export const WashTypes = [
     icon: DryerIcon,
   },
 ];
+
+export const Amenities: CarServiceAmenity[] = [
+  {
+    "id": 1,
+    "created_at": "2025-03-16T18:17:05.398474Z",
+    "updated_at": "2025-03-16T18:17:05.398490Z",
+    "status": "ACTIVE",
+    "name": "Free vacuums",
+    "description": "",
+    "category": "automatic",
+    "created_by": null,
+    "updated_by": null,
+    "icon": FreeVacuumsIcon,
+  },
+  {
+    "id": 2,
+    "created_at": "2025-03-16T18:17:05.410048Z",
+    "updated_at": "2025-03-16T18:17:05.410060Z",
+    "status": "ACTIVE",
+    "name": "Air gun",
+    "description": "",
+    "category": "automatic",
+    "created_by": null,
+    "updated_by": null,
+    "icon": AirgunIcon,
+  },
+  {
+    "id": 3,
+    "created_at": "2025-03-16T18:17:05.421951Z",
+    "updated_at": "2025-03-16T18:17:05.421965Z",
+    "status": "ACTIVE",
+    "name": "Mat wash station",
+    "description": "",
+    "category": "automatic",
+    "created_by": null,
+    "updated_by": null,
+    "icon": MatWashStationIcon,
+  },
+  {
+    "id": 4,
+    "created_at": "2025-03-16T18:17:05.434041Z",
+    "updated_at": "2025-03-16T18:17:05.434054Z",
+    "status": "ACTIVE",
+    "name": "Open 24 hours",
+    "description": "",
+    "category": "automatic",
+    "created_by": null,
+    "updated_by": null,
+    "icon": Open24HoursIcon,
+  },
+  {
+    "id": 5,
+    "created_at": "2025-03-16T18:17:05.445955Z",
+    "updated_at": "2025-03-16T18:17:05.445968Z",
+    "status": "ACTIVE",
+    "name": "Free tire air station",
+    "description": "",
+    "category": "automatic",
+    "created_by": null,
+    "updated_by": null,
+    "icon": FreeTireAirStationIcon,
+  },
+  {
+    "id": 6,
+    "created_at": "2025-03-16T18:17:05.459837Z",
+    "updated_at": "2025-03-16T18:17:05.459855Z",
+    "status": "ACTIVE",
+    "name": "Fragrant dispenser",
+    "description": "",
+    "category": "selfservice",
+    "created_by": null,
+    "updated_by": null,
+    "icon": FragrantDispenserIcon,
+  },
+  {
+    "id": 7,
+    "created_at": "2025-03-16T18:17:05.472460Z",
+    "updated_at": "2025-03-16T18:17:05.472475Z",
+    "status": "ACTIVE",
+    "name": "Rug/mat machine",
+    "description": "",
+    "category": "selfservice",
+    "created_by": null,
+    "updated_by": null,
+    "icon": RugMatMachineIcon,
+  },
+  {
+    "id": 8,
+    "created_at": "2025-03-16T18:17:05.483751Z",
+    "updated_at": "2025-03-16T18:17:05.483764Z",
+    "status": "ACTIVE",
+    "name": "Carpet shampoo machine",
+    "description": "",
+    "category": "selfservice",
+    "created_by": null,
+    "updated_by": null,
+    "icon": CarpetShampooMachineIcon,
+  },
+  {
+    "id": 9,
+    "created_at": "2025-03-16T18:17:05.494886Z",
+    "updated_at": "2025-03-16T18:17:05.494898Z",
+    "status": "ACTIVE",
+    "name": "In-bay vacuum",
+    "description": "",
+    "category": "selfservice",
+    "created_by": null,
+    "updated_by": null,
+    "icon": InBayVacuumIcon,
+  },
+  {
+    "id": 10,
+    "created_at": "2025-03-16T18:17:05.505583Z",
+    "updated_at": "2025-03-16T18:17:05.505595Z",
+    "status": "ACTIVE",
+    "name": "Credit cards accepted",
+    "description": "",
+    "category": "selfservice",
+    "created_by": null,
+    "updated_by": null,
+    "icon": CreditCardsAcceptedIcon,
+  },
+  {
+    "id": 11,
+    "created_at": "2025-04-01T21:00:37.356872Z",
+    "updated_at": "2025-04-01T21:00:37.356890Z",
+    "status": "ACTIVE",
+    "name": "Accepts Credit Cards",
+    "description": "Accepts credit cards",
+    "category": "automatic",
+    "created_by": null,
+    "updated_by": null,
+    "icon": CreditCardsAcceptedIcon,
+  }
+]

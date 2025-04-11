@@ -23,6 +23,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
 import useLocationData from "@/hooks/useLocationData";
+const defaultAvatar =
+  "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde";
 
 const FilterButtonConfigs = [
   {
@@ -50,7 +52,7 @@ const Topbar: React.FC<TopbarProps> = ({
   sideBarAlwaysOpen,
   locationData,
 }) => {
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
   const [notiCount, setNotiCount] = useState(2);
@@ -101,9 +103,8 @@ const Topbar: React.FC<TopbarProps> = ({
   return (
     <div>
       <div
-        className={`flex gap-2 items-center justify-between px-4 h-[66px] ${
-          sideBarAlwaysOpen || openSidebar ? "border-b border-neutral-100" : ""
-        }`}
+        className={`flex gap-2 items-center justify-between px-4 h-[66px] ${sideBarAlwaysOpen || openSidebar ? "border-b border-neutral-100" : ""
+          }`}
       >
         <div className="flex items-center gap-2">
           <div
@@ -130,17 +131,17 @@ const Topbar: React.FC<TopbarProps> = ({
                 variant="outline"
                 key={config.label}
                 onClick={() => handleSelectCarWashType(config.value)}
-                className={`rounded-full shadow-none ${
-                  filters?.automaticCarWash === config.value
-                    ? "border-blue-500"
-                    : "border-neutral-100"
-                }`}
+                className={`rounded-full shadow-none ${filters?.automaticCarWash === config.value
+                  ? "border-blue-500"
+                  : "border-neutral-100"
+                  }`}
               >
                 <Image
                   src={config.icon}
                   alt={config.label}
                   width={24}
                   height={24}
+                  className={`${filters?.automaticCarWash === config.value ? "filter-blue-500" : ""}`}
                 />
                 <span className="text-title-2 text-neutral-900">
                   {config.label}
@@ -174,13 +175,13 @@ const Topbar: React.FC<TopbarProps> = ({
             )}
           </div>
           <DropdownMenu>
-            <DropdownMenuTrigger>
+            <DropdownMenuTrigger className="flex items-center gap-2">
               <Image
-                src={user}
-                alt="user"
-                width={32}
-                height={32}
-                className="rounded-full"
+                src={user?.user_metadata?.avatar_url || defaultAvatar}
+                alt={`${user?.user_metadata?.full_name}'s avatar`}
+                className="w-10 h-10 rounded-full"
+                width={40}
+                height={40}
               />
             </DropdownMenuTrigger>
             <DropdownMenuContent>

@@ -8,6 +8,8 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { CircleBadge } from "../ui/circleBadge";
+import { CustomIconToggle } from "../ui/customIconToggle";
+import Image from "next/image";
 
 interface WashTypeCheckboxesProps {
   value?: string[];
@@ -86,18 +88,14 @@ const WashTypeCheckboxes: React.FC<WashTypeCheckboxesProps> = ({
               <legend className="text-title-2 py-2 text-neutral-900">
                 {option.detailed_type}
               </legend>
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-row flex-wrap gap-2">
                 {option.services?.map((service) => (
-                  <Checkbox
+                  <CustomIconToggle
                     key={service.name}
                     label={service.name}
-                    checked={
-                      value
-                        ? value.includes(service.name)
-                        : selectedWashTypes.includes(service.name)
-                    }
+                    checked={value?.includes(service.name)}
                     onChange={() => handleChange(service.name)}
-                    description={service.description}
+                    icon={service.icon}
                   />
                 ))}
               </div>

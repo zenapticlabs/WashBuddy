@@ -19,7 +19,7 @@ import { RadarAddress } from "radar-sdk-js/dist/types";
 import Topbar from "@/components/pages/main/Topbar";
 import { useAmenities } from "@/hooks/useAmenities";
 import { useWashTypes } from "@/hooks/useWashTypes";
-import { DEFAULT_PAYLOAD, FORM_CONFIG } from "@/utils/constants";
+import { Amenities, Car_Wash_Type, Car_Wash_Type_Value, CarWashTypes, DEFAULT_PAYLOAD, FORM_CONFIG } from "@/utils/constants";
 import { Switch } from "@/components/ui/switch";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
@@ -28,6 +28,14 @@ import MultiImageUploadZone from "@/components/molecule/MultiImageUploadZone";
 import { IconToggle } from "@/components/ui/iconToggle";
 import { CarwashPackage } from "@/components/organism/carwashPackage";
 import Image from "next/image";
+import { Separator } from "@/components/ui/separator";
+import { Accordion } from "@/components/ui/accordion";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { AccordionItem, AccordionContent } from "@/components/ui/accordion";
+import { CustomIconToggle } from "@/components/ui/customIconToggle";
+import AutomaticIcon from "@/assets/icons/automatic.svg";
+import SelfServiceIcon from "@/assets/icons/self-service.svg";
 
 const NEXT_PUBLIC_STORAGE_ENDPOINT = process.env.NEXT_PUBLIC_STORAGE_ENDPOINT;
 const NEXT_PUBLIC_STORAGE_BUCKET_NAME =
@@ -61,6 +69,7 @@ const CarWashContent = () => {
   const carwashId = searchParams.get("id");
   const [isLoading, setIsLoading] = useState(false);
   const { locationData, error, loading, fetchLocationData } = useLocationData();
+  const [locationLoading, setLocationLoading] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [address, setAddress] = useState<any>(null);
   const [errorMessage, setErrorMessage] = useState<any>(null);
@@ -68,9 +77,13 @@ const CarWashContent = () => {
   const [fetchLoading, setFetchLoading] = useState(true);
   const [originalImages, setOriginalImages] = useState<any>([]);
   const [uploadingSitePhoto, setUploadingSitePhoto] = useState(false);
+  const [knowHours, setKnowHours] = useState(true);
+  const [knowPhone, setKnowPhone] = useState(false);
   const [activeTab, setActiveTab] = useState<"use_gps" | "enter_address">(
     "use_gps"
   );
+
+  useEffect(() => { }, [locationData]);
   const {
     amenities,
     isLoading: amenitiesLoading,
@@ -105,6 +118,9 @@ const CarWashContent = () => {
             ),
             amenities: data.amenities.map((amenity: any) => amenity.id),
           };
+          if (modifiedData.phone) {
+            setKnowPhone(true);
+          }
           setFormData(modifiedData);
           setOriginalImages(modifiedData.images);
           setIsEdit(true);
@@ -129,29 +145,37 @@ const CarWashContent = () => {
   };
 
   const handleFilterOperatingHours = (payload: any) => {
-    const { operating_hours } = payload;
-    const isOpen24Hours = payload.open_24_hours;
-    if (isOpen24Hours) {
-      return {
-        ...payload,
-        operating_hours: null,
-      };
+    if (knowHours) {
+      const { operating_hours } = payload;
+      const isOpen24Hours = payload.open_24_hours;
+      if (isOpen24Hours) {
+        return {
+          ...payload,
+          operating_hours: [],
+        };
+      } else {
+        // Filter out operating hours where is_closed is true
+        const filteredOperatingHours =
+          operating_hours?.filter((hour: any) => !hour.is_closed) || [];
+        return {
+          ...payload,
+          operating_hours: filteredOperatingHours,
+        };
+      }
     } else {
-      // Filter out operating hours where is_closed is true
-      const filteredOperatingHours =
-        operating_hours?.filter((hour: any) => !hour.is_closed) || [];
-      return {
-        ...payload,
-        operating_hours: filteredOperatingHours,
-      };
+      return { ...payload, operating_hours: [], open_24_hours: true };
     }
   };
 
+  const handleFilterPhone = (payload: any) => {
+    if (!knowPhone) {
+      return { ...payload, phone: "" };
+    }
+  };
   const handleSubmit = async () => {
     try {
       setIsLoading(true);
       let payload = { ...DEFAULT_PAYLOAD, ...formData };
-      payload = handleFilterOperatingHours(payload);
       if (!isEdit) {
         setErrorMessage({
           ...errorMessage,
@@ -161,6 +185,8 @@ const CarWashContent = () => {
         payload = { ...payload, ...address };
       }
 
+      payload = handleFilterOperatingHours(payload);
+      payload = handleFilterPhone(payload);
       let response;
       if (isEdit) {
         response = await updateCarwash(carwashId || "", payload);
@@ -192,7 +218,9 @@ const CarWashContent = () => {
   };
 
   const handleDetectLocation = async () => {
-    fetchLocationData();
+    setLocationLoading(true);
+    await fetchLocationData();
+    setLocationLoading(false);
   };
 
   const handleSelectAddress = (address: RadarAddress | null) => {
@@ -241,6 +269,22 @@ const CarWashContent = () => {
         (image: any) => image.image_url != image_url
       ),
     }));
+  };
+
+  const handleSelectCarWashType = (carWashType: string) => {
+    if (carWashType == Car_Wash_Type_Value.AUTOMATIC) {
+      setFormData((prevData: any) => ({
+        ...prevData,
+        automatic_car_wash: true,
+        self_service_car_wash: false,
+      }));
+    } else {
+      setFormData((prevData: any) => ({
+        ...prevData,
+        automatic_car_wash: false,
+        self_service_car_wash: true,
+      }));
+    }
   };
   return (
     <>
@@ -295,6 +339,7 @@ const CarWashContent = () => {
                       </div>
                     ))}
                   </div>
+                  <Separator className="my-2" />
                   <div className="px-6 py-4 ">
                     <div className="text-title-1 text-[#262626]">Location</div>
                     <Tabs defaultValue="use_gps" className="w-full">
@@ -318,24 +363,23 @@ const CarWashContent = () => {
                         <div className="text-body-2 text-neutral-900 mb-3">
                           Automatically detect your location using GPS.
                         </div>
-                        <div className="flex justify-between items-center">
+                        <div className="flex md:justify-between flex-col md:flex-row gap-3 md:items-center">
                           <Button
                             variant="outline"
-                            className="text-blue-500 border-blue-500 rounded-full  hover:bg-blue-500 hover:text-white"
+                            className="text-blue-500 border-blue-500 rounded-full  hover:bg-blue-500 hover:text-white w-fit"
                             onClick={handleDetectLocation}
                           >
                             <Crosshair size={20} className="mr-2" />
                             Detect Location
                           </Button>
-                          {loading && (
-                            <p className="pt-2 text-neutral-600">Loading...</p>
+                          {locationLoading ? (
+                            <p className="text-neutral-600">Loading...</p>
+                          ) : (
+                            <div className="text-body-2 text-neutral-900">
+                              {locationData?.formatted_address ||
+                                formData.formatted_address}
+                            </div>
                           )}
-                          {error && <p>Error: {error}</p>}
-
-                          <div className="text-body-2 text-neutral-900">
-                            {locationData?.formatted_address ||
-                              formData.formatted_address}
-                          </div>
                         </div>
                       </TabsContent>
                       <TabsContent value="enter_address" className="pt-2">
@@ -348,45 +392,45 @@ const CarWashContent = () => {
                       </p>
                     )}
                   </div>
-                  <div className="flex flex-col px-6 gap-2  py-4">
-                    <div className="text-title-1 text-[#262626] py-5">
+                  <Separator className="my-2" />
+                  <div className="flex flex-col px-6 gap-2 py-4">
+                    <div className="text-title-1 text-[#262626]">
                       Select Carwash Type
                     </div>
-                    <div className="flex gap-2 flex-wrap">
-                      <IconToggle
-                        label="Automatic car wash"
-                        icon={<CheckIcon size={10} />}
-                        checked={formData.automatic_car_wash}
-                        onChange={(checked) =>
-                          setFormData({
-                            ...formData,
-                            automatic_car_wash: !!checked,
-                          })
-                        }
-                      />
-                      <IconToggle
-                        label="Self-service car wash"
-                        icon={<CheckIcon size={10} />}
-                        checked={formData.self_service_car_wash}
-                        onChange={(checked) =>
-                          setFormData({
-                            ...formData,
-                            self_service_car_wash: !!checked,
-                          })
-                        }
-                      />
+                    <div className="flex gap-2 w-full bg-[#F4F4F4] rounded-full">
+                      {CarWashTypes.map((carWashType) => (
+                        <div
+                          key={carWashType.id}
+                          className={`flex-1 flex items-center justify-center rounded-full py-2 px-3 text-title-2 gap-2 cursor-pointer
+                            ${(formData.automatic_car_wash == true && carWashType.value == Car_Wash_Type_Value.AUTOMATIC) ||
+                              (formData.self_service_car_wash == true && carWashType.value == Car_Wash_Type_Value.SELF_SERVICE) ?
+                              "bg-blue-500 text-white" : "text-neutral-900"}`}
+                          onClick={() => handleSelectCarWashType(carWashType.value)}
+                        >
+                          <Image
+                            src={carWashType.value == Car_Wash_Type_Value.AUTOMATIC ? AutomaticIcon : SelfServiceIcon}
+                            alt={carWashType.name}
+                            width={16} height={16}
+                            className={`${(formData.automatic_car_wash == true && carWashType.value == Car_Wash_Type_Value.AUTOMATIC) ||
+                              (formData.self_service_car_wash == true && carWashType.value == Car_Wash_Type_Value.SELF_SERVICE) ?
+                              "filter-white" : "filter-neutral-400"}`}
+                          />
+                          {carWashType.name}
+                        </div>
+                      ))}
                     </div>
                   </div>
+                  <Separator className="my-2" />
                   <div className="flex flex-col px-6 gap-2  py-4">
-                    <div className="text-title-1 text-[#262626] py-5">
+                    <div className="text-title-1 text-[#262626] pb-4">
                       Select Amenities
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {amenities.map((amenity) => (
-                        <IconToggle
+                      {Amenities.map((amenity) => (
+                        <CustomIconToggle
                           key={amenity.id}
                           label={amenity.name}
-                          icon={<CheckIcon size={10} />}
+                          icon={amenity.icon}
                           checked={formData.amenities.includes(amenity.id)}
                           onChange={(checked) =>
                             setFormData({
@@ -394,51 +438,119 @@ const CarWashContent = () => {
                               amenities: checked
                                 ? [...formData.amenities, amenity.id]
                                 : formData.amenities.filter(
-                                    (id: any) => id !== amenity.id
-                                  ),
+                                  (id: any) => id !== amenity.id
+                                ),
                             })
                           }
                         />
                       ))}
                     </div>
                   </div>
-                  <div className="flex flex-col px-6 gap-2  py-4">
-                    <div className="text-title-1 text-[#262626] py-5">
-                      Carwash Packages
-                    </div>
-                    <CarwashPackage
-                      carwashPackages={formData.packages}
-                      setCarwashPackages={(carwashPackages) =>
-                        setFormData({
-                          ...formData,
-                          packages: carwashPackages,
-                        })
-                      }
-                    />
-                  </div>
+                  <Separator className="my-2" />
+
+                  <CarwashPackage
+                    carwashPackages={formData.packages}
+                    setCarwashPackages={(carwashPackages) =>
+                      setFormData({
+                        ...formData,
+                        packages: carwashPackages,
+                      })
+                    }
+                  />
+                  <Separator className="my-2" />
                   <div className="px-6 flex flex-col py-4">
                     <div className="text-title-1 text-[#262626] pb-6">
-                      Operating Hours
+                      Hours/Phone
                     </div>
-                    <div className="h-7 flex items-center">
-                      <Switch
-                        label="Open 24 hours"
-                        checked={formData.open_24_hours}
-                        onCheckedChange={(value) =>
-                          setFormData({ ...formData, open_24_hours: value })
-                        }
-                      />
+                    <div className="text-title-2 text-neutral-900 pb-4">
+                      Do you know the hours of operation?
                     </div>
-                    <OperatingHoursRange
-                      open_24_hours={formData.open_24_hours}
-                      operatingHours={formData.operating_hours}
-                      setOperatingHours={(operating_hours) =>
-                        setFormData({ ...formData, operating_hours })
-                      }
-                    />
+                    <RadioGroup
+                      defaultValue={knowHours ? "true" : "false"}
+                      onValueChange={(value) => setKnowHours(value === "true")}
+                      className="flex flex-row gap-2 pb-4"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="true" id="r1" />
+                        <Label htmlFor="r1">Yes</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="false" id="r2" />
+                        <Label htmlFor="r2">No</Label>
+                      </div>
+                    </RadioGroup>
+
+                    <Accordion
+                      type="single"
+                      collapsible
+                      className="w-full"
+                      value={knowHours ? "item-1" : ""}
+                    >
+                      <AccordionItem value="item-1">
+                        <AccordionContent>
+                          <div className="h-7 flex items-center">
+                            <Switch
+                              label="Open 24 hours"
+                              checked={formData.open_24_hours}
+                              onCheckedChange={(value) =>
+                                setFormData({
+                                  ...formData,
+                                  open_24_hours: value,
+                                })
+                              }
+                            />
+                          </div>
+                          <OperatingHoursRange
+                            open_24_hours={formData.open_24_hours}
+                            operatingHours={formData.operating_hours}
+                            setOperatingHours={(operating_hours) =>
+                              setFormData({ ...formData, operating_hours })
+                            }
+                          />
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                    <div className="text-title-2 text-neutral-900 pb-4">
+                      Do you know the phone number?
+                    </div>
+                    <RadioGroup
+                      defaultValue={knowPhone ? "true" : "false"}
+                      onValueChange={(value) => setKnowPhone(value === "true")}
+                      className="flex flex-row gap-2 pb-4"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="true" id="r1" />
+                        <Label htmlFor="r1">Yes</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="false" id="r2" />
+                        <Label htmlFor="r2">No</Label>
+                      </div>
+                    </RadioGroup>
+                    <Accordion
+                      type="single"
+                      collapsible
+                      className="w-full"
+                      value={knowPhone ? "item-1" : ""}
+                    >
+                      <AccordionItem value="item-1">
+                        <AccordionContent className="p-0.5">
+                          <Input
+                            name="phone"
+                            value={formData.phone}
+                            onChange={handleChangeInput}
+                            className="px-3 py-2.5"
+                            placeholder="Enter phone number"
+                          />
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
                   </div>
-                  <div className="px-6 flex flex-col gap-1">
-                    <div className="text-title-1 text-[#262626]">Photos</div>
+                  <Separator className="my-2" />
+                  <div className="px-6 flex flex-col gap-1 pt-6">
+                    <div className="text-title-1 text-[#262626] pb-4">
+                      Photos
+                    </div>
                     {/* <div className="text-title-2 text-neutral-900 py-3">
                       Site Photo
                     </div>

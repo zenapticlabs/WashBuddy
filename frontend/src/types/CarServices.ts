@@ -1,21 +1,26 @@
 export interface CarServiceAmenity {
-  id: string;
+  id: number;
   name: string;
   category: string;
   description?: string;
-  created_at: Date;
-  updated_at: Date;
-}
-
-export interface CarServiceWashType {
-  id: string;
-  category: string;
-  name: string;
-  subclass: string;
-  description?: string;
+  created_at: string;
+  updated_at: string;
   status: string;
   created_by: string | null;
   updated_by: string | null;
+  icon: string;
+}
+
+export interface CarServiceWashType {
+  id: number;
+  status: string;
+  name: string;
+  description?: string;
+  category: string;
+  subclass: string;
+  created_by: string | null;
+  updated_by: string | null;
+  icon: string;
 }
 
 export interface ICarServiceWashPackage {
@@ -65,7 +70,7 @@ export interface OperatingHour {
 
 export interface CarWashPackage {
   id: number;
-  type: string;
+  category: string;
   name: string;
   price: number;
   wash_types: number[];

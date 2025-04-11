@@ -96,7 +96,7 @@ export function TimePicker({
         <Button
           variant="outline"
           className={cn(
-            "w-48 justify-start text-left font-normal border-neutral-700",
+            "justify-start text-left font-normal border-neutral-700",
             !value && "text-muted-foreground"
           )}
         >

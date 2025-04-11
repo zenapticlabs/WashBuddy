@@ -51,7 +51,7 @@ const CarWashDetail: React.FC<CarWashDetailProps> = ({
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [isOpen, setIsOpen] = useState(false);
   const [closingTime, setClosingTime] = useState<string>("");
-
+  const [activeTab, setActiveTab] = useState("about");
   useEffect(() => {
     setImageLoading(true);
     if (data?.open_24_hours) {
@@ -199,7 +199,12 @@ const CarWashDetail: React.FC<CarWashDetailProps> = ({
               </div>
             </div>
             <Separator className="" />
-            <Tabs defaultValue="about" className="w-full">
+            <Tabs
+              defaultValue="about"
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="w-full"
+            >
               <TabsList className="bg-transparent w-full">
                 <TabsTrigger value="about" className="w-full text-title-2">
                   About
