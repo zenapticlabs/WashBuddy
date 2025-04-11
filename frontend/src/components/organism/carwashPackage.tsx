@@ -4,26 +4,8 @@ import Image from "next/image";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { useState, useEffect, useRef } from "react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import AutomaticIcon from "@/assets/icons/automatic.svg";
+import SelfServiceIcon from "@/assets/icons/self-service.svg";
 import {
   Sheet,
   SheetClose,
@@ -95,7 +77,7 @@ export function CarwashPackage({
       // Update existing package
       const updatedPackage = {
         ...selectedPackage,
-        type: selectedCarWashType,
+        category: selectedCarWashType,
         name: packageName,
         price: Number(price),
         minutes:
@@ -115,7 +97,7 @@ export function CarwashPackage({
     } else {
       // Create new package
       const newPackage: CarWashPackage = {
-        type: selectedCarWashType,
+        category: selectedCarWashType,
         id: carwashPackages.length + 1,
         name: packageName,
         price: Number(price),
@@ -235,183 +217,198 @@ export function CarwashPackage({
   };
 
   return (
-    <div className="w-full max-w-full overflow-hidden">
-      <Button className="mb-4" onClick={handleAddPackage}>
-        <PlusIcon size={24} />
-        Add Package
-      </Button>
-      <div
-        ref={containerRef}
-        className="flex gap-4 cursor-grab active:cursor-grabbing flex-nowrap overflow-x-auto w-full max-w-[calc(100vw-48px)] pb-2 scrollbar-hide"
-        style={{ WebkitOverflowScrolling: 'touch' }}
-        onMouseDown={handleMouseDown}
-        onMouseLeave={handleMouseLeave}
-        onMouseUp={handleMouseUp}
-        onMouseMove={handleMouseMove}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
-        {getAutomaticPackages().map((pkg) => (
-          <CarwashPackageCard key={pkg.id} carwashPackage={pkg}
-            onClick={() => {
-              setSelectedPackage(pkg);
-              setIsSheetOpen(true);
-            }}
-            onDelete={() => handleDeletePackage(pkg.id)}
-          />
-        ))}
+    <div className="flex flex-col px-6 gap-2  py-4">
+      <div className="flex md:flex-row flex-col justify-between pb-4 gap-4">
+        <div className="text-title-1 text-[#262626]">
+          Carwash Packages
+        </div>
+        <Button onClick={handleAddPackage}>
+          <PlusIcon size={24} />
+          Add Package
+        </Button>
       </div>
-
-      {/* Create/Edit Form */}
-      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-        <SheetTrigger asChild></SheetTrigger>
-        <SheetContent
-          side={isMobile ? "bottom" : "right"}
-          className={`p-0 overflow-auto ${isMobile ? "h-[80vh]" : "min-w-[600px]"
-            }`}
+      <div className="w-full max-w-full overflow-hidden">
+        <div
+          ref={containerRef}
+          className="flex gap-4 cursor-grab active:cursor-grabbing flex-nowrap overflow-x-auto w-full max-w-[calc(100vw-48px)] pb-2 scrollbar-hide"
+          style={{ WebkitOverflowScrolling: 'touch' }}
+          onMouseDown={handleMouseDown}
+          onMouseLeave={handleMouseLeave}
+          onMouseUp={handleMouseUp}
+          onMouseMove={handleMouseMove}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
         >
-          <SheetHeader className="p-6 pb-0">
-            <SheetTitle className="flex justify-between">
-              {selectedPackage ? "Edit Package" : "Create Package"}
-              {selectedPackage && (
-                <Button variant="outline" size="icon" onClick={handleDelete}>
-                  <TrashIcon size={24} />
-                </Button>
-              )}
-            </SheetTitle>
-          </SheetHeader>
-
-          <ScrollArea className="px-4">
-            <div className="text-title-1 font-semibold my-3 px-2">
-              General Information
+          {getAutomaticPackages().length === 0 && (
+            <div className="text-body-2 text-neutral-500">
+              No carwash packages
             </div>
-            <div className="flex flex-col gap-2 mb-3 px-2">
-              <div className="text-body-2 text-neutral-900">Package Name</div>
-              <Input
-                placeholder="Name"
-                className="py-2"
-                value={packageName}
-                onChange={(e) => setPackageName(e.target.value)}
-              />
-            </div>
+          )}
+          {getAutomaticPackages().map((pkg) => (
+            <CarwashPackageCard key={pkg.id} carwashPackage={pkg}
+              onClick={() => {
+                setSelectedPackage(pkg);
+                setIsSheetOpen(true);
+              }}
+              onDelete={() => handleDeletePackage(pkg.id)}
+            />
+          ))}
+        </div>
 
-            {selectedCarWashType === CarWashTypes[0].value && (
-              <div className="flex flex-col gap-2 mb-6 px-2">
-                <div className="text-body-2 text-neutral-900">Price</div>
+        {/* Create/Edit Form */}
+        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+          <SheetTrigger asChild></SheetTrigger>
+          <SheetContent
+            side={isMobile ? "bottom" : "right"}
+            className={`p-0 overflow-auto ${isMobile ? "h-[80vh]" : "min-w-[600px]"
+              }`}
+          >
+            <SheetHeader className="p-6 pb-0">
+              <SheetTitle className="flex justify-between">
+                {selectedPackage ? "Edit Package" : "Create Package"}
+                {selectedPackage && (
+                  <Button variant="outline" size="icon" onClick={handleDelete}>
+                    <TrashIcon size={24} />
+                  </Button>
+                )}
+              </SheetTitle>
+            </SheetHeader>
+
+            <ScrollArea className="px-4">
+              <div className="text-title-1 font-semibold my-3 px-2">
+                General Information
+              </div>
+              <div className="flex flex-col gap-2 mb-3 px-2">
+                <div className="text-body-2 text-neutral-900">Package Name</div>
                 <Input
-                  placeholder="Price"
+                  placeholder="Name"
                   className="py-2"
-                  type="number"
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
+                  value={packageName}
+                  onChange={(e) => setPackageName(e.target.value)}
                 />
               </div>
-            )}
 
-            <div className="flex flex-col px-2 gap-2 py-4">
-              <div className="text-title-1 text-[#262626]">
-                Select Carwash Type
-              </div>
-              <div className="flex gap-2 w-full bg-[#F4F4F4] rounded-full">
-                {CarWashTypes.map((carWashType) => (
-                  <div
-                    key={carWashType.id}
-                    className={`flex-1 flex items-center justify-center rounded-full py-2 px-3 text-title-2 cursor-pointer
+              {selectedCarWashType === CarWashTypes[0].value && (
+                <div className="flex flex-col gap-2 mb-6 px-2">
+                  <div className="text-body-2 text-neutral-900">Price</div>
+                  <Input
+                    placeholder="Price"
+                    className="py-2"
+                    type="number"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                  />
+                </div>
+              )}
+
+              <div className="flex flex-col px-2 gap-2 py-4">
+                <div className="text-title-1 text-[#262626]">
+                  Select Carwash Type
+                </div>
+                <div className="flex gap-2 w-full bg-[#F4F4F4] rounded-full">
+                  {CarWashTypes.map((carWashType) => (
+                    <div
+                      key={carWashType.id}
+                      className={`flex-1 flex items-center justify-center rounded-full py-2 px-3 text-title-2 cursor-pointer gap-2
                             ${(selectedCarWashType == carWashType.value) ?
-                        "bg-blue-500 text-white" : "text-neutral-900"}`}
-                    onClick={() => setSelectedCarWashType(carWashType.value)}
-                  >{carWashType.name}</div>
-                ))}
-              </div>
-            </div>
-            {selectedCarWashType === CarWashTypes[0].value && (
-              <div className="flex flex-col gap-4 px-2">
-                <div className="text-title-1 font-semibold">Carwash Types</div>
-                {Object.entries(washTypesBySubclass).map(
-                  ([subclass, types]) => (
-                    <div key={subclass} className="flex-1 flex flex-col gap-2">
-                      <div className="text-body-2 font-semibold">
-                        {subclass}
-                      </div>
-                      <div className="flex gap-2 flex-wrap">
-                        {types.map((washType) => (
-                          <CustomIconToggle
-                            key={washType.id}
-                            label={washType.name}
-                            icon={<Image src={washType.icon} alt={washType.name} width={20} height={20} />}
-                            checked={selectedWashTypes.includes(Number(washType.id))}
-                            onChange={(checked: boolean) => toggleWashType(Number(washType.id))}
-                          />
-                        ))}
-                      </div>
+                          "bg-blue-500 text-white" : "text-neutral-900"}`}
+                      onClick={() => setSelectedCarWashType(carWashType.value)}
+                    >
+                      <Image src={carWashType.value == Car_Wash_Type_Value.AUTOMATIC ? AutomaticIcon : SelfServiceIcon} alt={carWashType.name} width={16} height={16} className={`${(selectedCarWashType == carWashType.value) ? "filter-white" : "filter-neutral-400"}`} />
+                      {carWashType.name}
                     </div>
-                  )
-                )}
-              </div>
-            )}
-            {selectedCarWashType === CarWashTypes[1].value && (
-              <div className="flex flex-col gap-4 px-2">
-                <div className="text-title-1 font-semibold">
-                  Price per Minutes
-                </div>
-                <div className="flex items-end gap-2 pb-2">
-                  <div className="flex-1">
-                    <div className="text-body-2 text-neutral-900 mb-2">
-                      Price ($)
-                    </div>
-                    <Input
-                      placeholder="Enter price"
-                      className="py-2"
-                      type="number"
-                      value={price}
-                      onChange={(e) => setPrice(e.target.value)}
-                    />
-                  </div>
-                  <div className="text-title-2 text-neutral-500 pb-2">per</div>
-                  <div className="flex-1">
-                    <div className="text-body-2 text-neutral-900 mb-2">
-                      Minutes
-                    </div>
-                    <Input
-                      placeholder="Enter minutes"
-                      className="py-2"
-                      type="number"
-                      value={minutes}
-                      onChange={(e) => setMinutes(e.target.value)}
-                    />
-                  </div>
+                  ))}
                 </div>
               </div>
-            )}
-          </ScrollArea>
+              {selectedCarWashType === CarWashTypes[0].value && (
+                <div className="flex flex-col gap-4 px-2">
+                  <div className="text-title-1 font-semibold">Carwash Types</div>
+                  {Object.entries(washTypesBySubclass).map(
+                    ([subclass, types]) => (
+                      <div key={subclass} className="flex-1 flex flex-col gap-2">
+                        <div className="text-body-2 font-semibold">
+                          {subclass}
+                        </div>
+                        <div className="flex gap-2 flex-wrap">
+                          {types.map((washType) => (
+                            <CustomIconToggle
+                              key={washType.id}
+                              label={washType.name}
+                              icon={washType.icon}
+                              checked={selectedWashTypes.includes(Number(washType.id))}
+                              onChange={(checked: boolean) => toggleWashType(Number(washType.id))}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )
+                  )}
+                </div>
+              )}
+              {selectedCarWashType === CarWashTypes[1].value && (
+                <div className="flex flex-col gap-4 px-2">
+                  <div className="text-title-1 font-semibold">
+                    Price per Minutes
+                  </div>
+                  <div className="flex items-end gap-2 pb-2">
+                    <div className="flex-1">
+                      <div className="text-body-2 text-neutral-900 mb-2">
+                        Price ($)
+                      </div>
+                      <Input
+                        placeholder="Enter price"
+                        className="py-2"
+                        type="number"
+                        value={price}
+                        onChange={(e) => setPrice(e.target.value)}
+                      />
+                    </div>
+                    <div className="text-title-2 text-neutral-500 pb-2">per</div>
+                    <div className="flex-1">
+                      <div className="text-body-2 text-neutral-900 mb-2">
+                        Minutes
+                      </div>
+                      <Input
+                        placeholder="Enter minutes"
+                        className="py-2"
+                        type="number"
+                        value={minutes}
+                        onChange={(e) => setMinutes(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </ScrollArea>
 
-          <SheetFooter className="p-4">
-            <SheetClose asChild>
+            <SheetFooter className="p-4">
+              <SheetClose asChild>
+                <Button
+                  variant="outline"
+                  onClick={handleCancel}
+                  className="w-full mb-2"
+                >
+                  Cancel
+                </Button>
+              </SheetClose>
               <Button
-                variant="outline"
-                onClick={handleCancel}
                 className="w-full mb-2"
+                onClick={handleSave}
+                disabled={
+                  !packageName ||
+                  !price ||
+                  (selectedCarWashType === CarWashTypes[0].value &&
+                    selectedWashTypes.length === 0) ||
+                  (selectedCarWashType === CarWashTypes[1].value && !minutes)
+                }
               >
-                Cancel
+                Save
               </Button>
-            </SheetClose>
-            <Button
-              className="w-full mb-2"
-              onClick={handleSave}
-              disabled={
-                !packageName ||
-                !price ||
-                (selectedCarWashType === CarWashTypes[0].value &&
-                  selectedWashTypes.length === 0) ||
-                (selectedCarWashType === CarWashTypes[1].value && !minutes)
-              }
-            >
-              Save
-            </Button>
-          </SheetFooter>
-        </SheetContent>
-      </Sheet>
+            </SheetFooter>
+          </SheetContent>
+        </Sheet>
+      </div>
     </div>
   );
 }

@@ -4,7 +4,7 @@ import Image from "next/image";
 
 interface CustomIconToggleProps {
   label: string;
-  icon: React.ReactNode;
+  icon: string;
   checked?: boolean;
   onChange?: (checked: boolean) => void;
   className?: string;
@@ -25,10 +25,9 @@ const CustomIconToggle = React.forwardRef<HTMLDivElement, CustomIconToggleProps>
         <div
           className={cn(
             "flex text-white items-center justify-center transition-colors rounded-full px-1 py-[1px]",
-            checked ? "opacity-100" : "opacity-30"
           )}
         >
-          {icon}
+          <Image src={icon} alt={label} width={20} height={20} className={checked ? "filter-blue-500" : "filter-neutral-400"} />
         </div>
         <span
           className={cn(

@@ -25,15 +25,16 @@ const CarwashPackageCard: React.FC<CarwashPackageCardProps> = ({
         acc[subclass].push(WashTypes.find(type => type.id === washType.id));
         return acc;
     }, {});
+    console.log(carwashPackage);
     return (
         <div className="w-[260px] flex-shrink-0 border rounded-lg p-3 hover:border-blue-500 hover:bg-blue-50 cursor-pointer select-none" onClick={onClick}>
             <div className="flex justify-between">
                 <div className="flex gap-3">
                     <div className="w-12 h-12 bg-blue-100 flex justify-center items-center rounded-lg">
                         {carwashPackage.category === CarWashTypes[0].value ? (
-                            <Image src={AutomaticIcon} alt="Automatic" width={24} height={24} />
+                            <Image src={AutomaticIcon} alt="Automatic" width={24} height={24} className="filter-blue-500" />
                         ) : (
-                            <Image src={SelfServiceIcon} alt="Self Service" width={24} height={24} />
+                            <Image src={SelfServiceIcon} alt="Self Service" width={24} height={24} className="filter-blue-500" />
                         )}
                     </div>
                     <div className="flex flex-col gap-2">

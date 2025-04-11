@@ -70,7 +70,7 @@ export interface OperatingHour {
 
 export interface CarWashPackage {
   id: number;
-  type: string;
+  category: string;
   name: string;
   price: number;
   wash_types: number[];

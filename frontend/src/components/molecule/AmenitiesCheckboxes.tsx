@@ -66,7 +66,7 @@ const AmenitiesCheckboxes: React.FC<AmenitiesCheckboxesProps> = ({
                 label={amenity.name}
                 checked={value?.includes(amenity.name)}
                 onChange={() => handleChange(amenity.name)}
-                icon={<Image src={amenity.icon} alt={amenity.name} width={20} height={20} />}
+                icon={amenity.icon}
               />
             ))}
           </div>

@@ -103,9 +103,8 @@ const Topbar: React.FC<TopbarProps> = ({
   return (
     <div>
       <div
-        className={`flex gap-2 items-center justify-between px-4 h-[66px] ${
-          sideBarAlwaysOpen || openSidebar ? "border-b border-neutral-100" : ""
-        }`}
+        className={`flex gap-2 items-center justify-between px-4 h-[66px] ${sideBarAlwaysOpen || openSidebar ? "border-b border-neutral-100" : ""
+          }`}
       >
         <div className="flex items-center gap-2">
           <div
@@ -132,17 +131,17 @@ const Topbar: React.FC<TopbarProps> = ({
                 variant="outline"
                 key={config.label}
                 onClick={() => handleSelectCarWashType(config.value)}
-                className={`rounded-full shadow-none ${
-                  filters?.automaticCarWash === config.value
-                    ? "border-blue-500"
-                    : "border-neutral-100"
-                }`}
+                className={`rounded-full shadow-none ${filters?.automaticCarWash === config.value
+                  ? "border-blue-500"
+                  : "border-neutral-100"
+                  }`}
               >
                 <Image
                   src={config.icon}
                   alt={config.label}
                   width={24}
                   height={24}
+                  className={`${filters?.automaticCarWash === config.value ? "filter-blue-500" : ""}`}
                 />
                 <span className="text-title-2 text-neutral-900">
                   {config.label}

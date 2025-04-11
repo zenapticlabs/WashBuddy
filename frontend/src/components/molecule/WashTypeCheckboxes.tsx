@@ -95,7 +95,7 @@ const WashTypeCheckboxes: React.FC<WashTypeCheckboxesProps> = ({
                     label={service.name}
                     checked={value?.includes(service.name)}
                     onChange={() => handleChange(service.name)}
-                    icon={<Image src={service.icon} alt={service.name} width={20} height={20} />}
+                    icon={service.icon}
                   />
                 ))}
               </div>

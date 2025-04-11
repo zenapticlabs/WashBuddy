@@ -39,6 +39,7 @@ body {
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
   }
+
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
@@ -71,39 +72,51 @@ body {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+
   .text-title-1 {
     @apply font-figtree font-semibold text-base leading-[1.35];
   }
+
   .text-title-2 {
     @apply font-figtree font-semibold text-sm leading-[1.35];
   }
+
   .text-title-3 {
     @apply font-figtree font-semibold text-xs leading-[1.35];
   }
+
   .text-body-1 {
     @apply font-figtree font-normal text-base leading-[1.35];
   }
+
   .text-body-2 {
     @apply font-figtree font-normal text-sm leading-[1.35];
   }
+
   .text-body-3 {
     @apply font-figtree font-normal text-xs leading-[1.35];
   }
+
   .text-headline-1 {
     @apply font-figtree font-bold text-[32px] leading-[1.25];
   }
+
   .text-headline-2 {
     @apply font-figtree font-bold text-[28px] leading-[1.25];
   }
+
   .text-headline-3 {
     @apply font-figtree font-bold text-2xl leading-[1.25];
   }
+
   .text-headline-4 {
     @apply font-figtree font-bold text-xl leading-[1.25];
   }
+
   .text-headline-5 {
     @apply font-figtree font-bold text-lg leading-[1.25];
   }
@@ -111,7 +124,8 @@ body {
   .text-display-5 {
     @apply font-figtree font-bold text-[40px] leading-[1.25];
   }
-  .text-display-4 { 
+
+  .text-display-4 {
     @apply font-figtree font-bold text-[48px] leading-[1.25];
   }
 }
@@ -122,6 +136,7 @@ body {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -162,3 +177,16 @@ body {
 .marker-animation:hover {
   transform: scale(1.1);
 }
+
+.filter-blue-500 {
+  filter: invert(30%) sepia(100%) saturate(2000%) hue-rotate(180deg) brightness(100%) contrast(100%);
+}
+
+.filter-neutral-400 {
+  filter: invert(50%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(90%) contrast(90%);
+}
+
+.filter-white {
+  filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%);
+}
+

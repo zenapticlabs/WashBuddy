@@ -34,6 +34,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { AccordionItem, AccordionContent } from "@/components/ui/accordion";
 import { CustomIconToggle } from "@/components/ui/customIconToggle";
+import AutomaticIcon from "@/assets/icons/automatic.svg";
+import SelfServiceIcon from "@/assets/icons/self-service.svg";
 
 const NEXT_PUBLIC_STORAGE_ENDPOINT = process.env.NEXT_PUBLIC_STORAGE_ENDPOINT;
 const NEXT_PUBLIC_STORAGE_BUCKET_NAME =
@@ -399,12 +401,22 @@ const CarWashContent = () => {
                       {CarWashTypes.map((carWashType) => (
                         <div
                           key={carWashType.id}
-                          className={`flex-1 flex items-center justify-center rounded-full py-2 px-3 text-title-2 cursor-pointer
+                          className={`flex-1 flex items-center justify-center rounded-full py-2 px-3 text-title-2 gap-2 cursor-pointer
                             ${(formData.automatic_car_wash == true && carWashType.value == Car_Wash_Type_Value.AUTOMATIC) ||
                               (formData.self_service_car_wash == true && carWashType.value == Car_Wash_Type_Value.SELF_SERVICE) ?
                               "bg-blue-500 text-white" : "text-neutral-900"}`}
                           onClick={() => handleSelectCarWashType(carWashType.value)}
-                        >{carWashType.name}</div>
+                        >
+                          <Image
+                            src={carWashType.value == Car_Wash_Type_Value.AUTOMATIC ? AutomaticIcon : SelfServiceIcon}
+                            alt={carWashType.name}
+                            width={16} height={16}
+                            className={`${(formData.automatic_car_wash == true && carWashType.value == Car_Wash_Type_Value.AUTOMATIC) ||
+                              (formData.self_service_car_wash == true && carWashType.value == Car_Wash_Type_Value.SELF_SERVICE) ?
+                              "filter-white" : "filter-neutral-400"}`}
+                          />
+                          {carWashType.name}
+                        </div>
                       ))}
                     </div>
                   </div>
@@ -418,7 +430,7 @@ const CarWashContent = () => {
                         <CustomIconToggle
                           key={amenity.id}
                           label={amenity.name}
-                          icon={<Image src={amenity.icon} alt={amenity.name} width={16} height={16} />}
+                          icon={amenity.icon}
                           checked={formData.amenities.includes(amenity.id)}
                           onChange={(checked) =>
                             setFormData({
@@ -435,20 +447,16 @@ const CarWashContent = () => {
                     </div>
                   </div>
                   <Separator className="my-2" />
-                  <div className="flex flex-col px-6 gap-2  py-4">
-                    <div className="text-title-1 text-[#262626] pb-4">
-                      Carwash Packages
-                    </div>
-                    <CarwashPackage
-                      carwashPackages={formData.packages}
-                      setCarwashPackages={(carwashPackages) =>
-                        setFormData({
-                          ...formData,
-                          packages: carwashPackages,
-                        })
-                      }
-                    />
-                  </div>
+
+                  <CarwashPackage
+                    carwashPackages={formData.packages}
+                    setCarwashPackages={(carwashPackages) =>
+                      setFormData({
+                        ...formData,
+                        packages: carwashPackages,
+                      })
+                    }
+                  />
                   <Separator className="my-2" />
                   <div className="px-6 flex flex-col py-4">
                     <div className="text-title-1 text-[#262626] pb-6">
