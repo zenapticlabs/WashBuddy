@@ -19,12 +19,12 @@ const Progress = React.forwardRef<
 
   const updateValue = React.useCallback((clientX: number) => {
     if (!progressBarRef.current || !onValueChange) return;
-    
+
     const rect = progressBarRef.current.getBoundingClientRect();
     const clickPosition = clientX - rect.left;
     const percentage = (clickPosition / rect.width) * 100;
     const clampedValue = Math.min(Math.max(percentage, 0), 100);
-    
+
     const newValue = minValue + (clampedValue / 100) * (maxValue - minValue);
     setProgress(Math.round(newValue));
     onValueChange(Math.round(newValue));
@@ -81,9 +81,9 @@ const Progress = React.forwardRef<
   return (
     <div className="flex items-center w-full">
       <div className="px-2">{minValue}</div>
-      <div 
-        className="relative flex-1 cursor-pointer" 
-        ref={progressBarRef} 
+      <div
+        className="relative flex-1 cursor-pointer py-4"
+        ref={progressBarRef}
         onMouseDown={handleMouseDown}
         onTouchStart={handleTouchStart}
       >
@@ -97,15 +97,15 @@ const Progress = React.forwardRef<
         >
           <ProgressPrimitive.Indicator
             className="h-full w-full flex-1 bg-blue-500"
-            style={{ 
-              transform: `translateX(-${100 - ((progress || minValue) - minValue) / (maxValue - minValue) * 100}%)` 
+            style={{
+              transform: `translateX(-${100 - ((progress || minValue) - minValue) / (maxValue - minValue) * 100}%)`
             }}
           />
         </ProgressPrimitive.Root>
-        <div 
+        <div
           className="absolute top-1/2 h-5 w-5 bg-blue-500 shadow-md -translate-y-1/2 rounded-full border-[4px] border-white pointer-events-none"
-          style={{ 
-            left: `${((progress || minValue) - minValue) / (maxValue - minValue) * 100}%` 
+          style={{
+            left: `${((progress || minValue) - minValue) / (maxValue - minValue) * 100}%`
           }}
         />
       </div>
