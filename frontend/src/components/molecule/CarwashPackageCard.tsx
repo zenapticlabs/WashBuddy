@@ -25,7 +25,6 @@ const CarwashPackageCard: React.FC<CarwashPackageCardProps> = ({
         acc[subclass].push(WashTypes.find(type => type.id === washType.id));
         return acc;
     }, {});
-    console.log(carwashPackage);
     return (
         <div className="w-[260px] flex-shrink-0 border rounded-lg p-3 hover:border-blue-500 hover:bg-blue-50 cursor-pointer select-none" onClick={onClick}>
             <div className="flex justify-between">
