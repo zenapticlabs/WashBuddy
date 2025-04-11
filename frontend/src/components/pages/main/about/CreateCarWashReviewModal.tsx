@@ -95,13 +95,10 @@ const CreateCarWashReviewModal: React.FC<{
   };
 
   const handleSubmit = async () => {
-    console.log("submitting");
     if (!comment || !overall_rating) {
       toast.error("Please fill in all required fields");
-      console.log("Not Validation");
       return;
     }
-    console.log("Validatied");
     setIsSubmitting(true);
     try {
       const reviewData: IReviewCreate = {

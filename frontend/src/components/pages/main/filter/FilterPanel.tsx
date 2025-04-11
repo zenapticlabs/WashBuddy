@@ -20,6 +20,10 @@ import { getWashTypes } from "@/services/WashType";
 import { Amenities, Car_Wash_Type, Car_Wash_Type_Value, SortBy, WashTypes } from "@/utils/constants";
 import useMediaQuery from "@/hooks/useMediaQuery";
 import { getAmenities } from "@/services/AmenityService";
+import AutomaticIcon from "@/assets/icons/automatic.svg";
+import SelfServiceIcon from "@/assets/icons/self-service.svg";
+import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
 
 const initialFilterState: FilterState = {
   automaticCarWash: true,
@@ -38,6 +42,19 @@ const initialFilterState: FilterState = {
   page: 1,
 };
 
+const FilterButtonConfigs = [
+  {
+    icon: AutomaticIcon,
+    value: true,
+    label: Car_Wash_Type.AUTOMATIC,
+  },
+  {
+    icon: SelfServiceIcon,
+    value: false,
+    label: Car_Wash_Type.SELF_SERVICE,
+  },
+];
+
 export interface FilterPanelProps {
   open: boolean;
   setOpen: (open: boolean) => void;
@@ -52,6 +69,8 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   setFilters,
 }) => {
   const [inlineFilters, setInlineFilters] = useState<FilterState>(filters);
+  const pathname = usePathname();
+  const router = useRouter();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [amenities, setAmenities] = useState<CarServiceAmenity[]>([]);
   const [washTypes, setWashTypes] = useState<CarServiceWashType[]>([]);
@@ -84,6 +103,33 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
     setOpen(false);
   };
 
+  const handleSelectCarWashType = (value: boolean) => {
+    if (pathname !== "/") {
+      // If not on dashboard, navigate to dashboard with filter params
+      const params = new URLSearchParams();
+      params.append("automaticCarWash", value.toString());
+      params.append("selfServiceCarWash", (!value).toString());
+      params.append(
+        "sortBy",
+        SortBy[value ? Car_Wash_Type.AUTOMATIC : Car_Wash_Type.SELF_SERVICE][0]
+          .value
+      );
+      router.push(`/?${params.toString()}`);
+    } else if (filters && setFilters) {
+      // If on dashboard, update filters directly
+      setFilters({
+        ...filters,
+        automaticCarWash: value,
+        selfServiceCarWash: !value,
+        sortBy: [
+          SortBy[
+            value ? Car_Wash_Type.AUTOMATIC : Car_Wash_Type.SELF_SERVICE
+          ][0].value,
+        ],
+      });
+    }
+  };
+
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetContent
@@ -94,6 +140,30 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
           <SheetTitle>Filters</SheetTitle>
         </SheetHeader>
         <div className="flex flex-col px-2 overflow-y-auto h-full gap-4">
+          <div className="flex gap-2">
+            {FilterButtonConfigs.map((config) => (
+              <Button
+                variant="outline"
+                key={config.label}
+                onClick={() => handleSelectCarWashType(config.value)}
+                className={`rounded-full shadow-none ${filters?.automaticCarWash === config.value
+                  ? "border-blue-500"
+                  : "border-neutral-100"
+                  }`}
+              >
+                <Image
+                  src={config.icon}
+                  alt={config.label}
+                  width={24}
+                  height={24}
+                  className={`${filters?.automaticCarWash === config.value ? "filter-blue-500" : ""}`}
+                />
+                <span className="text-title-2 text-neutral-900">
+                  {config.label}
+                </span>
+              </Button>
+            ))}
+          </div>
           <DistanceRange
             value={inlineFilters.distance}
             onChange={(value) =>

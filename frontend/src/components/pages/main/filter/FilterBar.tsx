@@ -104,7 +104,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
           <WashTypeCheckboxes
             value={inlineFilters.washTypeName}
             onChange={(value) => setInlineFilters({ ...inlineFilters, washTypeName: value })}
-            options={WashTypes.filter((washType) => washType.category == (filters.automaticCarWash ? Car_Wash_Type_Value.AUTOMATIC : Car_Wash_Type_Value.SELF_SERVICE))}
+            options={WashTypes.filter((washType) => washType.category == (filters.automaticCarWash == true ? Car_Wash_Type_Value.AUTOMATIC : Car_Wash_Type_Value.SELF_SERVICE))}
           />
         </div>
       ),
@@ -119,7 +119,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
           <AmenitiesCheckboxes
             value={inlineFilters.amenityName}
             onChange={(value) => setInlineFilters({ ...inlineFilters, amenityName: value })}
-            options={Amenities.filter((amenity) => amenity.category == (filters.automaticCarWash ? Car_Wash_Type_Value.AUTOMATIC : Car_Wash_Type_Value.SELF_SERVICE))}
+            options={Amenities.filter((amenity) => amenity.category == (filters.automaticCarWash == true ? Car_Wash_Type_Value.AUTOMATIC : Car_Wash_Type_Value.SELF_SERVICE))}
           />
         </div>
       ),
