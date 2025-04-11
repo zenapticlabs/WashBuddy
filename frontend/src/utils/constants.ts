@@ -149,9 +149,16 @@ export const ReviewSortBy = [
 
 export interface CarwashPackage {
   id?: number;
-  name: string;
-  price: number;
-  washTypes: number[];
+  wash_types: any[];
+  created_at?: string;
+  updated_at?: string;
+  status?: string;
+  name?: string;
+  description?: string;
+  price?: number;
+  category?: string;
+  created_by?: any;
+  updated_by?: any;
 }
 
 export const WashTypes: CarServiceWashType[] = [

@@ -19,7 +19,7 @@ import { RadarAddress } from "radar-sdk-js/dist/types";
 import Topbar from "@/components/pages/main/Topbar";
 import { useAmenities } from "@/hooks/useAmenities";
 import { useWashTypes } from "@/hooks/useWashTypes";
-import { DEFAULT_PAYLOAD, FORM_CONFIG } from "@/utils/constants";
+import { Amenities, Car_Wash_Type, Car_Wash_Type_Value, CarWashTypes, DEFAULT_PAYLOAD, FORM_CONFIG } from "@/utils/constants";
 import { Switch } from "@/components/ui/switch";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
@@ -33,6 +33,7 @@ import { Accordion } from "@/components/ui/accordion";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { AccordionItem, AccordionContent } from "@/components/ui/accordion";
+import { CustomIconToggle } from "@/components/ui/customIconToggle";
 
 const NEXT_PUBLIC_STORAGE_ENDPOINT = process.env.NEXT_PUBLIC_STORAGE_ENDPOINT;
 const NEXT_PUBLIC_STORAGE_BUCKET_NAME =
@@ -80,7 +81,7 @@ const CarWashContent = () => {
     "use_gps"
   );
 
-  useEffect(() => {}, [locationData]);
+  useEffect(() => { }, [locationData]);
   const {
     amenities,
     isLoading: amenitiesLoading,
@@ -267,6 +268,22 @@ const CarWashContent = () => {
       ),
     }));
   };
+
+  const handleSelectCarWashType = (carWashType: string) => {
+    if (carWashType == Car_Wash_Type_Value.AUTOMATIC) {
+      setFormData((prevData: any) => ({
+        ...prevData,
+        automatic_car_wash: true,
+        self_service_car_wash: false,
+      }));
+    } else {
+      setFormData((prevData: any) => ({
+        ...prevData,
+        automatic_car_wash: false,
+        self_service_car_wash: true,
+      }));
+    }
+  };
   return (
     <>
       <Toaster position="top-center" />
@@ -378,29 +395,17 @@ const CarWashContent = () => {
                     <div className="text-title-1 text-[#262626]">
                       Select Carwash Type
                     </div>
-                    <div className="flex gap-2 flex-wrap">
-                      <IconToggle
-                        label="Automatic car wash"
-                        icon={<CheckIcon size={10} />}
-                        checked={formData.automatic_car_wash}
-                        onChange={(checked) =>
-                          setFormData({
-                            ...formData,
-                            automatic_car_wash: !!checked,
-                          })
-                        }
-                      />
-                      <IconToggle
-                        label="Self-service car wash"
-                        icon={<CheckIcon size={10} />}
-                        checked={formData.self_service_car_wash}
-                        onChange={(checked) =>
-                          setFormData({
-                            ...formData,
-                            self_service_car_wash: !!checked,
-                          })
-                        }
-                      />
+                    <div className="flex gap-2 w-full bg-[#F4F4F4] rounded-full">
+                      {CarWashTypes.map((carWashType) => (
+                        <div
+                          key={carWashType.id}
+                          className={`flex-1 flex items-center justify-center rounded-full py-2 px-3 text-title-2 cursor-pointer
+                            ${(formData.automatic_car_wash == true && carWashType.value == Car_Wash_Type_Value.AUTOMATIC) ||
+                              (formData.self_service_car_wash == true && carWashType.value == Car_Wash_Type_Value.SELF_SERVICE) ?
+                              "bg-blue-500 text-white" : "text-neutral-900"}`}
+                          onClick={() => handleSelectCarWashType(carWashType.value)}
+                        >{carWashType.name}</div>
+                      ))}
                     </div>
                   </div>
                   <Separator className="my-2" />
@@ -409,11 +414,11 @@ const CarWashContent = () => {
                       Select Amenities
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {amenities.map((amenity) => (
-                        <IconToggle
+                      {Amenities.map((amenity) => (
+                        <CustomIconToggle
                           key={amenity.id}
                           label={amenity.name}
-                          icon={<CheckIcon size={10} />}
+                          icon={<Image src={amenity.icon} alt={amenity.name} width={16} height={16} />}
                           checked={formData.amenities.includes(amenity.id)}
                           onChange={(checked) =>
                             setFormData({
@@ -421,8 +426,8 @@ const CarWashContent = () => {
                               amenities: checked
                                 ? [...formData.amenities, amenity.id]
                                 : formData.amenities.filter(
-                                    (id: any) => id !== amenity.id
-                                  ),
+                                  (id: any) => id !== amenity.id
+                                ),
                             })
                           }
                         />

@@ -3,7 +3,7 @@ import { CheckIcon, EyeIcon, PlusIcon, TrashIcon } from "lucide-react";
 import Image from "next/image";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,9 +34,11 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { ScrollArea } from "../ui/scroll-area";
-import { CarWashTypes, WashTypes } from "@/utils/constants";
+import { Car_Wash_Type_Value, CarWashTypes, WashTypes } from "@/utils/constants";
 import { IconToggle } from "../ui/iconToggle";
 import useMediaQuery from "@/hooks/useMediaQuery";
+import CarwashPackageCard from "../molecule/CarwashPackageCard";
+import { CustomIconToggle } from "../ui/customIconToggle";
 
 interface CarwashPackageProps {
   carwashPackages: CarWashPackage[];
@@ -59,6 +61,10 @@ export function CarwashPackage({
   const [minutes, setMinutes] = useState("");
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const isMobile = useMediaQuery("(max-width: 768px)");
+  const [isMouseDown, setIsMouseDown] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Reset form when selected package changes
   useEffect(() => {
@@ -183,153 +189,87 @@ export function CarwashPackage({
   const handleDeletePackage = (id: number) => {
     setCarwashPackages(carwashPackages.filter((pkg) => pkg.id !== id));
   };
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsMouseDown(true);
+    setStartX(e.pageX - (containerRef.current?.offsetLeft || 0));
+    setScrollLeft(containerRef.current?.scrollLeft || 0);
+  };
+
+  const handleMouseLeave = () => {
+    setIsMouseDown(false);
+  };
+
+  const handleMouseUp = () => {
+    setIsMouseDown(false);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isMouseDown) return;
+    e.preventDefault();
+    const x = e.pageX - (containerRef.current?.offsetLeft || 0);
+    const walk = (x - startX) * 2;
+    if (containerRef.current) {
+      containerRef.current.scrollLeft = scrollLeft - walk;
+    }
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setIsMouseDown(true);
+    setStartX(e.touches[0].pageX - (containerRef.current?.offsetLeft || 0));
+    setScrollLeft(containerRef.current?.scrollLeft || 0);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isMouseDown) return;
+    e.preventDefault();
+    const x = e.touches[0].pageX - (containerRef.current?.offsetLeft || 0);
+    const walk = (x - startX) * 2;
+    if (containerRef.current) {
+      containerRef.current.scrollLeft = scrollLeft - walk;
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setIsMouseDown(false);
+  };
+
   return (
-    <div className="">
+    <div className="w-full max-w-full overflow-hidden">
       <Button className="mb-4" onClick={handleAddPackage}>
         <PlusIcon size={24} />
         Add Package
       </Button>
-
-      <div className="text-title-1 font-semibold text-neutral-900 pb-2">
-        Automatic
+      <div
+        ref={containerRef}
+        className="flex gap-4 cursor-grab active:cursor-grabbing flex-nowrap overflow-x-auto w-full max-w-[calc(100vw-48px)] pb-2 scrollbar-hide"
+        style={{ WebkitOverflowScrolling: 'touch' }}
+        onMouseDown={handleMouseDown}
+        onMouseLeave={handleMouseLeave}
+        onMouseUp={handleMouseUp}
+        onMouseMove={handleMouseMove}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        {getAutomaticPackages().map((pkg) => (
+          <CarwashPackageCard key={pkg.id} carwashPackage={pkg}
+            onClick={() => {
+              setSelectedPackage(pkg);
+              setIsSheetOpen(true);
+            }}
+            onDelete={() => handleDeletePackage(pkg.id)}
+          />
+        ))}
       </div>
-      {getAutomaticPackages().length > 0 ? (
-        <div className="mb-4 flex gap-2 border border-neutral-100 rounded-lg overflow-hidden">
-          <Table className="">
-            <TableHeader className="">
-              <TableRow>
-                <TableHead className="w-[100px]">Name</TableHead>
-                {Object.entries(washTypesBySubclass).map(([key, value]) => (
-                  <TableHead key={key} className="">
-                    {key}
-                  </TableHead>
-                ))}
-                <TableHead className="">Price</TableHead>
-                <TableHead className="">Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {getAutomaticPackages().map((pkg) => (
-                <TableRow
-                  key={pkg.id}
-                  className="hover:bg-gray-50 cursor-pointer"
-                  onClick={() => {
-                    setSelectedPackage(pkg);
-                    setIsSheetOpen(true);
-                  }}
-                >
-                  <TableCell className="font-medium">{pkg.name}</TableCell>
-                  {Object.entries(washTypesBySubclass).map(([key, value]) => (
-                    <TableCell key={key} className="">
-                      <div className="flex gap-2">
-                        {value.map((washType) => (
-                          <div key={washType.id}>
-                            <Image
-                              src={washType.icon}
-                              alt={washType.name}
-                              width={24}
-                              height={24}
-                              className={`${
-                                pkg.wash_types.includes(Number(washType.id))
-                                  ? "text-blue-500 opacity-100"
-                                  : "text-gray-300 opacity-30"
-                              }`}
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    </TableCell>
-                  ))}
-                  <TableCell className="">{pkg.price}</TableCell>
-                  <TableCell className="">
-                    <div
-                      className="flex gap-2"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <TrashIcon size={24} />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>
-                              Are you sure you want to delete this package?
-                            </AlertDialogTitle>
-                            <AlertDialogDescription>
-                              This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              className="bg-red-500 text-white hover:bg-red-600"
-                              onClick={() => handleDeletePackage(pkg.id)}
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      ) : (
-        <div className="text-body-2 text-neutral-500">
-          No automatic packages found
-        </div>
-      )}
-
-      {/* <div className="text-title-1 font-semibold text-neutral-900 py-2">
-        Self-Service
-      </div>
-      {getSelfServicePackages().length > 0 ? (
-        <div className="mb-4 flex gap-2 border border-neutral-200 rounded-lg overflow-hidden">
-          <Table className="">
-            <TableHeader className="">
-              <TableRow>
-                <TableHead className="w-[100px]">Name</TableHead>
-                <TableHead className="">Price (per minutes)</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {getSelfServicePackages().map((pkg) => (
-                <TableRow
-                  key={pkg.id}
-                  className="hover:bg-gray-50 cursor-pointer"
-                  onClick={() => {
-                    setSelectedPackage(pkg);
-                    setIsSheetOpen(true);
-                  }}
-                >
-                  <TableCell className="font-medium">{pkg.name}</TableCell>
-                  <TableCell className="">
-                    {pkg.price / (pkg.minutes || 1)}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      ) : (
-        <div className="text-body-2 text-neutral-500">
-          No self-service packages found
-        </div>
-      )} */}
 
       {/* Create/Edit Form */}
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         <SheetTrigger asChild></SheetTrigger>
         <SheetContent
           side={isMobile ? "bottom" : "right"}
-          className={`p-0 overflow-auto ${
-            isMobile ? "h-[80vh]" : "min-w-[600px]"
-          }`}
+          className={`p-0 overflow-auto ${isMobile ? "h-[80vh]" : "min-w-[600px]"
+            }`}
         >
           <SheetHeader className="p-6 pb-0">
             <SheetTitle className="flex justify-between">
@@ -347,7 +287,7 @@ export function CarwashPackage({
               General Information
             </div>
             <div className="flex flex-col gap-2 mb-3 px-2">
-              <div className="text-body-2 text-neutral-900">Name</div>
+              <div className="text-body-2 text-neutral-900">Package Name</div>
               <Input
                 placeholder="Name"
                 className="py-2"
@@ -369,16 +309,21 @@ export function CarwashPackage({
               </div>
             )}
 
-            <div className="flex gap-4 px-2 mb-4">
-              {CarWashTypes.map((type) => (
-                <IconToggle
-                  key={type.value}
-                  label={type.name}
-                  icon={<CheckIcon size={10} />}
-                  checked={selectedCarWashType === type.value}
-                  onChange={(checked) => setSelectedCarWashType(type.value)}
-                />
-              ))}
+            <div className="flex flex-col px-2 gap-2 py-4">
+              <div className="text-title-1 text-[#262626]">
+                Select Carwash Type
+              </div>
+              <div className="flex gap-2 w-full bg-[#F4F4F4] rounded-full">
+                {CarWashTypes.map((carWashType) => (
+                  <div
+                    key={carWashType.id}
+                    className={`flex-1 flex items-center justify-center rounded-full py-2 px-3 text-title-2 cursor-pointer
+                            ${(selectedCarWashType == carWashType.value) ?
+                        "bg-blue-500 text-white" : "text-neutral-900"}`}
+                    onClick={() => setSelectedCarWashType(carWashType.value)}
+                  >{carWashType.name}</div>
+                ))}
+              </div>
             </div>
             {selectedCarWashType === CarWashTypes[0].value && (
               <div className="flex flex-col gap-4 px-2">
@@ -391,29 +336,13 @@ export function CarwashPackage({
                       </div>
                       <div className="flex gap-2 flex-wrap">
                         {types.map((washType) => (
-                          <div
+                          <CustomIconToggle
                             key={washType.id}
-                            onClick={() => toggleWashType(Number(washType.id))}
-                            className={`w-24 h-32 p-4 flex flex-col items-center rounded-lg cursor-pointer transition-all
-                          ${
-                            selectedWashTypes.includes(Number(washType.id))
-                              ? "border-2 border-blue-500 bg-blue-50"
-                              : "border-2 border-gray-200"
-                          }`}
-                          >
-                            <Image
-                              src={washType.icon}
-                              alt={washType.name}
-                              width={36}
-                              height={36}
-                              className="flex-1"
-                            />
-                            <div className="text-xs w-full font-medium flex-1 text-center">
-                              <span className="line-clamp-2">
-                                {washType.name}
-                              </span>
-                            </div>
-                          </div>
+                            label={washType.name}
+                            icon={<Image src={washType.icon} alt={washType.name} width={20} height={20} />}
+                            checked={selectedWashTypes.includes(Number(washType.id))}
+                            onChange={(checked: boolean) => toggleWashType(Number(washType.id))}
+                          />
                         ))}
                       </div>
                     </div>
