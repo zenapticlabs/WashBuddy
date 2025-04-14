@@ -5,8 +5,8 @@ import { useSearchParams } from 'next/navigation';
 
 function getFiltersFromParams(params: URLSearchParams): FilterState {
   return {
-    automaticCarWash: params.get("automaticCarWash") === "true",
-    selfServiceCarWash: params.get("selfServiceCarWash") === "true",
+    automaticCarWash: params.has("automaticCarWash") ? params.get("automaticCarWash") === "true" : true,
+    selfServiceCarWash: params.has("selfServiceCarWash") ? params.get("selfServiceCarWash") === "true" : false,
     washTypeName: params.getAll("washTypeName").map(String),
     ratings: params.getAll("ratings").map(Number),
     distance: Number(params.get("distance")) || 3,
