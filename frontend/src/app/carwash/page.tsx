@@ -198,7 +198,7 @@ const CarWashContent = () => {
           ? "Car wash updated successfully!"
           : "Car wash created successfully!"
       );
-      router.push(`/`);
+      handleNavigateDashboard();
     } catch (error) {
       toast.error(
         isEdit
@@ -214,6 +214,26 @@ const CarWashContent = () => {
       );
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleNavigateDashboard = () => {
+    const filters = sessionStorage.getItem('dashboardFilters');
+    const params = new URLSearchParams();
+    if (filters) {
+      const filtersObj = JSON.parse(filters);
+      Object.entries(filtersObj).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          value.forEach((item) => {
+            params.append(key, item);
+          });
+        } else {
+          params.append(key, value as string);
+        }
+      });
+      router.push(`/?${params.toString()}`);
+    } else {
+      router.push(`/`);
     }
   };
 
@@ -590,9 +610,7 @@ const CarWashContent = () => {
                       variant="outline"
                       className="w-full"
                       size="lg"
-                      onClick={() => {
-                        router.push(`/`);
-                      }}
+                      onClick={handleNavigateDashboard}
                       disabled={isLoading}
                     >
                       Cancel

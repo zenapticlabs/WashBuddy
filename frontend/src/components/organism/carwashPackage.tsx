@@ -48,6 +48,27 @@ export function CarwashPackage({
   const [scrollLeft, setScrollLeft] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Add useEffect for touch event handling
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!isMouseDown) return;
+      e.preventDefault();
+      const x = e.touches[0].pageX - (container.offsetLeft || 0);
+      const walk = (x - startX) * 2;
+      container.scrollLeft = scrollLeft - walk;
+    };
+
+    // Add event listener with { passive: false } option
+    container.addEventListener('touchmove', handleTouchMove, { passive: false });
+
+    return () => {
+      container.removeEventListener('touchmove', handleTouchMove);
+    };
+  }, [isMouseDown, startX, scrollLeft]);
+
   // Reset form when selected package changes
   useEffect(() => {
     if (selectedPackage) {
@@ -202,16 +223,6 @@ export function CarwashPackage({
     setScrollLeft(containerRef.current?.scrollLeft || 0);
   };
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isMouseDown) return;
-    e.preventDefault();
-    const x = e.touches[0].pageX - (containerRef.current?.offsetLeft || 0);
-    const walk = (x - startX) * 2;
-    if (containerRef.current) {
-      containerRef.current.scrollLeft = scrollLeft - walk;
-    }
-  };
-
   const handleTouchEnd = () => {
     setIsMouseDown(false);
   };
@@ -237,7 +248,6 @@ export function CarwashPackage({
           onMouseUp={handleMouseUp}
           onMouseMove={handleMouseMove}
           onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
           {getAutomaticPackages().length === 0 && (

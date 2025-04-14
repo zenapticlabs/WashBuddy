@@ -27,7 +27,7 @@ const WashPackage: React.FC<WashPackageProps> = ({ data }) => {
       <PopoverTrigger asChild>
         <div
           key={data.id}
-          className="border border-neutral-100 p-2 rounded-lg flex-shrink-0 max-w-[150px] cursor-pointer hover:border-accent-blue transition-all duration-300"
+          className="border border-neutral-100 p-2 rounded-lg flex-shrink-0 w-[150px] cursor-pointer hover:border-accent-blue transition-all duration-300"
         >
           <div className="text-title-2 text-neutral-900">{data.name}</div>
           <div className="flex items-center gap-1 text-headline-5 my-1">

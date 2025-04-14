@@ -25,18 +25,18 @@ export default function CarWashAbout({ data }: { data: CarWashResponse }) {
   return (
     <>
       <div className="flex flex-col gap-3">
-        <div className="flex flex-col gap-3">
-          <div className="flex gap-2 overflow-hidden relative">
+        <div className="flex flex-col gap-3 relative">
+          <div className="flex gap-2 overflow-x-auto pb-4 w-full max-w-[100vw] px-4 -mx-4">
             {data.packages.map((wp) => (
               <WashPackage key={wp.id} data={wp} />
             ))}
-            <div className="absolute right-0 top-0 h-full w-12 bg-gradient-to-r from-transparent to-white" />
             {data.packages.length === 0 && (
               <div className="text-body-3 text-neutral-500">
                 There is no package yet
               </div>
             )}
           </div>
+          <div className="absolute right-0 top-0 h-full w-12 bg-gradient-to-r from-transparent to-white" />
         </div>
         <Separator />
         <div className="p-3 border border-neutral-100 rounded-xl">
