@@ -59,8 +59,10 @@ const Topbar: React.FC<TopbarProps> = ({
   // const [openCreateModal, setOpenCreateModal] = useState(false);
   const [openSidebar, setOpenSidebar] = useState(false);
 
-  const handleOpenCreateModal = () => {
-    // setOpenCreateModal(true);
+  const handleNavigateCreatePage = () => {
+    if (filters) {
+      sessionStorage.setItem('dashboardFilters', JSON.stringify(filters));
+    }
     router.push("/carwash");
   };
 
@@ -158,14 +160,15 @@ const Topbar: React.FC<TopbarProps> = ({
           <Plus
             size={24}
             className="block md:hidden text-blue-500"
-            onClick={handleOpenCreateModal}
+            onClick={handleNavigateCreatePage}
           />
-          <Link
+          <Button
+            variant="ghost"
             className="rounded-full shadow-none text-title-2 text-blue-500 hover:text-blue-500 hidden md:block mr-4"
-            href="/carwash"
+            onClick={handleNavigateCreatePage}
           >
             + Add your local carwash
-          </Link>
+          </Button>
           <div className="relative">
             <Bell size={24} className="text-neutral-900" />
             {notiCount > 0 && (
