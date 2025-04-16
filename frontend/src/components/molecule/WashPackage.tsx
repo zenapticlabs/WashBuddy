@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import axiosInstance from "@/lib/axios";
 
 // Initialize Stripe
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
@@ -94,17 +95,13 @@ const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
     if (showPurchase && !clientSecret) {
       const fetchClientSecret = async () => {
         try {
-          const response = await fetch('/api/create-payment-intent', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              amount: Number(data.price) * 100, // Convert to cents
-            }),
+          const response = await axiosInstance.post('http://localhost:3000/api/create-payment-intent', {
+            amount: Number(data.price) * 100, // Convert to cents
+            carWashId: carWash.id,
+            packageName: data.name,
+            carWashName: carWash.car_wash_name
           });
-          const result = await response.json();
-          setClientSecret(result.clientSecret);
+          setClientSecret(response.data.clientSecret);
         } catch (error) {
           console.error('Error fetching client secret:', error);
         }
@@ -112,7 +109,7 @@ const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
 
       fetchClientSecret();
     }
-  }, [showPurchase, data.price, clientSecret]);
+  }, [showPurchase, data.price, clientSecret, carWash, data.name]);
 
   const handlePaymentSuccess = () => {
     setIsModalOpen(false);
