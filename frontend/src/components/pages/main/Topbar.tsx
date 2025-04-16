@@ -103,7 +103,7 @@ const Topbar: React.FC<TopbarProps> = ({
   };
 
   return (
-    <div>
+    <div className="bg-white">
       <div
         className={`flex gap-2 items-center justify-between px-4 h-[66px] ${sideBarAlwaysOpen || openSidebar ? "border-b border-neutral-100" : ""
           }`}
