@@ -49,7 +49,7 @@ const StripePaymentForm = ({ carWashPackage, onSuccess }: { carWashPackage: CarW
       const { error } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: `${window.location.origin}/payment/return`,
+          return_url: `${window.location.origin}/payment/code`,
         },
       });
 
@@ -84,9 +84,6 @@ const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showPurchase, setShowPurchase] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
-  const router = useRouter();
-  const imageUrl = carWash?.image_url || carWash?.images[0]?.image_url || emptyImageURL;
-
   useEffect(() => {
     console.log(isModalOpen);
   }, [isModalOpen]);
@@ -95,7 +92,7 @@ const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
     if (showPurchase && !clientSecret) {
       const fetchClientSecret = async () => {
         try {
-          const response = await axiosInstance.post('http://localhost:3000/api/create-payment-intent', {
+          const response = await axiosInstance.post(`${window.location.origin}/api/create-payment-intent`, {
             amount: Number(data.price) * 100, // Convert to cents
             carWashId: carWash.id,
             packageName: data.name,
@@ -147,7 +144,7 @@ const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
               {showPurchase ? "Complete your purchase for the selected wash package" : "View available wash types in this package"}
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="px-6 py-4 overflow-y-auto flex-1">
             {!showPurchase ? (
               <>
