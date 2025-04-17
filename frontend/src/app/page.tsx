@@ -21,6 +21,7 @@ import { Car_Wash_Type, SortBy } from "@/utils/constants";
 import { Loader2 } from "lucide-react";
 import useLocationData from "@/hooks/useLocationData";
 import { RadarAddress } from "radar-sdk-js/dist/types";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Home() {
   return (
@@ -39,6 +40,7 @@ export default function Home() {
 function HomeContent() {
   const RADAR_KEY = process.env.NEXT_PUBLIC_RADAR_API_KEY;
   const searchParams = useSearchParams();
+  const { user } = useAuth();
   const [openAbout, setOpenAbout] = useState(false);
   const [selectedCarWash, setSelectedCarWash] =
     useState<CarWashResponse | null>(null);
@@ -240,6 +242,7 @@ function HomeContent() {
                 longitude: filters.userLng,
                 latitude: filters.userLat,
               }}
+              userId={user?.id}
               showMap={showMap}
               publishableKey={RADAR_KEY || ""}
               carWashes={carWashes}

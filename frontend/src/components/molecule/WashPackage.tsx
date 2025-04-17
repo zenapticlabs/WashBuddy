@@ -17,8 +17,6 @@ interface WashPackageProps {
   carWash: CarWashResponse;
 }
 
-const emptyImageURL = "/images/empty-image.png";
-
 const washTypesBySubclass = WashTypes.reduce((acc, washType) => {
   const subclass = washType.subclass;
   if (!acc[subclass]) {

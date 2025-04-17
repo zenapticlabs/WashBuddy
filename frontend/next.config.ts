@@ -10,7 +10,16 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "**",
       },
+      {
+        protocol: "https",
+        hostname: "*.googleusercontent.com",
+      },
+      {
+        protocol: "https",
+        hostname: "*.googleapis.com",
+      }
     ],
+    unoptimized: true // This will bypass Next.js image optimization for all images
   },
 };
 
