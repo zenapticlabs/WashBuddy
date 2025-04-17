@@ -16,7 +16,9 @@ from .models import (
     WashType, 
     Amenity,
     CarWashPackage,
-    AmenityCarWashMapping
+    AmenityCarWashMapping,
+    Offer,
+    CarWashCode
 )
 
 @admin.register(WashType)
@@ -168,3 +170,31 @@ class CarWashAdmin(ImportExportModelAdmin, ModelAdmin):
         CarWashImageInline,
         AmenityCarWashMappingInline
     ]
+
+@admin.register(CarWashPackage)
+class CarWashPackageAdmin(ModelAdmin):
+    list_display = ('name', 'car_wash', 'price', 'rate_duration', 'category')
+    list_filter = ('car_wash',)
+    search_fields = ('name', 'car_wash__car_wash_name')
+    raw_id_fields = ('car_wash',)
+
+@admin.register(Offer)
+class OfferAdmin(admin.ModelAdmin):
+    list_display = ('name', 'package', 'offer_type', 'offer_price')
+    list_filter = ('offer_type', )
+    search_fields = ('name', 'package__name')
+    raw_id_fields = ('package',)
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('package__car_wash')
+
+@admin.register(CarWashCode)
+class CarWashCodeAdmin(admin.ModelAdmin):
+    list_display = ('code', 'offer', 'is_used', 'used_at')
+    list_filter = ('is_used', 'offer__offer_type')
+    search_fields = ('code', 'offer__name')
+    readonly_fields = ('used_at', 'used_by_metadata')
+    raw_id_fields = ('offer',)
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('offer__package__car_wash')

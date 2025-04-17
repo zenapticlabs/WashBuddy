@@ -10,6 +10,7 @@ from .managers import ActiveManager
 from utilities.mixins import CustomModelMixin
 from phonenumber_field.modelfields import PhoneNumberField
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 class CarWash(CustomModelMixin):
     car_wash_name = models.CharField(max_length=255, db_index=True)
@@ -229,6 +230,76 @@ class CarWashPackage(CustomModelMixin):
 
         if is_new:
             self.wash_types.set(self.wash_types.all())
+
+class Offer(CustomModelMixin):
+    OFFER_TYPES = [
+        ('TIME_DEPENDENT', 'Time Dependent'),
+        ('ONE_TIME', 'One Time'),
+        ('GEOGRAPHICAL', 'Geographical')
+    ]
+    
+    package = models.OneToOneField(CarWashPackage, on_delete=models.CASCADE, related_name="offer")
+    name = models.CharField(max_length=255)
+    description = models.TextField(null=True, blank=True)
+    offer_price = models.DecimalField(max_digits=10, decimal_places=2)
+    offer_type = models.CharField(max_length=20, choices=OFFER_TYPES)
+    
+    # Time dependent fields
+    start_time = models.TimeField(null=True, blank=True)
+    end_time = models.TimeField(null=True, blank=True)
+    
+    # Geographical fields
+    radius_miles = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    
+    objects = models.Manager()
+    active_objects = ActiveManager()
+    
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                check=(
+                    models.Q(offer_type='TIME_DEPENDENT', start_time__isnull=False, end_time__isnull=False) |
+                    models.Q(offer_type='ONE_TIME', start_time__isnull=True, end_time__isnull=True) |
+                    models.Q(offer_type='GEOGRAPHICAL', radius_miles__isnull=False)
+                ),
+                name='check_offer_type_constraints'
+            )
+        ]
+    
+    def __str__(self):
+        return f"{self.name} - {self.package.car_wash.car_wash_name}"
+    
+    def clean(self):
+        if self.offer_type == 'TIME_DEPENDENT' and not (self.start_time and self.end_time):
+            raise ValidationError("Time dependent offers require both start and end times")
+        if self.offer_type == 'GEOGRAPHICAL' and not self.radius_miles:
+            raise ValidationError("Geographical offers require a radius")
+        if self.package and self.offer_price >= self.package.price:
+            raise ValidationError("Offer price must be less than package price")
+        
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+
+class CarWashCode(CustomModelMixin):
+    offer = models.ForeignKey(Offer, on_delete=models.CASCADE, related_name="codes")
+    code = models.CharField(max_length=50, unique=True)
+    is_used = models.BooleanField(default=False)
+    used_at = models.DateTimeField(null=True, blank=True)
+    used_by_metadata = models.JSONField()
+    
+    objects = models.Manager()
+    active_objects = ActiveManager()
+    
+    def __str__(self):
+        return f"{self.code} - {self.offer.name}"
+    
+    def mark_as_used(self, user_metadata):
+        self.is_used = True
+        self.used_at = timezone.now()
+        self.used_by_metadata = user_metadata
+        self.save()
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)

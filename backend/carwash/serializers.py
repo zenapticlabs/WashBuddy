@@ -4,7 +4,7 @@ from django.contrib.gis.geos import Point
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
 from .models import (
     CarWash, CarWashOperatingHours, CarWashImage, CarWashReview, CarWashReviewImage, 
-    WashType, Amenity, CarWashPackage
+    WashType, Amenity, CarWashPackage, Offer, CarWashCode
 )
 from utilities.mixins import DynamicFieldsSerializerMixin
 from rest_framework_gis.fields import GeometryField
@@ -321,4 +321,34 @@ class CarWashReviewListSerializer(DynamicFieldsSerializerMixin, serializers.Mode
 
     class Meta:
         model = CarWashReview
+        fields = '__all__'
+
+class OfferCreatePatchSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Offer
+        fields = '__all__'
+
+class OfferSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+    package = CarWashPackageSerializer()
+    available_codes_count = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = Offer
+        fields = '__all__'
+    
+    def get_available_codes_count(self, obj):
+        return obj.codes.filter(is_used=False).count()
+
+
+class CarWashCodeCreatePatchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CarWashCode
+        fields = '__all__'
+
+class CarWashCodeSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+    offer = OfferSerializer(read_only=True)
+    
+    class Meta:
+        model = CarWashCode
         fields = '__all__'

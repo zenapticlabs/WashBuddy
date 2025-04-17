@@ -4,8 +4,8 @@ from drf_spectacular.types import OpenApiTypes
 from rest_framework import viewsets, status, generics
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from .models import CarWash, CarWashReview, WashType, Amenity
-from .serializers import CarWashListSerializer, CarWashPostPatchSerializer, CarWashReviewListSerializer, CarWashReviewPostPatchSerializer, PreSignedUrlSerializer, WashTypeSerializer, AmenitySerializer
+from .models import CarWash, CarWashReview, WashType, Amenity, Offer, CarWashCode
+from .serializers import CarWashListSerializer, CarWashPostPatchSerializer, CarWashReviewListSerializer, CarWashReviewPostPatchSerializer, PreSignedUrlSerializer, WashTypeSerializer, AmenitySerializer, OfferSerializer, CarWashCodeSerializer, OfferCreatePatchSerializer, CarWashCodeCreatePatchSerializer
 from django.db.models import Q
 from datetime import datetime
 from django.contrib.gis.geos import Point
@@ -16,12 +16,13 @@ from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from utilities.utils import ResponseInfo, CustomResponsePagination, SupabaseSingleton
 from utilities.mixins import DynamicFieldsViewMixin
-from .filters import DynamicSearchFilter, ListCarWashFilter, ListCarWashReviewFilter
+from .filters import DynamicSearchFilter, ListCarWashFilter, ListCarWashReviewFilter, ListCarWashCodeFilter, ListOfferFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models.functions import Coalesce
 from django.db.models import FloatField, Value
 from django.db import transaction
 from django.conf import settings
+from django.core.exceptions import ValidationError
 
 class WashTypeListAPIView(generics.ListAPIView):
     queryset = WashType.objects.all()
@@ -227,6 +228,166 @@ class ListCarWashReviewAPIView(DynamicFieldsViewMixin, ListAPIView):
 
     def get_queryset(self):
         queryset = CarWashReview.objects.all()
+        return queryset
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({"request": self.request})
+        return context
+
+    def get(self, request, *args, **kwargs):
+        serializer = super().list(request, *args, **kwargs)
+
+        self.response_format["data"] = serializer.data
+        self.response_format["error"] = None
+        self.response_format["status_code"] = status.HTTP_200_OK
+        self.response_format["message"] = ["Success"]
+
+        return Response(self.response_format)
+
+class OfferCreateView(generics.CreateAPIView):
+    serializer_class = OfferCreatePatchSerializer
+    permission_classes = [AllowAny]
+
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except ValidationError as e:
+            return Response(
+                {'error': str(e.message_dict) if hasattr(e, 'message_dict') else str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+class OfferRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Offer.objects.all()
+    permission_classes = [AllowAny]
+    lookup_field = "id"
+
+    def get_serializer_class(self):
+        if self.request.method == "GET":
+            return OfferSerializer
+        return OfferCreatePatchSerializer
+
+    @extend_schema(
+        summary="Retrieve Offer",
+        description="Retrieve an Offer by ID",
+        responses={200: OfferSerializer}
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="Update Offer",
+        description="Update Offer details",
+        request=OfferCreatePatchSerializer,
+        responses={200: OfferSerializer}
+    )
+    @transaction.atomic
+    def patch(self, request, *args, **kwargs):
+        return super().patch(request, *args, **kwargs)
+
+
+class CarWashCodeCreateView(generics.CreateAPIView):
+    serializer_class = CarWashCodeCreatePatchSerializer
+    permission_classes = [AllowAny]
+
+class CarWashCodeRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = CarWashCode.objects.all()
+    permission_classes = [AllowAny]
+    lookup_field = "id"
+
+    def get_serializer_class(self):
+        if self.request.method == "GET":
+            return CarWashCodeSerializer
+        return CarWashCodeCreatePatchSerializer
+
+    @extend_schema(
+        summary="Retrieve Car Wash Code",
+        description="Retrieve a Car Wash Code by ID",
+        responses={200: CarWashCodeSerializer}
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="Update Car Wash Code",
+        description="Update Car Wash Code details",
+        request=CarWashCodeCreatePatchSerializer,
+        responses={200: CarWashCodeSerializer}
+    )
+    @transaction.atomic
+    def patch(self, request, *args, **kwargs):
+        return super().patch(request, *args, **kwargs)
+
+class ListCarWashCodeAPIView(DynamicFieldsViewMixin, ListAPIView):
+    permission_classes = (AllowAny, )
+    serializer_class = CarWashCodeSerializer
+    pagination_class = CustomResponsePagination
+    filter_backends = [DynamicSearchFilter, DjangoFilterBackend]
+    filterset_class = ListCarWashCodeFilter
+
+    def __init__(self, **kwargs):
+        """
+        Constructor method for formatting web response to return.
+        """
+        self.pagination = False
+        self.response_format = ResponseInfo().response
+        super(ListCarWashCodeAPIView, self).__init__(**kwargs)
+
+    def paginate_queryset(self, queryset):
+        """
+        Method for getting paginated queryset.
+        """
+        pagination = self.request.GET.get("pagination", "True")
+        if pagination == "True" or pagination == "true":
+            return super().paginate_queryset(queryset)
+        return None
+
+    def get_queryset(self):
+        queryset = CarWashCode.objects.all()
+        return queryset
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({"request": self.request})
+        return context
+
+    def get(self, request, *args, **kwargs):
+        serializer = super().list(request, *args, **kwargs)
+
+        self.response_format["data"] = serializer.data
+        self.response_format["error"] = None
+        self.response_format["status_code"] = status.HTTP_200_OK
+        self.response_format["message"] = ["Success"]
+
+        return Response(self.response_format)
+
+class ListOfferAPIView(DynamicFieldsViewMixin, ListAPIView):
+    permission_classes = (AllowAny, )
+    serializer_class = OfferSerializer
+    pagination_class = CustomResponsePagination
+    filter_backends = [DynamicSearchFilter, DjangoFilterBackend]
+    filterset_class = ListOfferFilter
+
+    def __init__(self, **kwargs):
+        """
+        Constructor method for formatting web response to return.
+        """
+        self.pagination = False
+        self.response_format = ResponseInfo().response
+        super(ListOfferAPIView, self).__init__(**kwargs)
+
+    def paginate_queryset(self, queryset):
+        """
+        Method for getting paginated queryset.
+        """
+        pagination = self.request.GET.get("pagination", "True")
+        if pagination == "True" or pagination == "true":
+            return super().paginate_queryset(queryset)
+        return None
+
+    def get_queryset(self):
+        queryset = Offer.objects.all()
         return queryset
 
     def get_serializer_context(self):
