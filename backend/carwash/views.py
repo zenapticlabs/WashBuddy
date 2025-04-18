@@ -301,8 +301,63 @@ class CarWashCodeMarkAsUsedView(generics.CreateAPIView):
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context.update({"authorization_header": self.request.headers.get("Authorization")})
-        return context 
-
+        return context
+        
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        code = CarWashCode.objects.filter(code=serializer.validated_data['code']).first()
+        if not code:
+            return Response({"error": "Invalid code"}, status=status.HTTP_404_NOT_FOUND)
+            
+        # Validate offer based on type
+        offer = code.offer
+        now = timezone.now()
+        
+        if offer.offer_type == 'TIME_DEPENDENT':
+            if not (offer.start_time <= now.time() <= offer.end_time):
+                return Response(
+                    {"error": "This offer is only valid between {} and {}".format(
+                        offer.start_time.strftime('%H:%M'), 
+                        offer.end_time.strftime('%H:%M')
+                    )},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+                
+        elif offer.offer_type == 'GEOGRAPHICAL':
+            user_location = request.data.get('location')
+            if not user_location:
+                return Response(
+                    {"error": "Location is required for geographical offers"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+                
+            try:
+                user_point = Point(float(user_location['lng']), float(user_location['lat']), srid=4326)
+                distance = user_point.distance(offer.package.car_wash.location) * 100  # Convert to km
+                
+                if float(distance) > float(offer.radius_miles) * 1.60934:  # Convert miles to km
+                    return Response(
+                        {"error": "You are outside the offer's geographical range"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            except (KeyError, ValueError):
+                return Response(
+                    {"error": "Invalid location format"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+                
+        elif offer.offer_type == 'ONE_TIME':
+            user_metadata = utils.handle_user_meta_data(request.headers.get("Authorization"))
+            if user_metadata and code.usages.filter(user_metadata__email=user_metadata['email']).exists():
+                return Response(
+                    {"error": "You have already used this one-time offer"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+        
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 class CarWashCodeRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = CarWashCode.objects.all().prefetch_related('usages', 'offer__package__car_wash')
