@@ -2,10 +2,7 @@ import { FilterState } from "@/types/filters";
 import SearchBar from "@/components/molecule/SearchBar";
 import FilterComponent from "@/components/pages/main/filter/FilterComponent";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
-import useGeoLocationData from "@/hooks/useGeoLocationData";
 import { RadarAddress } from "radar-sdk-js/dist/types";
-import useLocationData from "@/hooks/useLocationData";
 
 interface SearchAndFilterBarProps {
   filters: FilterState;

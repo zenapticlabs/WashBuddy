@@ -14,12 +14,9 @@ import OperatingHours from "../../../molecule/OperatingHoursCheckboxes";
 import { Button } from "../../../ui/button";
 import AmenitiesCheckboxes from "../../../molecule/AmenitiesCheckboxes";
 import { FilterState } from "@/types/filters";
-import { useEffect, useState } from "react";
-import { Amenity, CarServiceAmenity, CarServiceWashType, WashType } from "@/types";
-import { getWashTypes } from "@/services/WashType";
+import { useState } from "react";
 import { Amenities, Car_Wash_Type, Car_Wash_Type_Value, SortBy, WashTypes } from "@/utils/constants";
 import useMediaQuery from "@/hooks/useMediaQuery";
-import { getAmenities } from "@/services/AmenityService";
 import AutomaticIcon from "@/assets/icons/automatic.svg";
 import SelfServiceIcon from "@/assets/icons/self-service.svg";
 import Image from "next/image";
@@ -72,27 +69,27 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   const pathname = usePathname();
   const router = useRouter();
   const isMobile = useMediaQuery("(max-width: 768px)");
-  const [amenities, setAmenities] = useState<CarServiceAmenity[]>([]);
-  const [washTypes, setWashTypes] = useState<CarServiceWashType[]>([]);
-  useEffect(() => {
-    setInlineFilters(filters);
-  }, [filters]);
+  // const [amenities, setAmenities] = useState<CarServiceAmenity[]>([]);
+  // const [washTypes, setWashTypes] = useState<CarServiceWashType[]>([]);
+  // useEffect(() => {
+  //   setInlineFilters(filters);
+  // }, [filters]);
 
-  useEffect(() => {
-    const fetchAmenities = async () => {
-      const amenities = await getAmenities();
-      setAmenities(amenities);
-    };
-    fetchAmenities();
-  }, []);
+  // useEffect(() => {
+  //   const fetchAmenities = async () => {
+  //     const amenities = await getAmenities();
+  //     setAmenities(amenities);
+  //   };
+  //   fetchAmenities();
+  // }, []);
 
-  useEffect(() => {
-    const fetchWashTypes = async () => {
-      const washTypes = await getWashTypes();
-      setWashTypes(washTypes);
-    };
-    fetchWashTypes();
-  }, []);
+  // useEffect(() => {
+  //   const fetchWashTypes = async () => {
+  //     const washTypes = await getWashTypes();
+  //     setWashTypes(washTypes);
+  //   };
+  //   fetchWashTypes();
+  // }, []);
 
   const handleReset = () => {
     setFilters(initialFilterState);

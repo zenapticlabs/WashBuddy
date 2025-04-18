@@ -1,32 +1,10 @@
 "use client";
 
 import Topbar from "@/components/pages/main/Topbar";
-import {
-  ChevronDown,
-  Eye,
-  Image,
-  MessageSquareText,
-  Search,
-  Star,
-} from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { cn } from "@/lib/utils";
-import { Separator } from "@/components/ui/separator";
-import { IMyReview, IReviewShow } from "@/types/Review";
-import { ReviewShow } from "@/components/organism/reviewShow";
-import { MyReview } from "@/components/organism/myReview";
 import { RadarMap } from "@/components/organism/RadarMap";
 import { MobileRewardView } from "@/components/pages/main/MobileRewardView";
 import reviews from "@/mocks/myReviewData";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { RewardList } from "@/components/pages/rewards/RewardList";
 const SortOptions = [
   {
@@ -60,7 +38,7 @@ export default function Rewards() {
               showMap={showMap}
               publishableKey={RADAR_KEY || ""}
               carWashes={[]}
-              onMapReady={() => {}}
+              onMapReady={() => { }}
             />
           </div>
           <MobileRewardView

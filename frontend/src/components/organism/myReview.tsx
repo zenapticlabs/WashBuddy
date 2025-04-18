@@ -1,7 +1,7 @@
 import { Rate } from "../ui/rate";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "../ui/button";
-import { IMyReview, IReviewShow } from "@/types/Review";
+import { IMyReview } from "@/types/Review";
 import { formatTimeAgo } from "@/utils/functions";
 import { EllipsisVertical, Eye, MapPin, Star } from "lucide-react";
 import {

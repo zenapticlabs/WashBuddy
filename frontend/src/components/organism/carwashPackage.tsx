@@ -1,5 +1,5 @@
 import { CarWashPackage } from "@/types/CarServices";
-import { CheckIcon, EyeIcon, PlusIcon, TrashIcon } from "lucide-react";
+import { PlusIcon, TrashIcon } from "lucide-react";
 import Image from "next/image";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/sheet";
 import { ScrollArea } from "../ui/scroll-area";
 import { Car_Wash_Type_Value, CarWashTypes, WashTypes } from "@/utils/constants";
-import { IconToggle } from "../ui/iconToggle";
 import useMediaQuery from "@/hooks/useMediaQuery";
 import CarwashPackageCard from "../molecule/CarwashPackageCard";
 import { CustomIconToggle } from "../ui/customIconToggle";
@@ -185,10 +184,10 @@ export function CarwashPackage({
     return carwashPackages;
   };
 
-  const getSelfServicePackages = () => {
-    // return carwashPackages.filter((pkg) => pkg.type === CarWashTypes[1].value);
-    return carwashPackages;
-  };
+  // const getSelfServicePackages = () => {
+  // return carwashPackages.filter((pkg) => pkg.type === CarWashTypes[1].value);
+  // return carwashPackages;
+  // };
   const handleDeletePackage = (id: number) => {
     setCarwashPackages(carwashPackages.filter((pkg) => pkg.id !== id));
   };
@@ -347,7 +346,7 @@ export function CarwashPackage({
                               label={washType.name}
                               icon={washType.icon}
                               checked={selectedWashTypes.includes(Number(washType.id))}
-                              onChange={(checked: boolean) => toggleWashType(Number(washType.id))}
+                              onChange={() => toggleWashType(Number(washType.id))}
                             />
                           ))}
                         </div>

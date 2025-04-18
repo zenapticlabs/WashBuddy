@@ -1,4 +1,3 @@
-import AirDryerIcon from "@/assets/wash-type-icons/Air dryer.svg";
 import DryerIcon from "@/assets/wash-type-icons/dryer.svg";
 import GraphineIcon from "@/assets/wash-type-icons/Graphine Sealant.svg";
 import HotWaxIcon from "@/assets/wash-type-icons/Hot wax.svg";
@@ -7,7 +6,6 @@ import TireShineIcon from "@/assets/wash-type-icons/Tire Shine.svg";
 import TouchlessWashIcon from "@/assets/wash-type-icons/Touchless wash.svg";
 import TripleFoamIcon from "@/assets/wash-type-icons/Triple foam.svg";
 import UnderBodyFlushIcon from "@/assets/wash-type-icons/Underbody flush.svg";
-import UnderBodySprayIcon from "@/assets/wash-type-icons/Underbody spray.svg";
 import { CarServiceAmenity, CarServiceWashType } from "@/types/CarServices";
 import FreeVacuumsIcon from "@/assets/amenities-icons/free-vacuums.svg";
 import AirgunIcon from "@/assets/amenities-icons/air-gun.svg";

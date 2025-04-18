@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { CarServiceAmenity, CarServiceWashType } from '@/types';
-import { getAmenities } from '@/services/AmenityService';
+import { CarServiceWashType } from '@/types';
 import { getWashTypes } from '@/services/WashType';
 
 export function useWashTypes() {

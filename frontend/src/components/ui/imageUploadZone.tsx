@@ -1,5 +1,3 @@
-import { XIcon } from "lucide-react";
-import Image from "next/image";
 
 interface ImageUploadZoneProps {
   title?: string;
@@ -9,7 +7,6 @@ interface ImageUploadZoneProps {
 
 const ImageUploadZone: React.FC<ImageUploadZoneProps> = ({
   title,
-  required,
   onFileChange,
 }) => {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {

@@ -3,9 +3,7 @@ import {
     PaginationContent,
     PaginationEllipsis,
     PaginationItem,
-    PaginationLink,
-    PaginationNext,
-    PaginationPrevious,
+    PaginationLink
 } from "@/components/ui/pagination";
 import { ChevronLeftIcon, ChevronRightIcon, ChevronsLeftIcon, ChevronsRightIcon } from "lucide-react";
 

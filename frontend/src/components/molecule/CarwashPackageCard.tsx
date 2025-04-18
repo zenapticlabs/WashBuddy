@@ -2,7 +2,7 @@ import { CarWashTypes, WashTypes, type CarwashPackage } from "@/utils/constants"
 import AutomaticIcon from "@/assets/icons/automatic.svg";
 import SelfServiceIcon from "@/assets/icons/self-service.svg";
 import Image from "next/image";
-import { DeleteIcon, Trash2Icon, TrashIcon } from "lucide-react";
+import { Trash2Icon } from "lucide-react";
 interface CarwashPackageCardProps {
     carwashPackage: CarwashPackage;
     onClick: () => void;

@@ -1,4 +1,3 @@
-import axios from "axios";
 import { IReviewCreate } from "@/types/Review";
 import axiosInstance from "@/lib/axios";
 

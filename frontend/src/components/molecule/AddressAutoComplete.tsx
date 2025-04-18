@@ -1,6 +1,5 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { Input } from "../ui/input";
-import { Search } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { RadarAddress } from "radar-sdk-js/dist/types";
 

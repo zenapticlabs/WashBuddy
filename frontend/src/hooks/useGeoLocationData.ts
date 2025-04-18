@@ -1,10 +1,5 @@
 import { useState, useCallback } from "react";
 
-interface LocationData {
-  latitude: number;
-  longitude: number;
-}
-
 const useGeoLocationData = () => {
   const [latitude, setLatitude] = useState<number | null>(null);
   const [longitude, setLongitude] = useState<number | null>(null);

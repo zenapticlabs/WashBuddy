@@ -1,7 +1,3 @@
-import { CarWashResponse } from "@/types/CarServices";
-import { DotIcon, MapPinIcon, StarIcon } from "lucide-react";
-import { Badge } from "../ui/badge";
-import Image from "next/image";
 import { Skeleton } from "../ui/skeleton";
 
 export function CarWashSkeleton() {

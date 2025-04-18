@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { Input } from "../ui/input";
 import { MapPin, Search } from "lucide-react";
 import { cn } from "@/lib/utils";

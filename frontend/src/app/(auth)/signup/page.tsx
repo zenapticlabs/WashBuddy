@@ -4,7 +4,7 @@ import Image from "next/image";
 import logo from "@/assets/logo.png";
 import car from "@/assets/car.png";
 import { Button } from "@/components/ui/button";
-import { ChevronLeftIcon, Loader2, MailIcon } from "lucide-react";
+import { ChevronLeftIcon, Loader2} from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState, useCallback, Suspense } from "react";
 import { Input } from "@/components/ui/input";
@@ -134,14 +134,7 @@ function SignupContent() {
     }
   }, [user, loading, router]);
 
-  useEffect(() => {
-    const isOTPComplete = otp.every((digit) => digit !== "");
-    if (isOTPComplete) {
-      handleVerifyOTP();
-    }
-  }, [otp]);
-
-  const handleVerifyOTP = async () => {
+  const handleVerifyOTP = useCallback(async () => {
     setLoading(true);
     try {
       const { error } = await verifyOtp(currentEmail, otp.join(""));
@@ -152,11 +145,20 @@ function SignupContent() {
       }
       toast.success("OTP verified successfully");
       window.location.href = "/";
-    } catch (error) {
+    } catch (err) {
+      console.error("OTP verification error:", err);
+      toast.error("Failed to verify OTP");
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentEmail, otp, setLoading, verifyOtp]);
+
+  useEffect(() => {
+    const isOTPComplete = otp.every((digit) => digit !== "");
+    if (isOTPComplete) {
+      handleVerifyOTP();
+    }
+  }, [otp, handleVerifyOTP]);
 
   const handleSendOTP = async () => {
     setLoading(true);
@@ -167,7 +169,8 @@ function SignupContent() {
         return;
       }
       toast.success("Verification code sent successfully");
-    } catch (error) {
+    } catch (err) {
+      console.error("Send OTP error:", err);
       toast.error("Failed to send verification code");
     } finally {
       setLoading(false);
@@ -177,7 +180,6 @@ function SignupContent() {
   const onSubmit = async (data: SignupFormValues) => {
     setLoading(true);
     try {
-      // Update email in URL instead of setState
       const { error } = await signUpWithOtp(
         data.email,
         data.password,
@@ -191,7 +193,8 @@ function SignupContent() {
 
       goToStep(3, data.email);
       toast.success("Account created! Please verify your email.");
-    } catch (error) {
+    } catch (err) {
+      console.error("Signup error:", err);
       toast.error("Failed to create account");
     } finally {
       setLoading(false);
@@ -205,7 +208,8 @@ function SignupContent() {
       if (error) {
         toast.error(error.message);
       }
-    } catch (error) {
+    } catch (err) {
+      console.error("Google signup error:", err);
       toast.error("An unexpected error occurred");
     } finally {
       setLoading(false);
@@ -305,7 +309,7 @@ function SignupContent() {
       <div className="flex flex-col gap-4">
         <div
           onClick={() => goToStep(1)}
-          className="w-fit border-neutral-100 flex items-center gap-2 cursor-pointer flex items-center"
+          className="w-fit border-neutral-100 flex items-center gap-2 cursor-pointer"
         >
           <ChevronLeftIcon className="w-4 h-4" />
           Back
@@ -360,7 +364,7 @@ function SignupContent() {
       <div className="flex flex-col gap-4">
         <div
           onClick={() => goToStep(2)}
-          className="w-fit border-neutral-100 flex items-center gap-2 cursor-pointer flex items-center"
+          className="w-fit border-neutral-100 flex items-center gap-2 cursor-pointer"
         >
           <ChevronLeftIcon className="w-4 h-4" />
           Back
@@ -376,7 +380,7 @@ function SignupContent() {
         <InputOTP value={otp} onChange={setOtp} />
 
         <div className="text-body-2 text-neutral-900 flex justify-center items-center gap-2">
-          Can't find the email?
+          Can&apos;t find the email?
           <span
             className="text-blue-500 cursor-pointer font-bold"
             onClick={handleSendOTP}

@@ -1,5 +1,4 @@
 import { ReviewShow } from "@/components/organism/reviewShow";
-import { Checkbox } from "@/components/ui/checkbox";
 import { CheckTag } from "@/components/ui/checkTag";
 import { Input } from "@/components/ui/input";
 import { Rate } from "@/components/ui/rate";
@@ -8,7 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/useAuth";
 import { ReviewsSummary } from "@/types";
 import { IReviewShow } from "@/types/Review";
-import { Search, SlidersVertical, Star, TextSearch } from "lucide-react";
+import { SlidersVertical, Star, TextSearch } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 

@@ -1,6 +1,5 @@
 import { CarServiceAmenity } from "@/types";
 import { useState } from "react";
-import { Checkbox } from "../ui/checkbox";
 import {
   Accordion,
   AccordionContent,
@@ -9,8 +8,6 @@ import {
 } from "@/components/ui/accordion";
 import { CircleBadge } from "../ui/circleBadge";
 import { CustomIconToggle } from "../ui/customIconToggle";
-import Image from "next/image";
-
 interface AmenitiesCheckboxesProps {
   value?: string[];
   onChange?: (option: string[]) => void;

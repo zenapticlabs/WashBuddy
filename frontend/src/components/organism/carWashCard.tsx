@@ -1,6 +1,5 @@
 import { CarWashResponse } from "@/types/CarServices";
-import { DotIcon, MapPinIcon, StarIcon } from "lucide-react";
-import { Badge } from "../ui/badge";
+import { MapPinIcon, StarIcon } from "lucide-react";
 import Image from "next/image";
 import { ImageModal } from "../molecule/ImageModal";
 import { useState } from "react";

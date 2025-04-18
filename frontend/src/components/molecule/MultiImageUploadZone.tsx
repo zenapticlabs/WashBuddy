@@ -4,8 +4,6 @@ import { useState } from "react";
 import ImageUploadZone from "../ui/imageUploadZone";
 import { getPresignedUrl, uploadFile } from "@/services/UploadService";
 import { toast } from "sonner";
-import { XIcon } from "lucide-react";
-import Image from "next/image";
 import UploadedImageCard from "../ui/uploadedImageCard";
 
 const NEXT_PUBLIC_STORAGE_ENDPOINT = process.env.NEXT_PUBLIC_STORAGE_ENDPOINT;
@@ -29,7 +27,6 @@ const MultiImageUploadZone = ({
   handleDeleteImage: (image_url: string) => void;
 }) => {
   const [uploading, setUploading] = useState(false);
-  const [uploadingFile, setUploadingFile] = useState<File | null>(null);
   let image_urls = [""];
   image_urls = images
     .filter((image: any) => image.image_type == image_type)
@@ -37,13 +34,12 @@ const MultiImageUploadZone = ({
   const handleFileChange = async (file: File | null) => {
     if (!file) return;
     setUploading(true);
-    setUploadingFile(file);
     // const fileName = await uploadFileToS3(file);
 
     try {
       const sanitizedFileName = file.name.replace(/\s+/g, '_');
       const presignedUrl = await getPresignedUrl(sanitizedFileName);
-      const uploadResponse = await uploadFile(presignedUrl.signed_url, file);
+      await uploadFile(presignedUrl.signed_url, file);
       const fileUrl = `${NEXT_PUBLIC_STORAGE_ENDPOINT}/object/public/${NEXT_PUBLIC_STORAGE_BUCKET_NAME}/${presignedUrl.path}`;
 
       // Add the uploaded image to your application state
@@ -54,7 +50,6 @@ const MultiImageUploadZone = ({
       toast.error("Failed to upload file");
     } finally {
       setUploading(false);
-      setUploadingFile(null);
     }
   };
 
