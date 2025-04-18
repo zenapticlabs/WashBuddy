@@ -4,7 +4,6 @@ import Image from "next/image";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "../ui/button";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import axiosInstance from "@/lib/axios";
@@ -56,8 +55,8 @@ const StripePaymentForm = ({ carWashPackage, onSuccess }: { carWashPackage: CarW
       } else {
         onSuccess();
       }
-    } catch (err) {
-      setError('An unexpected error occurred');
+    } catch (err: any) {
+      setError(err?.message || 'An unexpected error occurred');
     } finally {
       setIsProcessing(false);
     }

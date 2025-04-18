@@ -3,7 +3,6 @@ import Radar from "radar-sdk-js";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { CarWashResponse } from "@/types/CarServices";
-import { extractCoordinates } from "@/utils/functions";
 import { Button } from "../ui/button";
 import { Search } from "lucide-react";
 import { Skeleton } from "../ui/skeleton";
@@ -35,12 +34,6 @@ export function RadarMap({
   presentCenter,
   loading,
 }: RadarMapProps) {
-  const [center, setCenter] = useState<{ longitude: number; latitude: number }>(
-    {
-      longitude: -89.4012,
-      latitude: 43.0731,
-    }
-  );
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
   const [showSearchButton, setShowSearchButton] = useState<boolean>(false);
@@ -68,11 +61,6 @@ export function RadarMap({
     });
   };
 
-  useEffect(() => {
-    if (presentCenter) {
-      setCenter(presentCenter);
-    }
-  }, [presentCenter]);
 
   // Initialize map only once
   useEffect(() => {
@@ -123,7 +111,7 @@ export function RadarMap({
         if (result.location) {
           const { latitude, longitude } = result.location;
 
-          const userMarker = new maplibregl.Marker({
+          new maplibregl.Marker({
             color: "#2563eb",
           })
             .setLngLat([longitude, latitude])
@@ -266,9 +254,9 @@ export function RadarMap({
     const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
       Math.cos(toRad(lat1)) *
-        Math.cos(toRad(lat2)) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
 
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     const distance = R * c;
@@ -329,11 +317,10 @@ export function RadarMap({
       ) : (
         <Button
           variant="ghost"
-          className={`absolute top-10 left-10 z-10 bg-white rounded-full shadow-lg transition-all duration-300 ${
-            showSearchButton
+          className={`absolute top-10 left-10 z-10 bg-white rounded-full shadow-lg transition-all duration-300 ${showSearchButton
               ? "opacity-100 transform translate-y-0"
               : "opacity-0 transform -translate-y-4 pointer-events-none"
-          }`}
+            }`}
           onClick={handleSearchArea}
         >
           <Search size={20} />

@@ -1,7 +1,7 @@
 "use client";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CheckIcon, Crosshair, Loader2, MapPin, XIcon } from "lucide-react";
+import { Crosshair, Loader2, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { OperatingHoursRange } from "@/components/molecule/OperatingHoursRange";
 import { Input } from "@/components/ui/input";
@@ -17,15 +17,13 @@ import {
 import AddressAutoComplete from "@/components/molecule/AddressAutoComplete";
 import { RadarAddress } from "radar-sdk-js/dist/types";
 import Topbar from "@/components/pages/main/Topbar";
-import { useAmenities } from "@/hooks/useAmenities";
-import { useWashTypes } from "@/hooks/useWashTypes";
-import { Amenities, Car_Wash_Type, Car_Wash_Type_Value, CarWashTypes, DEFAULT_PAYLOAD, FORM_CONFIG } from "@/utils/constants";
+// import { useAmenities } from "@/hooks/useAmenities";
+// import { useWashTypes } from "@/hooks/useWashTypes";
+import { Amenities, Car_Wash_Type_Value, CarWashTypes, DEFAULT_PAYLOAD, FORM_CONFIG } from "@/utils/constants";
 import { Switch } from "@/components/ui/switch";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
-import { getPresignedUrl, uploadFile } from "@/services/UploadService";
 import MultiImageUploadZone from "@/components/molecule/MultiImageUploadZone";
-import { IconToggle } from "@/components/ui/iconToggle";
 import { CarwashPackage } from "@/components/organism/carwashPackage";
 import Image from "next/image";
 import { Separator } from "@/components/ui/separator";
@@ -36,10 +34,6 @@ import { AccordionItem, AccordionContent } from "@/components/ui/accordion";
 import { CustomIconToggle } from "@/components/ui/customIconToggle";
 import AutomaticIcon from "@/assets/icons/automatic.svg";
 import SelfServiceIcon from "@/assets/icons/self-service.svg";
-
-const NEXT_PUBLIC_STORAGE_ENDPOINT = process.env.NEXT_PUBLIC_STORAGE_ENDPOINT;
-const NEXT_PUBLIC_STORAGE_BUCKET_NAME =
-  process.env.NEXT_PUBLIC_STORAGE_BUCKET_NAME;
 
 const UploadFormConfig = [
   {
@@ -68,7 +62,7 @@ const CarWashContent = () => {
   const searchParams = useSearchParams();
   const carwashId = searchParams.get("id");
   const [isLoading, setIsLoading] = useState(false);
-  const { locationData, error, loading, fetchLocationData } = useLocationData();
+  const { locationData, fetchLocationData } = useLocationData();
   const [locationLoading, setLocationLoading] = useState(false);
   const [isEdit, setIsEdit] = useState(false);
   const [address, setAddress] = useState<any>(null);
@@ -76,24 +70,10 @@ const CarWashContent = () => {
   const [formData, setFormData] = useState<any>(DEFAULT_PAYLOAD);
   const [fetchLoading, setFetchLoading] = useState(true);
   const [originalImages, setOriginalImages] = useState<any>([]);
-  const [uploadingSitePhoto, setUploadingSitePhoto] = useState(false);
   const [knowHours, setKnowHours] = useState(true);
   const [knowPhone, setKnowPhone] = useState(false);
-  const [activeTab, setActiveTab] = useState<"use_gps" | "enter_address">(
-    "use_gps"
-  );
 
   useEffect(() => { }, [locationData]);
-  const {
-    amenities,
-    isLoading: amenitiesLoading,
-    error: amenitiesError,
-  } = useAmenities();
-  const {
-    washTypes,
-    isLoading: washTypesLoading,
-    error: washTypesError,
-  } = useWashTypes();
 
   useEffect(() => {
     if (locationData) {
@@ -126,8 +106,8 @@ const CarWashContent = () => {
           setIsEdit(true);
           setFetchLoading(false);
         })
-        .catch((error) => {
-          toast.error("Error fetching car wash by id");
+        .catch((error: any) => {
+          toast.error(error?.message || "Error fetching car wash by id");
           router.push("/carwash");
           setFetchLoading(false);
         });
@@ -187,7 +167,7 @@ const CarWashContent = () => {
 
       payload = handleFilterOperatingHours(payload);
       payload = handleFilterPhone(payload);
-      let response;
+      let response: any;
       if (isEdit) {
         response = await updateCarwash(carwashId || "", payload);
       } else {
@@ -200,6 +180,7 @@ const CarWashContent = () => {
       );
       handleNavigateDashboard();
     } catch (error) {
+      console.log(error);
       toast.error(
         isEdit
           ? "Failed to update car wash. Please try again."
@@ -249,32 +230,12 @@ const CarWashContent = () => {
     }
   };
 
-  const handleUploadSitePhoto = async (file: File | null) => {
-    if (!file) return;
-    setUploadingSitePhoto(true);
-    try {
-      const presignedUrl = await getPresignedUrl(file.name);
-      const uploadResponse = await uploadFile(presignedUrl.signed_url, file);
-      const fileName = `${NEXT_PUBLIC_STORAGE_ENDPOINT}/object/public/${NEXT_PUBLIC_STORAGE_BUCKET_NAME}/${presignedUrl.path}`;
-      toast.success("File uploaded successfully!");
-      setFormData((prevData: any) => ({
-        ...prevData,
-        image_url: fileName,
-      }));
-      setUploadingSitePhoto(false);
-    } catch (error) {
-      toast.error("Failed to upload file");
-    } finally {
-      setUploadingSitePhoto(false);
-    }
-  };
-
-  const handleDeleteSitePhoto = () => {
-    setFormData((prevData: any) => ({
-      ...prevData,
-      image_url: null,
-    }));
-  };
+  // const handleDeleteSitePhoto = () => {
+  //   setFormData((prevData: any) => ({
+  //     ...prevData,
+  //     image_url: null,
+  //   }));
+  // };
 
   const handleUploadImage = (image_type: string, image_url: string) => {
     setFormData((prevData: any) => ({
@@ -367,14 +328,12 @@ const CarWashContent = () => {
                         <TabsTrigger
                           value="use_gps"
                           className="w-full text-title-2"
-                          onClick={() => setActiveTab("use_gps")}
                         >
                           <Crosshair size={20} className="mr-2" /> Use GPS
                         </TabsTrigger>
                         <TabsTrigger
                           value="enter_address"
                           className="w-full text-title-2"
-                          onClick={() => setActiveTab("enter_address")}
                         >
                           <MapPin size={20} className="mr-2" /> Enter Address
                         </TabsTrigger>

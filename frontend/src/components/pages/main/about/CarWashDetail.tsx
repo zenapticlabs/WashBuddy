@@ -1,22 +1,19 @@
 import Image from "next/image";
-import carlogo from "@/assets/carlogo.jpg";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CarWashAbout from "./CarWashAbout";
 import CarWashReviews from "./CarWashReviews";
 import {
   ArrowRight,
-  CrossIcon,
   Dot,
   MapPin,
   Phone,
   Star,
   XIcon,
 } from "lucide-react";
-import { CarWashResponse, ICarWashCard } from "@/types";
+import { CarWashResponse } from "@/types";
 import CreateCarWashReviewModal from "./CreateCarWashReviewModal";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import {
   Sheet,
@@ -25,7 +22,6 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import useMediaQuery from "@/hooks/useMediaQuery";
-import { extractCoordinates } from "@/utils/functions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getReviews } from "@/services/ReviewService";
 

@@ -9,13 +9,6 @@ import PayPalIcon from "@/assets/payment-icons/paypal.svg";
 import StripeIcon from "@/assets/payment-icons/stripe.svg";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import VisaIcon from "@/assets/payment-icons/visa.svg";
-import MastercardIcon from "@/assets/payment-icons/mastercard.svg";
-import AmexIcon from "@/assets/payment-icons/amex.svg";
-import DiscoverIcon from "@/assets/payment-icons/discover.svg";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectGroup, SelectLabel, SelectItem } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
@@ -54,8 +47,8 @@ const StripePaymentForm = ({ carWashPackage }: { carWash: CarWashResponse, carWa
             if (error) {
                 setError(error.message || 'An error occurred');
             }
-        } catch (err) {
-            setError('An unexpected error occurred');
+        } catch (error: any) {
+            setError(error?.message || 'An unexpected error occurred');
         } finally {
             setIsProcessing(false);
         }

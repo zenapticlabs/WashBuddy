@@ -3,13 +3,11 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Crosshair, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { OperatingHoursRange } from "@/components/molecule/OperatingHoursRange";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogFooter, DialogTitle } from "@/components/ui/dialog";
 import { DialogHeader } from "@/components/ui/dialog";
 import { DialogContent } from "@/components/ui/dialog";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Toaster, toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import useLocationData from "@/hooks/useLocationData";
@@ -17,13 +15,10 @@ import { createCarwash } from "@/services/CarwashService";
 import useMediaQuery from "@/hooks/useMediaQuery";
 import {
   Drawer,
-  DrawerClose,
   DrawerContent,
-  DrawerDescription,
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
-  DrawerTrigger,
 } from "@/components/ui/drawer";
 import ImageUploadZone from "@/components/ui/imageUploadZone";
 import { Separator } from "@/components/ui/separator";

@@ -7,7 +7,7 @@ import { SearchAndFilterBar } from "@/components/pages/main/SearchAndFilterBar";
 import Topbar from "@/components/pages/main/Topbar";
 import { useCarWashFilters } from "@/hooks/useCarWashFilters";
 import { useCarWashes } from "@/hooks/useCarWashes";
-import { CarWashResponse, ICarWashCard } from "@/types";
+import { CarWashResponse } from "@/types";
 import { RadarMap } from "@/components/organism/RadarMap";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CarWashCard } from "@/components/organism/carWashCard";
@@ -52,13 +52,11 @@ function HomeContent() {
   const [address, setAddress] = useState<RadarAddress | null>(null);
   const {
     locationData,
-    error: locationError,
-    loading: locationLoading,
     fetchLocationData: fetchLocationData,
   } = useLocationData();
 
   const { filters, setFilters } = useCarWashFilters();
-  const { carWashes, isLoading, count, totalPages, currentPage } =
+  const { carWashes, isLoading, count } =
     useCarWashes(filters);
 
   useEffect(() => {

@@ -1,10 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Switch } from "../ui/switch";
 import { TimePicker } from "../ui/TimePicker";
 import { Accordion, AccordionContent, AccordionItem } from "../ui/accordion";
 
 const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
-type DayType = (typeof days)[number];
 
 interface DaySchedule {
   day_of_week: number;
@@ -43,7 +42,7 @@ export function OperatingHoursRange({
     return operatingHours.find((schedule) => schedule.day_of_week === day);
   };
   const handleToggleDay = (day: number, value: boolean) => {
-    let tempDaySchedule = daySchedule(day);
+    const tempDaySchedule = daySchedule(day);
     if (tempDaySchedule) {
       setOperatingHours(
         operatingHours.map((schedule) =>

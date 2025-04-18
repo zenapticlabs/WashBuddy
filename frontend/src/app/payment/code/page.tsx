@@ -35,6 +35,7 @@ function PaymentCodeContent() {
                     throw new Error('No carwash code found');
                 }
             } catch (error) {
+                console.log(error);
                 setStatus('error');
                 setMessage('Failed to retrieve carwash code. Please contact support.');
             }
