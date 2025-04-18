@@ -4,14 +4,13 @@ from django.contrib.gis.geos import Point
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
 from .models import (
     CarWash, CarWashOperatingHours, CarWashImage, CarWashReview, CarWashReviewImage, 
-    WashType, Amenity, CarWashPackage
+    WashType, Amenity, CarWashPackage, Offer, CarWashCode, CarWashCodeUsage
 )
 from utilities.mixins import DynamicFieldsSerializerMixin
 from rest_framework_gis.fields import GeometryField
 from rest_framework.exceptions import PermissionDenied, AuthenticationFailed
-import jwt
-import os
 from django.db.models import Count, Avg, Q
+from . import utils
 
 class WashTypeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -282,22 +281,15 @@ class CarWashReviewPostPatchSerializer(serializers.ModelSerializer):
     def handle_user_meta_data(self, validated_data, authorization_header): 
         if not authorization_header or not authorization_header.startswith("Bearer "):
             raise PermissionDenied({"message": "Invalid or missing token"})
-        
-        token = authorization_header.split(" ")[1]
+            
         try:
-            decoded_payload = jwt.decode(
-                token, 
-                os.getenv('JWT_SECRET'),
-                algorithms=["HS256"],
-                audience="authenticated"
-            )
-        except jwt.ExpiredSignatureError:
-            raise AuthenticationFailed("Token has expired")
-        except jwt.InvalidTokenError:
-            raise AuthenticationFailed("Invalid token")
-
-        user_metadata = decoded_payload.get("user_metadata", {})
-        validated_data["user_metadata"] = user_metadata
+            user_metadata = utils.handle_user_meta_data(authorization_header)
+            if not user_metadata:
+                raise AuthenticationFailed("Invalid user metadata")
+                
+            validated_data["user_metadata"] = user_metadata
+        except Exception as e:
+            raise AuthenticationFailed(str(e))
 
     def handle_images(self, instance, images): 
         for image_object in images:
@@ -322,3 +314,56 @@ class CarWashReviewListSerializer(DynamicFieldsSerializerMixin, serializers.Mode
     class Meta:
         model = CarWashReview
         fields = '__all__'
+
+class OfferCreatePatchSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Offer
+        fields = '__all__'
+
+class CarWashCodeUsageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CarWashCodeUsage
+        fields = '__all__'
+
+class CarWashCodeSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+    
+    class Meta:
+        model = CarWashCode
+        fields = '__all__'
+
+class OfferSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+    package = CarWashPackageSerializer()
+    codes = CarWashCodeSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Offer
+        fields = '__all__'
+
+
+class CarWashCodeCreatePatchSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CarWashCode
+        exclude = ["created_by", "updated_by", "status"]
+
+class CarWashCodeUsageCreateSerializer(serializers.ModelSerializer):
+    code = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = CarWashCodeUsage
+        fields = ["code"]
+
+    def create(self, validated_data):
+        authorization_header = self.context.get('authorization_header')
+        if not authorization_header or not authorization_header.startswith("Bearer "):
+            raise PermissionDenied({"message": "Invalid or missing token"})
+        
+        if authorization_header:
+            user_metadata = utils.handle_user_meta_data(authorization_header)
+            if user_metadata:
+                validated_data['user_metadata'] = user_metadata
+        code = CarWashCode.objects.filter(code=validated_data['code']).first()
+        if not code:
+            raise serializers.ValidationError({"code": "Invalid code"})
+        validated_data['code'] = code
+        return super().create(validated_data)
