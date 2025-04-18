@@ -285,21 +285,17 @@ class Offer(CustomModelMixin):
 class CarWashCode(CustomModelMixin):
     offer = models.ForeignKey(Offer, on_delete=models.CASCADE, related_name="codes")
     code = models.CharField(max_length=50, unique=True)
-    is_used = models.BooleanField(default=False)
-    used_at = models.DateTimeField(null=True, blank=True)
-    used_by_metadata = models.JSONField()
     
     objects = models.Manager()
     active_objects = ActiveManager()
     
     def __str__(self):
         return f"{self.code} - {self.offer.name}"
-    
-    def mark_as_used(self, user_metadata):
-        self.is_used = True
-        self.used_at = timezone.now()
-        self.used_by_metadata = user_metadata
-        self.save()
+
+class CarWashCodeUsage(CustomModelMixin):
+    code = models.ForeignKey(CarWashCode, on_delete=models.CASCADE, related_name="usages")
+    user_metadata = models.JSONField()
+    used_at = models.DateTimeField(default=timezone.now)
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)

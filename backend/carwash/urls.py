@@ -5,7 +5,8 @@ from .views import (
     ListCarWashAPIView, S3APIView,
     CarWashReviewCreateView, CarWashReviewRetrieveUpdateDestroyView,
     ListCarWashReviewAPIView, OfferCreateView, OfferRetrieveUpdateDestroyView, ListOfferAPIView,
-    CarWashCodeCreateView, CarWashCodeRetrieveUpdateDestroyView, ListCarWashCodeAPIView
+    CarWashCodeCreateView, CarWashCodeRetrieveUpdateDestroyView, ListCarWashCodeAPIView,
+    CarWashCodeMarkAsUsedView
 )
 
 urlpatterns = [
@@ -25,6 +26,7 @@ urlpatterns = [
     path('offers/create/', OfferCreateView.as_view(), name='offers-create'),
     path('offers/<int:id>/', OfferRetrieveUpdateDestroyView.as_view(), name='offers-detail'),
     
+    path('car-wash-codes/mark-used/', CarWashCodeMarkAsUsedView.as_view(), name='car-wash-codes-mark-used'),
     path('car-wash-codes/search/', ListCarWashCodeAPIView.as_view(), name='car-wash-codes-list'),
     path('car-wash-codes/create/', CarWashCodeCreateView.as_view(), name='car-wash-codes-create'),
     path('car-wash-codes/<int:id>/', CarWashCodeRetrieveUpdateDestroyView.as_view(), name='car-wash-codes-detail')

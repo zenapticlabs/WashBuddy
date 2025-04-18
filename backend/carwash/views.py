@@ -5,7 +5,7 @@ from rest_framework import viewsets, status, generics
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from .models import CarWash, CarWashReview, WashType, Amenity, Offer, CarWashCode
-from .serializers import CarWashListSerializer, CarWashPostPatchSerializer, CarWashReviewListSerializer, CarWashReviewPostPatchSerializer, PreSignedUrlSerializer, WashTypeSerializer, AmenitySerializer, OfferSerializer, CarWashCodeSerializer, OfferCreatePatchSerializer, CarWashCodeCreatePatchSerializer
+from .serializers import CarWashListSerializer, CarWashPostPatchSerializer, CarWashReviewListSerializer, CarWashReviewPostPatchSerializer, PreSignedUrlSerializer, WashTypeSerializer, AmenitySerializer, OfferSerializer, CarWashCodeSerializer, OfferCreatePatchSerializer, CarWashCodeCreatePatchSerializer, CarWashCodeUsageCreateSerializer
 from django.db.models import Q
 from datetime import datetime
 from django.contrib.gis.geos import Point
@@ -23,6 +23,9 @@ from django.db.models import FloatField, Value
 from django.db import transaction
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.db.models import Case, When, BooleanField, F
+from django.utils import timezone
+from . import utils
 
 class WashTypeListAPIView(generics.ListAPIView):
     queryset = WashType.objects.all()
@@ -291,8 +294,18 @@ class CarWashCodeCreateView(generics.CreateAPIView):
     serializer_class = CarWashCodeCreatePatchSerializer
     permission_classes = [AllowAny]
 
+class CarWashCodeMarkAsUsedView(generics.CreateAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = CarWashCodeUsageCreateSerializer
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context.update({"authorization_header": self.request.headers.get("Authorization")})
+        return context 
+
+
 class CarWashCodeRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = CarWashCode.objects.all()
+    queryset = CarWashCode.objects.all().prefetch_related('usages', 'offer__package__car_wash')
     permission_classes = [AllowAny]
     lookup_field = "id"
 
@@ -388,7 +401,45 @@ class ListOfferAPIView(DynamicFieldsViewMixin, ListAPIView):
 
     def get_queryset(self):
         queryset = Offer.objects.all()
-        return queryset
+        now = timezone.now().time()
+        
+         # Handle time dependent offers
+        queryset = queryset.annotate(
+            is_time_valid=Case(
+                When(offer_type='TIME_DEPENDENT', 
+                     start_time__lte=now, 
+                     end_time__gte=now, 
+                     then=Value(True)),
+                When(offer_type='TIME_DEPENDENT', 
+                     then=Value(False)),
+                default=Value(True),
+                output_field=BooleanField()
+            )
+        ).filter(is_time_valid=True)
+        
+        # Handle geographical offers
+        user_lat = self.request.GET.get("userLat")
+        user_lng = self.request.GET.get("userLng")
+        if user_lat and user_lng:
+            user_location = Point(float(user_lng), float(user_lat), srid=4326)
+            queryset = queryset.annotate(
+                distance=Distance('package__car_wash__location', user_location)
+            ).filter(
+                Q(offer_type='GEOGRAPHICAL', distance__lte=F('radius_miles') * 1609.34) |  # Convert miles to meters
+                Q(offer_type__in=['TIME_DEPENDENT', 'ONE_TIME'])
+            )
+        else:
+            queryset = queryset.filter(offer_type__in=['TIME_DEPENDENT', 'ONE_TIME'])
+        
+        # Handle one-time offers (filter out used offers for current user)
+        user_metadata = utils.handle_user_meta_data(self.request.headers.get("Authorization"))
+        if user_metadata:
+            queryset = queryset.exclude(
+                Q(offer_type='ONE_TIME') & 
+                Q(codes__usages__user_metadata__email=user_metadata['email'])
+            )
+        
+        return queryset.distinct()
 
     def get_serializer_context(self):
         context = super().get_serializer_context()

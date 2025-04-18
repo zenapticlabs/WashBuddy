@@ -18,7 +18,8 @@ from .models import (
     CarWashPackage,
     AmenityCarWashMapping,
     Offer,
-    CarWashCode
+    CarWashCode,
+    CarWashCodeUsage
 )
 
 @admin.register(WashType)
@@ -190,11 +191,22 @@ class OfferAdmin(admin.ModelAdmin):
 
 @admin.register(CarWashCode)
 class CarWashCodeAdmin(admin.ModelAdmin):
-    list_display = ('code', 'offer', 'is_used', 'used_at')
-    list_filter = ('is_used', 'offer__offer_type')
+    list_display = ('code', 'offer', 'usage_count')
+    list_filter = ('offer__offer_type',)
     search_fields = ('code', 'offer__name')
-    readonly_fields = ('used_at', 'used_by_metadata')
     raw_id_fields = ('offer',)
     
-    def get_queryset(self, request):
-        return super().get_queryset(request).select_related('offer__package__car_wash')
+    def usage_count(self, obj):
+        return obj.usages.count()
+    usage_count.short_description = 'Usage Count'
+
+@admin.register(CarWashCodeUsage)
+class CarWashCodeUsageAdmin(admin.ModelAdmin):
+    list_display = ('code', 'used_at', 'user_email')
+    list_filter = ('used_at',)
+    search_fields = ('code__code', 'user_metadata')
+    raw_id_fields = ('code',)
+    
+    def user_email(self, obj):
+        return obj.user_metadata.get('email', '')
+    user_email.short_description = 'User Email'
