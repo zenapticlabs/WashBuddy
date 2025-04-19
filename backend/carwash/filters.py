@@ -1,6 +1,6 @@
 from rest_framework import filters
 import django_filters
-from .models import CarWash, CarWashReview
+from .models import CarWash, CarWashReview, CarWashCode, Offer
 from django.contrib.gis.geos import Point
 from django.contrib.gis.db.models.functions import Distance
 from django.db.models import Sum, Value, DecimalField, FloatField, Q
@@ -140,3 +140,29 @@ class ListCarWashReviewFilter(django_filters.FilterSet):
         model = CarWashReview
         fields = ("carWashId", "carWashName", "overall_rating", "wash_quality_rating", "price_value_rating", "facility_cleanliness_rating", "customer_service_rating", 
                   "amenities_extra_rating", "searchText", "sortBy")
+
+class ListCarWashCodeFilter(django_filters.FilterSet):
+    """
+    Filter class for car wash code list.
+    """
+    
+    offer = django_filters.BaseInFilter(field_name="offer__id", lookup_expr='in')
+    is_used = django_filters.BaseInFilter(field_name="is_used", lookup_expr='in')
+    code = django_filters.BaseInFilter(field_name="code", lookup_expr='in')
+    
+    class Meta:
+        model = CarWashCode
+        fields = ("offer", "is_used", "code")
+
+class ListOfferFilter(django_filters.FilterSet):
+    """
+    Filter class for offer list.
+    """
+    
+    package = django_filters.BaseInFilter(field_name="package__id", lookup_expr='in')
+    offer_type = django_filters.BaseInFilter(field_name="offer_type", lookup_expr='in')
+    name = django_filters.BaseInFilter(field_name="name", lookup_expr='in')
+    
+    class Meta:
+        model = Offer
+        fields = ("package", "offer_type", "name")
