@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 // import { getAmenities } from "@/services/AmenityService";
 // import { getWashTypes } from "@/services/WashType";
-import { Amenities, Car_Wash_Type_Value, WashTypes } from "@/utils/constants";
+import { Amenities, Car_Wash_Type_Value, INITIAL_FILTER_STATE, WashTypes } from "@/utils/constants";
 interface FilterBarProps {
   filters: FilterState;
   setFilters: (filters: FilterState) => void;
@@ -140,6 +140,13 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
     },
   ];
 
+  const handleResetFilters = () => {
+    setFilters({
+      ...INITIAL_FILTER_STATE,
+      userLat: filters.userLat,
+      userLng: filters.userLng,
+    });
+  };
   return (
     <>
       {filterConfigs.map((config) => (
@@ -165,7 +172,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
           </DropdownMenuContent>
         </DropdownMenu>
       ))}
-      <Button variant="ghost" className="rounded-full" onClick={() => setInlineFilters(filters)}>Reset Filters</Button>
+      <Button variant="ghost" className="rounded-full" onClick={handleResetFilters}>Reset Filters</Button>
       <Button className="rounded-full" onClick={() => setFilters(inlineFilters)}>Apply Filters</Button>
     </>
   );

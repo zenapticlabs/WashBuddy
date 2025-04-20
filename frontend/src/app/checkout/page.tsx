@@ -106,7 +106,6 @@ const MainContent = () => {
                     }),
                 });
                 const data = await response.json();
-                console.log(data);
                 setClientSecret(data.clientSecret);
             } catch (error) {
                 console.error('Error fetching client secret:', error);
@@ -114,7 +113,6 @@ const MainContent = () => {
         };
 
         if (carWashPackage) {
-            console.log(carWashPackage);
             fetchClientSecret();
         }
     }, [carWashPackage]);

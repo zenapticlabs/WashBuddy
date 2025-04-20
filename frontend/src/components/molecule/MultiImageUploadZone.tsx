@@ -23,7 +23,7 @@ const MultiImageUploadZone = ({
   originalImages: any[];
   title?: string;
   required?: boolean;
-  handleAddImage: (image_type: string, image_url: string) => void;
+  handleAddImage: (images: any[]) => void;
   handleDeleteImage: (image_url: string) => void;
 }) => {
   const [uploading, setUploading] = useState(false);
@@ -31,19 +31,23 @@ const MultiImageUploadZone = ({
   image_urls = images
     .filter((image: any) => image.image_type == image_type)
     ?.map((image: any) => image.image_url);
-  const handleFileChange = async (file: File | null) => {
-    if (!file) return;
+  const handleFileChange = async (files: FileList | null) => {
+    if (!files) return;
     setUploading(true);
     // const fileName = await uploadFileToS3(file);
-
+    const uploadedImages = [];
     try {
-      const sanitizedFileName = file.name.replace(/\s+/g, '_');
-      const presignedUrl = await getPresignedUrl(sanitizedFileName);
-      await uploadFile(presignedUrl.signed_url, file);
-      const fileUrl = `${NEXT_PUBLIC_STORAGE_ENDPOINT}/object/public/${NEXT_PUBLIC_STORAGE_BUCKET_NAME}/${presignedUrl.path}`;
+      for (const file of files) {
+        const sanitizedFileName = file.name.replace(/\s+/g, '_');
+        const presignedUrl = await getPresignedUrl(sanitizedFileName);
+        await uploadFile(presignedUrl.signed_url, file);
+        const fileUrl = `${NEXT_PUBLIC_STORAGE_ENDPOINT}/object/public/${NEXT_PUBLIC_STORAGE_BUCKET_NAME}/${presignedUrl.path}`;
 
-      // Add the uploaded image to your application state
-      handleAddImage(image_type, fileUrl);
+        // Add the uploaded image to your application state
+        // handleAddImage(image_type, fileUrl);
+        uploadedImages.push({ image_type, image_url: fileUrl });
+      }
+      handleAddImage(uploadedImages);
       toast.success("File uploaded successfully!");
     } catch (error) {
       console.error("Error uploading file:", error);
@@ -78,7 +82,7 @@ const MultiImageUploadZone = ({
       <ImageUploadZone
         title={title}
         required={true}
-        onFileChange={(file) => handleFileChange(file)}
+        onFileChange={(files) => handleFileChange(files)}
       />
     </div>
   );

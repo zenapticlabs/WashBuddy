@@ -81,9 +81,6 @@ const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showPurchase, setShowPurchase] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
-  useEffect(() => {
-    console.log(isModalOpen);
-  }, [isModalOpen]);
 
   useEffect(() => {
     if (showPurchase && !clientSecret) {
@@ -178,9 +175,9 @@ const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
                     </div>
                   ))}
                 </div>
-                <div className="flex items-center justify-end mt-4">
+                {/* <div className="flex items-center justify-end mt-4">
                   <Button size="sm" onClick={handleBuyNowClick}>Buy now</Button>
-                </div>
+                </div> */}
               </>
             ) : (
               <>

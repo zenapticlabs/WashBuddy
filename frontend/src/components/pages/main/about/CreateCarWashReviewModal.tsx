@@ -239,10 +239,10 @@ const CreateCarWashReviewModal: React.FC<{
                   </div>
                 )}
               </div>
-              <ImageUploadZone
+              {/* <ImageUploadZone
                 required={true}
                 onFileChange={(file) => handleFileChange(file)}
-              />
+              /> */}
             </div>
           </div>
         </div>

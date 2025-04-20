@@ -237,10 +237,10 @@ const CarWashContent = () => {
   //   }));
   // };
 
-  const handleUploadImage = (image_type: string, image_url: string) => {
+  const handleUploadImage = (images: any[]) => {
     setFormData((prevData: any) => ({
       ...prevData,
-      images: [...prevData.images, { image_type, image_url }],
+      images: [...prevData.images, ...images],
     }));
   };
   const handleDeleteImage = (image_url: string) => {

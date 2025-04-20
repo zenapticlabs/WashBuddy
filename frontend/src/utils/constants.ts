@@ -18,7 +18,6 @@ import CarpetShampooMachineIcon from "@/assets/amenities-icons/carpet-shampoo-ma
 import InBayVacuumIcon from "@/assets/amenities-icons/in-bay-vacuum.svg";
 import CreditCardsAcceptedIcon from "@/assets/amenities-icons/credit-cards-accepted.svg";
 
-
 export const CAR_SERVICES_TYPE = {
   WASH_TYPE: "Wash Type",
   AMENITIES: "Amenities",
@@ -260,6 +259,23 @@ export const WashTypes: CarServiceWashType[] = [
     icon: DryerIcon,
   },
 ];
+
+export const INITIAL_FILTER_STATE = {
+  automaticCarWash: true,
+  selfServiceCarWash: false,
+  washTypeName: [],
+  ratings: [],
+  distance: 3,
+  priceRange: 0,
+  amenityName: [],
+  operatingHours: [],
+  sortBy: [SortBy[Car_Wash_Type.AUTOMATIC][0].value],
+  pagination: true,
+  page_size: 30,
+  userLat: 0,
+  userLng: 0,
+  page: 1,
+};
 
 export const Amenities: CarServiceAmenity[] = [
   {
