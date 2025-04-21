@@ -5,23 +5,28 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2025-03-31.basil',
 });
 
-export async function GET(
-    request: Request,
-    context: { params: Promise<{ payment_intent: string }> }
-) {
-    const { payment_intent } = await context.params;
-    try {
-        const paymentIntent = await stripe.paymentIntents.retrieve(payment_intent);
+export async function GET(request: Request) {
+    const { searchParams } = new URL(request.url);
+    const paymentIntent = searchParams.get('paymentIntent');
 
-        if (paymentIntent.status !== 'succeeded') {
+    if (!paymentIntent) {
+        return NextResponse.json(
+            { error: 'Payment intent is required' },
+            { status: 400 }
+        );
+    }
+
+    try {
+        const paymentIntentObj = await stripe.paymentIntents.retrieve(paymentIntent);
+
+        if (paymentIntentObj.status !== 'succeeded') {
             return NextResponse.json(
                 { error: 'Payment not successful' },
                 { status: 400 }
             );
         }
 
-        const carwashCode = generateCarwashCode(paymentIntent.metadata.carWashId);
-
+        const carwashCode = generateCarwashCode(paymentIntentObj.metadata.carWashId);
 
         return NextResponse.json({ code: carwashCode });
     } catch (error) {

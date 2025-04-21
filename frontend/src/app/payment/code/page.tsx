@@ -26,7 +26,7 @@ function PaymentCodeContent() {
 
         const fetchCarwashCode = async () => {
             try {
-                const response = await axiosInstance.get(`${window.location.origin}/api/payment/code/${paymentIntent}`);
+                const response = await axiosInstance.get(`${window.location.origin}/api/payment/code/?paymentIntent=${paymentIntent}`);
                 if (response.data.code) {
                     setCarwashCode(response.data.code);
                     setStatus('success');

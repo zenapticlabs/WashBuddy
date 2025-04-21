@@ -49,6 +49,12 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
     setInlineFilters(filters);
   }, [filters]);
 
+  const handleApplyFilters = () => {
+    setFilters({
+      ...inlineFilters,
+      page: 1
+    });
+  }
 
   const filterConfigs = [
     {
@@ -173,7 +179,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
         </DropdownMenu>
       ))}
       <Button variant="ghost" className="rounded-full" onClick={handleResetFilters}>Reset Filters</Button>
-      <Button className="rounded-full" onClick={() => setFilters(inlineFilters)}>Apply Filters</Button>
+      <Button className="rounded-full" onClick={handleApplyFilters}>Apply Filters</Button>
     </>
   );
 };
