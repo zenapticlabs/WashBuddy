@@ -161,6 +161,7 @@ function HomeContent() {
   ) => {
     setFilters({
       ...filters,
+      page: 1,
       distance: Number(Math.ceil(radius / 2)),
       userLat: center.latitude,
       userLng: center.longitude,

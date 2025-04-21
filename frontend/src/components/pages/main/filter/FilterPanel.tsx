@@ -96,7 +96,10 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   };
 
   const handleApply = () => {
-    setFilters(inlineFilters);
+    setFilters({
+      ...inlineFilters,
+      page: 1
+    });
     setOpen(false);
   };
 
