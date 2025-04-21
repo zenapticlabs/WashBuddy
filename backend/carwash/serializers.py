@@ -118,7 +118,13 @@ class CarWashListSerializer(DynamicFieldsSerializerMixin, serializers.ModelSeria
         return AmenitySerializer(instance.amenities, many=True, context={"car_wash": instance}).data
     
     def get_packages(self, instance):
-        return CarWashPackageSerializer(instance.packages, many=True, context={"request": self.context.get("request")}).data
+        wash_type_names = self.context.get("request", {}).GET.get("washTypeName", None)
+        if wash_type_names:
+            wash_type_names_list = wash_type_names.split(",")
+            packages = instance.packages.filter(wash_types__name__in=wash_type_names_list).distinct()
+        else:
+            packages = instance.packages.all()
+        return CarWashPackageSerializer(packages, many=True, context={"request": self.context.get("request")}).data
     
     def get_location(self, instance):
         if instance.location:
