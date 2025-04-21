@@ -64,6 +64,10 @@ function HomeContent() {
   }, []);
 
   useEffect(() => {
+    setSelectedCarWash(null);
+  }, [filters]);
+
+  useEffect(() => {
     if (locationData && !currentLocation) {
       setCurrentLocation(locationData);
     }
@@ -228,6 +232,7 @@ function HomeContent() {
               />
             </div>
             <CarWashDetail
+              selectedWashTypes={filters.washTypeName}
               data={selectedCarWash}
               open={openAbout}
               setOpen={setOpenAbout}

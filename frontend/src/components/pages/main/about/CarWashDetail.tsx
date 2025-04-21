@@ -30,6 +30,7 @@ interface CarWashDetailProps {
   open: boolean;
   setOpen: (open: boolean) => void;
   onNavigate?: (location: { lat: number; lng: number }) => void;
+  selectedWashTypes: string[];
 }
 
 const emptyImageURL =
@@ -40,7 +41,9 @@ const CarWashDetail: React.FC<CarWashDetailProps> = ({
   onNavigate,
   open,
   setOpen,
+  selectedWashTypes,
 }) => {
+  const [reviewLoading, setReviewLoading] = useState(true);
   const [reviews, setReviews] = useState<any[]>([]);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
@@ -86,8 +89,10 @@ const CarWashDetail: React.FC<CarWashDetailProps> = ({
   }, [data]);
 
   useEffect(() => {
+    setReviewLoading(true);
     getReviews(data?.id.toString() || "").then((res: any) => {
       setReviews(res.data[0].results || []);
+      setReviewLoading(false);
     });
   }, [data]);
 
@@ -137,89 +142,130 @@ const CarWashDetail: React.FC<CarWashDetailProps> = ({
             </button>
           </div>
           <div className="flex flex-col gap-2 p-3">
-            <div className="flex items-center justify-between">
-              <div className="text-headline-4 text-neutral-900">
-                {data?.car_wash_name}
+            {reviewLoading && (
+              <div className="flex h-full flex-col gap-2">
+                <Skeleton className="w-48 h-6" />
+                <Skeleton className="w-24 h-4" />
+                <Skeleton className="w-full h-4" />
+                <Skeleton className="w-full h-4" />
+                <Separator className="" />
+                <Tabs
+                  defaultValue="aboutSkeleton"
+                  className="w-full"
+                >
+                  <TabsList className="bg-transparent w-full">
+                    <TabsTrigger value="aboutSkeleton" className="w-full text-title-2">
+                      About
+                    </TabsTrigger>
+                    <TabsTrigger value="reviewsSkeleton" className="w-full text-title-2">
+                      Reviews
+                    </TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="aboutSkeleton">
+                    <div className="flex flex-col gap-2">
+                      <Skeleton className="w-full h-4" />
+                      <Skeleton className="w-2/3 h-4" />
+                      <Skeleton className="w-full h-4" />
+                      <Skeleton className="w-full h-4" />
+                      <Skeleton className="w-full h-4" />
+                      <Skeleton className="w-full h-4" />
+                      <Skeleton className="w-full h-4" />
+
+                    </div>
+                  </TabsContent>
+                  <TabsContent value="reviewsSkeleton">
+                    <Skeleton className="w-full h-4" />
+                  </TabsContent>
+                </Tabs>
+
               </div>
-              <button
-                onClick={handleNavigate}
-                className="flex items-center justify-center text-white gap-2 w-8 h-8 bg-blue-500 rounded-lg hover:bg-blue-600"
-              >
-                <ArrowRight size={18} />
-              </button>
-            </div>
-            <div className="flex items-center gap-2">
-              <span
-                className={`text-body-2 ${
-                  isOpen ? "text-accent-green" : "text-accent-red"
-                }`}
-              >
-                {isOpen ? "Open" : "Closed"}
-              </span>
-              {data.open_24_hours && (
-                <>
-                  <span className="w-1 h-1 bg-[#D9D9D9] rounded-full"></span>
-                  <span className="text-body-2 text-neutral-500">24 hours</span>
-                </>
-              )}
-              {!data.open_24_hours && isOpen && (
-                <>
-                  <span className="w-1 h-1 bg-[#D9D9D9] rounded-full"></span>
-                  <span className="text-body-2 text-neutral-500">
-                    Closes {closingTime}
-                  </span>
-                </>
-              )}
-              <Star className="w-4 h-4 text-accent-yellow fill-accent-yellow" />
-              <span className="text-title-2 text-accent-yellow">
-                {data?.reviews_summary?.average_rating}
-                <span className="pl-1 text-body-3 text-neutral-300">
-                  ({data.reviews_summary?.total_reviews || 0})
-                </span>
-              </span>
-            </div>
-            <div className="flex flex-col gap-2 mb-2">
-              <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-neutral-500" />
-                <div className="flex items-center gap-0.5 text-body-2 text-neutral-500">
-                  {data?.formatted_address}
-                  <Dot className="w-4 h-4 text-neutral-500" />
-                  {Number(data.distance).toFixed(2)} miles
+            )}
+            {!reviewLoading && (
+              <>
+                <div className="flex items-center justify-between">
+                  <div className="text-headline-4 text-neutral-900">
+                    {data?.car_wash_name}
+                  </div>
+                  <button
+                    onClick={handleNavigate}
+                    className="flex items-center justify-center text-white gap-2 w-8 h-8 bg-blue-500 rounded-lg hover:bg-blue-600"
+                  >
+                    <ArrowRight size={18} />
+                  </button>
                 </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Phone className="w-4 h-4 text-neutral-500" />
-                <span className="text-body-2 text-neutral-500">
-                  {data?.phone || "No phone number"}
-                </span>
-              </div>
-            </div>
-            <Separator className="" />
-            <Tabs
-              defaultValue="about"
-              value={activeTab}
-              onValueChange={setActiveTab}
-              className="w-full"
-            >
-              <TabsList className="bg-transparent w-full">
-                <TabsTrigger value="about" className="w-full text-title-2">
-                  About
-                </TabsTrigger>
-                <TabsTrigger value="reviews" className="w-full text-title-2">
-                  Reviews
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="about">
-                <CarWashAbout data={data} />
-              </TabsContent>
-              <TabsContent value="reviews">
-                <CarWashReviews
-                  setReviewOpen={setReviewOpen}
-                  reviews={reviews}
-                  reviewsSummary={data?.reviews_summary}
-                />
-              </TabsContent>
-            </Tabs>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`text-body-2 ${isOpen ? "text-accent-green" : "text-accent-red"
+                      }`}
+                  >
+                    {isOpen ? "Open" : "Closed"}
+                  </span>
+                  {data.open_24_hours && (
+                    <>
+                      <span className="w-1 h-1 bg-[#D9D9D9] rounded-full"></span>
+                      <span className="text-body-2 text-neutral-500">24 hours</span>
+                    </>
+                  )}
+                  {!data.open_24_hours && isOpen && (
+                    <>
+                      <span className="w-1 h-1 bg-[#D9D9D9] rounded-full"></span>
+                      <span className="text-body-2 text-neutral-500">
+                        Closes {closingTime}
+                      </span>
+                    </>
+                  )}
+                  <Star className="w-4 h-4 text-accent-yellow fill-accent-yellow" />
+                  <span className="text-title-2 text-accent-yellow">
+                    {data?.reviews_summary?.average_rating}
+                    <span className="pl-1 text-body-3 text-neutral-300">
+                      ({data.reviews_summary?.total_reviews || 0})
+                    </span>
+                  </span>
+                </div>
+                <div className="flex flex-col gap-2 mb-2">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-neutral-500" />
+                    <div className="flex items-center gap-0.5 text-body-2 text-neutral-500">
+                      {data?.formatted_address}
+                      <Dot className="w-4 h-4 text-neutral-500" />
+                      {Number(data.distance).toFixed(2)} miles
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Phone className="w-4 h-4 text-neutral-500" />
+                    <span className="text-body-2 text-neutral-500">
+                      {data?.phone || "No phone number"}
+                    </span>
+                  </div>
+                </div>
+                <Separator className="" />
+                <Tabs
+                  defaultValue="about"
+                  value={activeTab}
+                  onValueChange={setActiveTab}
+                  className="w-full"
+                >
+                  <TabsList className="bg-transparent w-full">
+                    <TabsTrigger value="about" className="w-full text-title-2">
+                      About
+                    </TabsTrigger>
+                    <TabsTrigger value="reviews" className="w-full text-title-2">
+                      Reviews
+                    </TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="about">
+                    <CarWashAbout data={data} selectedWashTypes={selectedWashTypes} />
+                  </TabsContent>
+                  <TabsContent value="reviews">
+                    <CarWashReviews
+                      setReviewOpen={setReviewOpen}
+                      reviews={reviews}
+                      reviewsSummary={data?.reviews_summary}
+                    />
+                  </TabsContent>
+                </Tabs>
+              </>
+            )}
           </div>
         </div>
       </ScrollArea>
