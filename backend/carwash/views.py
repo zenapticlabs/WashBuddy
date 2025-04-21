@@ -1,5 +1,5 @@
 import uuid
-from drf_spectacular.utils import extend_schema, OpenApiParameter
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse, OpenApiExample
 from drf_spectacular.types import OpenApiTypes
 from rest_framework import viewsets, status, generics
 from rest_framework.response import Response
@@ -294,6 +294,43 @@ class CarWashCodeCreateView(generics.CreateAPIView):
     serializer_class = CarWashCodeCreatePatchSerializer
     permission_classes = [AllowAny]
 
+@extend_schema(
+    summary="Mark Car Wash Code as Used",
+    description="Validates and marks a car wash code as used, checking time, location, and usage restrictions",
+    request=CarWashCodeUsageCreateSerializer,
+    parameters=[
+        OpenApiParameter(
+            name="Authorization",
+            type=str,
+            location=OpenApiParameter.HEADER,
+            description="JWT token for user authentication",
+            required=True
+        )
+    ],
+    responses={
+        201: OpenApiResponse(response=CarWashCodeUsageCreateSerializer),
+        400: OpenApiResponse(response=OpenApiTypes.OBJECT),
+        404: OpenApiResponse(response=OpenApiTypes.OBJECT)
+    },
+    examples=[
+        OpenApiExample(
+            'Geographical Offer Example',
+            value={
+                'code': 'WASH123',
+                'location': {
+                    'lat': 37.7749,
+                    'lng': -122.4194
+                }
+            }
+        ),
+        OpenApiExample(
+            'Time-Dependent or One-Time Offer Example',
+            value={
+                'code': 'WASH123'
+            }
+        )
+    ]
+)
 class CarWashCodeMarkAsUsedView(generics.CreateAPIView):
     permission_classes = [AllowAny]
     serializer_class = CarWashCodeUsageCreateSerializer
@@ -302,7 +339,7 @@ class CarWashCodeMarkAsUsedView(generics.CreateAPIView):
         context = super().get_serializer_context()
         context.update({"authorization_header": self.request.headers.get("Authorization")})
         return context
-        
+    
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -419,7 +456,51 @@ class ListCarWashCodeAPIView(DynamicFieldsViewMixin, ListAPIView):
         context = super().get_serializer_context()
         context.update({"request": self.request})
         return context
-
+    
+    @extend_schema(
+        summary="List Car Wash Codes",
+        description="Get a list of car wash codes with optional filtering",
+        parameters=[
+            OpenApiParameter(
+                name="code",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description="Filter by code value",
+                required=False
+            ),
+            OpenApiParameter(
+                name="status",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description="Filter by code status (active/inactive)",
+                required=False,
+                enum=['active', 'inactive']
+            ),
+            OpenApiParameter(
+                name="offer_id",
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
+                description="Filter by associated offer ID",
+                required=False
+            ),
+            OpenApiParameter(
+                name="pagination",
+                type=OpenApiTypes.BOOL,
+                location=OpenApiParameter.QUERY,
+                description="Enable/disable pagination (default: True)",
+                required=False,
+                default=True
+            ),
+            OpenApiParameter(
+                name="fields",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description="Comma-separated list of fields to include in the response",
+                required=False
+            )
+        ],
+        responses={200: CarWashCodeSerializer}
+    )
     def get(self, request, *args, **kwargs):
         serializer = super().list(request, *args, **kwargs)
 
@@ -501,6 +582,42 @@ class ListOfferAPIView(DynamicFieldsViewMixin, ListAPIView):
         context.update({"request": self.request})
         return context
 
+    @extend_schema(
+        summary="List Offers",
+        description="Get a list of available offers with optional filtering",
+        parameters=[
+            OpenApiParameter(
+                name="userLat",
+                type=OpenApiTypes.NUMBER,
+                location=OpenApiParameter.QUERY,
+                description="User's latitude coordinate for geographical offers",
+                required=False
+            ),
+            OpenApiParameter(
+                name="userLng", 
+                type=OpenApiTypes.NUMBER,
+                location=OpenApiParameter.QUERY,
+                description="User's longitude coordinate for geographical offers",
+                required=False
+            ),
+            OpenApiParameter(
+                name="pagination",
+                type=OpenApiTypes.BOOL,
+                location=OpenApiParameter.QUERY,
+                description="Enable/disable pagination (default: True)",
+                required=False,
+                default=True
+            ),
+            OpenApiParameter(
+                name="fields",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                description="Comma-separated list of fields to include in the response",
+                required=False
+            )
+        ],
+        responses={200: OfferSerializer}
+    )
     def get(self, request, *args, **kwargs):
         serializer = super().list(request, *args, **kwargs)
 
