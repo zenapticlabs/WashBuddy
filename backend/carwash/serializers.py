@@ -64,13 +64,7 @@ class CarWashPackageSerializer(serializers.ModelSerializer):
         exclude = ('car_wash',)
 
     def get_wash_types(self, instance):
-        wash_type_names = self.context.get("request", {}).GET.get("washTypeName", None)
-        if wash_type_names:
-            wash_type_names_list = wash_type_names.split(",")
-            filtered_wash_type = instance.wash_types.filter(name__in=wash_type_names_list)
-            return WashTypeSerializer(filtered_wash_type, many=True).data
-        else:
-            return WashTypeSerializer(instance.wash_types, many=True).data
+        return WashTypeSerializer(instance.wash_types, many=True).data
 
 class CarWashTypeSerializer(serializers.ModelSerializer):    
     class Meta:
