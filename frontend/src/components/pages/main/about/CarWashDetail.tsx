@@ -30,6 +30,7 @@ interface CarWashDetailProps {
   open: boolean;
   setOpen: (open: boolean) => void;
   onNavigate?: (location: { lat: number; lng: number }) => void;
+  selectedWashTypes: string[];
 }
 
 const emptyImageURL =
@@ -40,6 +41,7 @@ const CarWashDetail: React.FC<CarWashDetailProps> = ({
   onNavigate,
   open,
   setOpen,
+  selectedWashTypes,
 }) => {
   const [reviewLoading, setReviewLoading] = useState(true);
   const [reviews, setReviews] = useState<any[]>([]);
@@ -252,7 +254,7 @@ const CarWashDetail: React.FC<CarWashDetailProps> = ({
                     </TabsTrigger>
                   </TabsList>
                   <TabsContent value="about">
-                    <CarWashAbout data={data} />
+                    <CarWashAbout data={data} selectedWashTypes={selectedWashTypes} />
                   </TabsContent>
                   <TabsContent value="reviews">
                     <CarWashReviews
