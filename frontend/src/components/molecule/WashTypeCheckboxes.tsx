@@ -1,5 +1,4 @@
 import { CarServiceWashType } from "@/types";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import {
   Accordion,
@@ -9,7 +8,6 @@ import {
 } from "@/components/ui/accordion";
 import { CircleBadge } from "../ui/circleBadge";
 import { CustomIconToggle } from "../ui/customIconToggle";
-import Image from "next/image";
 
 interface WashTypeCheckboxesProps {
   value?: string[];

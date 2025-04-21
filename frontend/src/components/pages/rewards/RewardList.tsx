@@ -1,6 +1,5 @@
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { CarWashCard } from "@/components/organism/carWashCard";
-import { FilterState, IMyReview } from "@/types";
+import { IMyReview } from "@/types";
 import { Button } from "@/components/ui/button";
 import {
   ChevronDown,
@@ -10,18 +9,7 @@ import {
   Search,
   Star,
 } from "lucide-react";
-import { useState } from "react";
-import { SortBy, Car_Wash_Type } from "@/utils/constants";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import { CarWashResponse } from "@/types/CarServices";
-import { CarWashSkeleton } from "@/components/organism/carWashSkeleton";
-import { CustomPagination } from "@/components/molecule/CustomPagination";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DropdownMenuContent,

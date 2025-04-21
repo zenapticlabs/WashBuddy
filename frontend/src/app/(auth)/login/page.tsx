@@ -6,7 +6,7 @@ import car from "@/assets/car.png";
 import { Button } from "@/components/ui/button";
 import { ChevronLeftIcon, Loader2, MailIcon } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState, Suspense } from "react";
+import { useEffect, useState, Suspense, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { InputOTP } from "@/components/molecule/InputOTP";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,26 +23,43 @@ function LoginContent() {
     user,
     signinWithPassword,
   } = useAuth();
-  
+
   // Get email and step from URL query parameters
   const email = searchParams.get('email') || '';
   const urlStep = searchParams.get('step');
-  
+
   // Initialize step from URL if available, otherwise default to 1
   const [step, setStep] = useState(urlStep ? parseInt(urlStep) : 1);
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
-  
+
+  const handleVerifyOTP = useCallback(async () => {
+    setLoading(true);
+    try {
+      const { error } = await verifyOtp(email, otp.join(""));
+
+      if (error) {
+        toast.error("An unexpected error occurred");
+        return;
+      }
+      toast.success("OTP verified successfully");
+      window.location.href = "/";
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to verify OTP");
+    } finally {
+      setLoading(false);
+    }
+  }, [email, otp, verifyOtp]);
+
   // Add effect to watch for OTP completion
   useEffect(() => {
     if (otp.every(digit => digit !== "") && otp.length === 6) {
       handleVerifyOTP();
     }
-  }, [otp]);
+  }, [otp, handleVerifyOTP]);
 
   // Update URL when step changes
   useEffect(() => {
@@ -60,7 +77,7 @@ function LoginContent() {
     }
   }, [user, loading, router]);
 
-  
+
   const handleContinueWithEmail = () => {
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -89,15 +106,15 @@ function LoginContent() {
     try {
       const { error } = await signinWithPassword(email, password);
       if (error) {
-        setError(error.message);
+        setPasswordError(error.message);
         toast.error(error.message);
         return;
       }
       toast.success("Signed in successfully");
       window.location.href = "/";
-    } catch (error) {
-      setError("An unexpected error occurred");
-      toast.error("An unexpected error occurred");
+    } catch (error: any) {
+      const errorMessage = error?.message || "An unexpected error occurred";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -105,40 +122,17 @@ function LoginContent() {
 
   const handleSendOTP = async () => {
     setLoading(true);
-    setError(null);
     try {
       const { error } = await signInWithOtp(email);
 
       if (error) {
-        setError(error.message);
-        toast.error(error.message);
+        toast.error("An unexpected error occurred");
         return;
       }
       toast.success("OTP sent successfully");
       setStep(4);
-    } catch (error) {
-      setError("An unexpected error occurred");
-      toast.error("An unexpected error occurred");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerifyOTP = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const { error } = await verifyOtp(email, otp.join(""));
-
-      if (error) {
-        setError(error.message);
-        toast.error("An unexpected error occurred");
-        return;
-      }
-      toast.success("OTP verified successfully");
-      window.location.href = "/";
-    } catch (error) {
-      setError("An unexpected error occurred");
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to send OTP");
     } finally {
       setLoading(false);
     }
@@ -149,12 +143,10 @@ function LoginContent() {
     try {
       const { error } = await signInWithGoogle();
       if (error) {
-        setError(error.message);
-        toast.error(error.message);
+        toast.error("An unexpected error occurred");
       }
-    } catch (error) {
-      setError("An unexpected error occurred");
-      toast.error("An unexpected error occurred");
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to sign in with Google");
     } finally {
       setLoading(false);
     }
@@ -239,7 +231,7 @@ function LoginContent() {
           .
         </div>
         <div className="text-body-2 text-neutral-900">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link href="/signup" className="text-blue-500 underline">
             Sign up
           </Link>
@@ -351,7 +343,7 @@ function LoginContent() {
           <div className="border rounded-lg p-4">
             <h3 className="font-medium mb-3">Sign in with email code</h3>
             <div className="text-sm text-neutral-600 mb-3">
-              We'll send a 6-digit code to your email that you can use to sign
+              We&apos;ll send a 6-digit code to your email that you can use to sign
               in.
             </div>
             <Button
@@ -387,8 +379,8 @@ function LoginContent() {
 
         <InputOTP value={otp} onChange={setOtp} />
 
-        <div className="text-body-2 text-neutral-900 flex justify-center items-center gap-2">
-          Can't find the email?
+        <div className="text-body-2 text-neutral-900">
+          Can&apos;t find the email?
           <span
             className="text-blue-500 cursor-pointer font-bold"
             onClick={handleSendOTP}

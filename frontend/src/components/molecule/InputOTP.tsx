@@ -1,4 +1,4 @@
-import { KeyboardEvent, useRef, useState } from "react";
+import { KeyboardEvent, useRef } from "react";
 
 interface InputOTPProps {
   value: string[];

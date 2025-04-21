@@ -1,4 +1,3 @@
-import AirDryerIcon from "@/assets/wash-type-icons/Air dryer.svg";
 import DryerIcon from "@/assets/wash-type-icons/dryer.svg";
 import GraphineIcon from "@/assets/wash-type-icons/Graphine Sealant.svg";
 import HotWaxIcon from "@/assets/wash-type-icons/Hot wax.svg";
@@ -7,7 +6,6 @@ import TireShineIcon from "@/assets/wash-type-icons/Tire Shine.svg";
 import TouchlessWashIcon from "@/assets/wash-type-icons/Touchless wash.svg";
 import TripleFoamIcon from "@/assets/wash-type-icons/Triple foam.svg";
 import UnderBodyFlushIcon from "@/assets/wash-type-icons/Underbody flush.svg";
-import UnderBodySprayIcon from "@/assets/wash-type-icons/Underbody spray.svg";
 import { CarServiceAmenity, CarServiceWashType } from "@/types/CarServices";
 import FreeVacuumsIcon from "@/assets/amenities-icons/free-vacuums.svg";
 import AirgunIcon from "@/assets/amenities-icons/air-gun.svg";
@@ -19,7 +17,6 @@ import RugMatMachineIcon from "@/assets/amenities-icons/rug-mat-machine.svg";
 import CarpetShampooMachineIcon from "@/assets/amenities-icons/carpet-shampoo-machine.svg";
 import InBayVacuumIcon from "@/assets/amenities-icons/in-bay-vacuum.svg";
 import CreditCardsAcceptedIcon from "@/assets/amenities-icons/credit-cards-accepted.svg";
-
 
 export const CAR_SERVICES_TYPE = {
   WASH_TYPE: "Wash Type",
@@ -262,6 +259,23 @@ export const WashTypes: CarServiceWashType[] = [
     icon: DryerIcon,
   },
 ];
+
+export const INITIAL_FILTER_STATE = {
+  automaticCarWash: true,
+  selfServiceCarWash: false,
+  washTypeName: [],
+  ratings: [],
+  distance: 3,
+  priceRange: 0,
+  amenityName: [],
+  operatingHours: [],
+  sortBy: [SortBy[Car_Wash_Type.AUTOMATIC][0].value],
+  pagination: true,
+  page_size: 30,
+  userLat: 0,
+  userLng: 0,
+  page: 1,
+};
 
 export const Amenities: CarServiceAmenity[] = [
   {

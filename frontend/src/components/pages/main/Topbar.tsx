@@ -5,11 +5,9 @@ import { Button } from "@/components/ui/button";
 import AutomaticIcon from "@/assets/icons/automatic.svg";
 import SelfServiceIcon from "@/assets/icons/self-service.svg";
 import { Car_Wash_Type, SortBy } from "@/utils/constants";
-import user from "@/assets/user.png";
 import { Bell, MapPin, Plus } from "lucide-react";
 import { FilterState } from "@/types/filters";
-import { useEffect, useState } from "react";
-import CreateCarWashDiaolog from "./CreateCarWashDiaolog";
+import { useState } from "react";
 import Sidebar from "./Sidebar";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
@@ -18,11 +16,9 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
-import useLocationData from "@/hooks/useLocationData";
 const defaultAvatar =
   "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde";
 
@@ -55,7 +51,7 @@ const Topbar: React.FC<TopbarProps> = ({
   const { signOut, user } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  const [notiCount, setNotiCount] = useState(2);
+  const notiCount = 2
   // const [openCreateModal, setOpenCreateModal] = useState(false);
   const [openSidebar, setOpenSidebar] = useState(false);
 
@@ -103,7 +99,7 @@ const Topbar: React.FC<TopbarProps> = ({
   };
 
   return (
-    <div>
+    <div className="bg-white">
       <div
         className={`flex gap-2 items-center justify-between px-4 h-[66px] ${sideBarAlwaysOpen || openSidebar ? "border-b border-neutral-100" : ""
           }`}

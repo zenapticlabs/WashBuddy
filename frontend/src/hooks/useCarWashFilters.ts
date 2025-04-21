@@ -1,19 +1,19 @@
 import { useState, useEffect } from 'react';
 import { FilterState } from "@/types/filters";
-import { Car_Wash_Type, SortBy } from "@/utils/constants";
+import { Car_Wash_Type, INITIAL_FILTER_STATE, SortBy } from "@/utils/constants";
 import { useSearchParams } from 'next/navigation';
 
 function getFiltersFromParams(params: URLSearchParams): FilterState {
   return {
-    automaticCarWash: params.get("automaticCarWash") === "true",
-    selfServiceCarWash: params.get("selfServiceCarWash") === "true",
+    automaticCarWash: params.has("automaticCarWash") ? params.get("automaticCarWash") === "true" : true,
+    selfServiceCarWash: params.has("selfServiceCarWash") ? params.get("selfServiceCarWash") === "true" : false,
     washTypeName: params.getAll("washTypeName").map(String),
     ratings: params.getAll("ratings").map(Number),
     distance: Number(params.get("distance")) || 3,
     priceRange: Number(params.get("priceRange")) || 0,
     amenityName: params.getAll("amenityName").map(String),
     operatingHours: params.getAll("operatingHours").map(String),
-    sortBy: params.getAll("sortBy").map(String).length > 0 
+    sortBy: params.getAll("sortBy").map(String).length > 0
       ? params.getAll("sortBy").map(String)
       : [SortBy[Car_Wash_Type.AUTOMATIC][0].value],
     pagination: Boolean(params.get("pagination")) || true,
@@ -42,7 +42,7 @@ export function useCarWashFilters() {
     userLng: 0,
     page: 1,
   });
-  
+
   // Update filters whenever URL params change
   useEffect(() => {
     setFilters(getFiltersFromParams(new URLSearchParams(searchParams.toString())));

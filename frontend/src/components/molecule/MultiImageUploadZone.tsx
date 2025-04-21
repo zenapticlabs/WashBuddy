@@ -4,8 +4,6 @@ import { useState } from "react";
 import ImageUploadZone from "../ui/imageUploadZone";
 import { getPresignedUrl, uploadFile } from "@/services/UploadService";
 import { toast } from "sonner";
-import { XIcon } from "lucide-react";
-import Image from "next/image";
 import UploadedImageCard from "../ui/uploadedImageCard";
 
 const NEXT_PUBLIC_STORAGE_ENDPOINT = process.env.NEXT_PUBLIC_STORAGE_ENDPOINT;
@@ -25,36 +23,37 @@ const MultiImageUploadZone = ({
   originalImages: any[];
   title?: string;
   required?: boolean;
-  handleAddImage: (image_type: string, image_url: string) => void;
+  handleAddImage: (images: any[]) => void;
   handleDeleteImage: (image_url: string) => void;
 }) => {
   const [uploading, setUploading] = useState(false);
-  const [uploadingFile, setUploadingFile] = useState<File | null>(null);
   let image_urls = [""];
   image_urls = images
     .filter((image: any) => image.image_type == image_type)
     ?.map((image: any) => image.image_url);
-  const handleFileChange = async (file: File | null) => {
-    if (!file) return;
+  const handleFileChange = async (files: FileList | null) => {
+    if (!files) return;
     setUploading(true);
-    setUploadingFile(file);
     // const fileName = await uploadFileToS3(file);
-
+    const uploadedImages = [];
     try {
-      const sanitizedFileName = file.name.replace(/\s+/g, '_');
-      const presignedUrl = await getPresignedUrl(sanitizedFileName);
-      const uploadResponse = await uploadFile(presignedUrl.signed_url, file);
-      const fileUrl = `${NEXT_PUBLIC_STORAGE_ENDPOINT}/object/public/${NEXT_PUBLIC_STORAGE_BUCKET_NAME}/${presignedUrl.path}`;
+      for (const file of files) {
+        const sanitizedFileName = file.name.replace(/\s+/g, '_');
+        const presignedUrl = await getPresignedUrl(sanitizedFileName);
+        await uploadFile(presignedUrl.signed_url, file);
+        const fileUrl = `${NEXT_PUBLIC_STORAGE_ENDPOINT}/object/public/${NEXT_PUBLIC_STORAGE_BUCKET_NAME}/${presignedUrl.path}`;
 
-      // Add the uploaded image to your application state
-      handleAddImage(image_type, fileUrl);
+        // Add the uploaded image to your application state
+        // handleAddImage(image_type, fileUrl);
+        uploadedImages.push({ image_type, image_url: fileUrl });
+      }
+      handleAddImage(uploadedImages);
       toast.success("File uploaded successfully!");
     } catch (error) {
       console.error("Error uploading file:", error);
       toast.error("Failed to upload file");
     } finally {
       setUploading(false);
-      setUploadingFile(null);
     }
   };
 
@@ -83,7 +82,7 @@ const MultiImageUploadZone = ({
       <ImageUploadZone
         title={title}
         required={true}
-        onFileChange={(file) => handleFileChange(file)}
+        onFileChange={(files) => handleFileChange(files)}
       />
     </div>
   );

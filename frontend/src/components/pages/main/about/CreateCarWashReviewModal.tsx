@@ -4,7 +4,6 @@ import { Separator } from "@/components/ui/separator";
 import { SelectRate } from "@/components/ui/selectRate";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Star, XIcon } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
 import ImageUploadZone from "@/components/ui/imageUploadZone";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,7 +15,6 @@ import {
 } from "@/components/ui/sheet";
 import useMediaQuery from "@/hooks/useMediaQuery";
 import { useState } from "react";
-import MultiImageUploadZone from "@/components/molecule/MultiImageUploadZone";
 import UploadedImageCard from "@/components/ui/uploadedImageCard";
 import { uploadFile } from "@/services/UploadService";
 import { getPresignedUrl } from "@/services/UploadService";
@@ -48,19 +46,17 @@ const CreateCarWashReviewModal: React.FC<{
   const [amenities_extra_rating, setAmenitiesExtraRating] = useState(0);
   const [overall_rating, setOverallRating] = useState(0);
   const [uploading, setUploading] = useState(false);
-  const [uploadingFile, setUploadingFile] = useState<File | null>(null);
   const [images, setImages] = useState<{ image_url: string }[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleFileChange = async (file: File | null) => {
     if (!file) return;
     setUploading(true);
-    setUploadingFile(file);
 
     try {
       const sanitizedFileName = file.name.replace(/\s+/g, "-");
       const presignedUrl = await getPresignedUrl(sanitizedFileName);
-      const uploadResponse = await uploadFile(presignedUrl.signed_url, file);
+      await uploadFile(presignedUrl.signed_url, file);
       const fileUrl = `${NEXT_PUBLIC_STORAGE_ENDPOINT}/object/public/${NEXT_PUBLIC_STORAGE_BUCKET_NAME}/${presignedUrl.path}`;
 
       handleUploadImage(fileUrl);
@@ -70,7 +66,6 @@ const CreateCarWashReviewModal: React.FC<{
       toast.error("Failed to upload file");
     } finally {
       setUploading(false);
-      setUploadingFile(null);
     }
   };
 
@@ -244,10 +239,10 @@ const CreateCarWashReviewModal: React.FC<{
                   </div>
                 )}
               </div>
-              <ImageUploadZone
+              {/* <ImageUploadZone
                 required={true}
                 onFileChange={(file) => handleFileChange(file)}
-              />
+              /> */}
             </div>
           </div>
         </div>

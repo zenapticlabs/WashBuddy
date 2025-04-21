@@ -1,5 +1,3 @@
-import { Car_Wash_Type_Value } from "@/utils/constants";
-
 import { Accordion, AccordionContent, AccordionItem } from "../ui/accordion";
 import { Checkbox } from "../ui/checkbox";
 import { CarServiceAmenity, CarServiceWashType } from "@/types";
