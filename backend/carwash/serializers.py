@@ -333,9 +333,9 @@ class CarWashCodeSerializer(DynamicFieldsSerializerMixin, serializers.ModelSeria
         fields = '__all__'
 
 class OfferSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
-    package = CarWashPackageSerializer()
-    codes = CarWashCodeSerializer(many=True, read_only=True)
-
+    package_id = serializers.IntegerField(source='package.id', read_only=True)
+    car_wash_id = serializers.IntegerField(source='package.car_wash.id', read_only=True)
+    
     class Meta:
         model = Offer
         fields = '__all__'
