@@ -49,10 +49,12 @@ function HomeContent() {
   const mapRef = useRef<maplibregl.Map | null>(null);
   const cardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const [selectedLocation, setSelectedLocation] = useState<any>(null);
   const [address, setAddress] = useState<RadarAddress | null>(null);
   const {
     locationData,
-    fetchLocationData: fetchLocationData,
+    fetchLocationData,
+    fetchLocationFromCoordinates
   } = useLocationData();
 
   const { filters, setFilters } = useCarWashFilters();
@@ -68,9 +70,10 @@ function HomeContent() {
   }, [filters]);
 
   useEffect(() => {
-    if (locationData && !currentLocation) {
-      setCurrentLocation(locationData);
-    }
+    const urlLat = Number(searchParams.get("userLat"));
+    const urlLng = Number(searchParams.get("userLng"));
+    const hasValidUrlCoordinates = urlLat !== 0 && urlLng !== 0;
+
     if (address) {
       handleNavigateToLocation({
         lat: address.latitude ?? 0,
@@ -81,6 +84,17 @@ function HomeContent() {
         userLat: address.latitude,
         userLng: address.longitude,
       });
+    } else if (hasValidUrlCoordinates) {
+      setFilters({
+        ...filters,
+        userLat: urlLat,
+        userLng: urlLng,
+      });
+      handleNavigateToLocation({
+        lat: urlLat,
+        lng: urlLng,
+      });
+      handleSelectLocationFromURL(urlLat, urlLng);
     } else if (locationData) {
       setFilters({
         ...filters,
@@ -92,7 +106,14 @@ function HomeContent() {
         lng: locationData.location.coordinates[0],
       });
     }
-  }, [locationData, address]);
+    if (locationData && !currentLocation) {
+      setCurrentLocation(locationData);
+    }
+  }, [locationData, address, searchParams]);
+  const handleSelectLocationFromURL = async (lat: number, lng: number) => {
+    const locationFromURL = await fetchLocationFromCoordinates(lat, lng);
+    setSelectedLocation(locationFromURL);
+  }
   // Handle URL parameters for filters - only on initial mount
   useEffect(() => {
     const automaticCarWash = searchParams.get("automaticCarWash");
@@ -150,13 +171,20 @@ function HomeContent() {
   };
 
   const handleNavigateToLocation = (location: { lat: number; lng: number }) => {
-    if (mapRef.current) {
-      mapRef.current.flyTo({
-        center: [location.lng, location.lat],
-        zoom: 15,
-        essential: true,
-      });
-    }
+    const waitForMap = () => {
+      if (mapRef.current) {
+        mapRef.current.flyTo({
+          center: [location.lng, location.lat],
+          zoom: 15,
+          essential: true,
+        });
+      } else {
+        // Try again after a short delay
+        setTimeout(waitForMap, 100);
+      }
+    };
+
+    waitForMap();
   };
 
   const handleSearchArea = (
@@ -186,6 +214,7 @@ function HomeContent() {
           setShowMap={setShowMap}
           currentLocation={currentLocation}
           setAddress={setAddress}
+          selectedLocation={selectedLocation}
         />
         <div className="flex flex-1 overflow-hidden bg-neutral-100 relative md:flex-row flex-col">
           <div className="w-[550px] relative bg-white hidden md:flex flex-col">

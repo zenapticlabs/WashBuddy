@@ -5,9 +5,10 @@ import { RadarAddress } from "radar-sdk-js/dist/types";
 interface SearchBarProps {
   onChange: (option: RadarAddress | null) => void;
   currentLocation: any;
+  selectedLocation: any;
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ onChange, currentLocation }) => {
+const SearchBar: React.FC<SearchBarProps> = ({ onChange, currentLocation, selectedLocation }) => {
   const [recentSearches, setRecentSearches] = useState<RadarAddress[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isDragging, setIsDragging] = useState(false);
@@ -16,12 +17,14 @@ const SearchBar: React.FC<SearchBarProps> = ({ onChange, currentLocation }) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (currentLocation?.formatted_address) {
+    if (selectedLocation) {
+      setInputValue(selectedLocation.formatted_address);
+    } else if (currentLocation?.formatted_address) {
       setInputValue(currentLocation.formatted_address);
     } else {
       setInputValue("");
     }
-  }, [currentLocation]);
+  }, [currentLocation, selectedLocation]);
 
   useEffect(() => {
     const recentSearches = localStorage.getItem("recentSearches");
