@@ -24,6 +24,45 @@ const useLocationData = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [retryCount, setRetryCount] = useState(0);
 
+  const fetchLocationFromCoordinates = useCallback(async (lat: number, lng: number) => {
+    try {
+      const response = await fetch(
+        `https://api.radar.io/v1/geocode/reverse?coordinates=${lat},${lng}`,
+        {
+          headers: {
+            Authorization: process.env.NEXT_PUBLIC_RADAR_API_KEY || "",
+          },
+        }
+      );
+      const data = await response.json();
+
+      if (!data.addresses || !data.addresses[0]) {
+        throw new Error("No address data found");
+      }
+
+      const address = data.addresses[0];
+      const locationData = {
+        address: address.addressLabel,
+        city: address.city,
+        state: address.state,
+        state_code: address.stateCode,
+        postal_code: address.postalCode,
+        country: address.country,
+        country_code: address.countryCode,
+        formatted_address: address.formattedAddress,
+        location: {
+          type: "Point",
+          coordinates: [lng, lat],
+        },
+      };
+
+      return locationData;
+    } catch (err) {
+      console.error("Error fetching location from coordinates:", err);
+      throw err;
+    }
+  }, []);
+
   const fetchLocationData = useCallback(async () => {
     if (!navigator.geolocation) {
       setError("Geolocation is not supported by this browser.");
@@ -133,7 +172,13 @@ const useLocationData = () => {
     }
   }, [retryCount]);
 
-  return { locationData, error, loading, fetchLocationData };
+  return { 
+    locationData, 
+    error, 
+    loading, 
+    fetchLocationData,
+    fetchLocationFromCoordinates
+  };
 };
 
 export default useLocationData;

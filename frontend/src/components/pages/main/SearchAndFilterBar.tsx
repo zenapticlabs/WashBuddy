@@ -11,6 +11,7 @@ interface SearchAndFilterBarProps {
   setShowMap: (show: boolean) => void;
   currentLocation: any;
   setAddress: (address: RadarAddress | null) => void;
+  selectedLocation: any;
 }
 
 export function SearchAndFilterBar({
@@ -20,6 +21,7 @@ export function SearchAndFilterBar({
   setShowMap,
   currentLocation,
   setAddress,
+  selectedLocation,
 }: SearchAndFilterBarProps) {
   const handleChange = (address: RadarAddress | null) => {
     setAddress(address);
@@ -27,7 +29,7 @@ export function SearchAndFilterBar({
   return (
     <>
       <div className="flex items-center gap-2">
-        <SearchBar onChange={handleChange} currentLocation={currentLocation} />
+        <SearchBar onChange={handleChange} currentLocation={currentLocation} selectedLocation={selectedLocation} />
       </div>
 
       <div className="flex items-center justify-between px-4">
