@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { createClient } from '@supabase/supabase-js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
     apiVersion: '2025-03-31.basil',
 });
+
+// Initialize Supabase client with environment variables
+const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export async function POST(request: Request) {
     try {
@@ -23,7 +29,6 @@ export async function POST(request: Request) {
         const token = authHeader.split(' ')[1];
         
         // Verify the token with Supabase
-        const supabase = createClientComponentClient();
         const { data: { user }, error } = await supabase.auth.getUser(token);
 
         if (error || !user) {
