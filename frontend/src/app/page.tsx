@@ -22,6 +22,8 @@ import { Loader2 } from "lucide-react";
 import useLocationData from "@/hooks/useLocationData";
 import { RadarAddress } from "radar-sdk-js/dist/types";
 import { useAuth } from "@/contexts/AuthContext";
+import { useOffers } from "@/hooks/userOffers";
+import { CarOfferCard } from "@/components/organism/carOfferCard";
 
 export default function Home() {
   return (
@@ -60,7 +62,8 @@ function HomeContent() {
   const { filters, setFilters } = useCarWashFilters();
   const { carWashes, isLoading, count } =
     useCarWashes(filters);
-
+  const { offers, isLoading: isLoadingOffers } =
+    useOffers(filters);
   useEffect(() => {
     fetchLocationData();
   }, []);
@@ -223,7 +226,7 @@ function HomeContent() {
             </div>
             <ScrollArea ref={scrollAreaRef} className="w-full flex-1 px-2">
               <div className="flex flex-col gap-2 pr-4">
-                {(isLoading || !locationData) && (
+                {(isLoading || isLoadingOffers || !locationData) && (
                   <div className="flex flex-col gap-2">
                     <CarWashSkeleton />
                     <CarWashSkeleton />
@@ -233,21 +236,30 @@ function HomeContent() {
                     <CarWashSkeleton />
                   </div>
                 )}
-                {!isLoading &&
-                  carWashes?.map((carWash) => (
-                    <div
-                      key={carWash.id}
-                      ref={(el) => {
-                        if (el) cardRefs.current.set(String(carWash.id), el);
-                      }}
-                    >
-                      <CarWashCard
-                        data={carWash}
-                        onClick={() => handleOpenAbout(carWash)}
-                        isSelected={selectedCarWash?.id === carWash.id}
-                      />
-                    </div>
-                  ))}
+                {!isLoading && !isLoadingOffers &&
+                  (
+                    <>
+                      {offers?.filter((offer) => offer.offer_type == "GEOGRAPHICAL").map((offer) => (
+                        <div key={offer.id}>
+                          <CarOfferCard data={offer} onClick={() => { }} />
+                        </div>
+                      ))}
+                      {carWashes?.map((carWash) => (
+                        <div
+                          key={carWash.id}
+                          ref={(el) => {
+                            if (el) cardRefs.current.set(String(carWash.id), el);
+                          }}
+                        >
+                          <CarWashCard
+                            data={carWash}
+                            onClick={() => handleOpenAbout(carWash)}
+                            isSelected={selectedCarWash?.id === carWash.id}
+                          />
+                        </div>
+                      ))}
+                    </>
+                  )}
               </div>
             </ScrollArea>
             <div className="px-4 py-4">
