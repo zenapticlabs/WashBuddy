@@ -56,8 +56,17 @@ class CarWashImageSerializer(serializers.ModelSerializer):
         model = CarWashImage
         exclude = ('car_wash',)
 
+class OfferSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+    package_id = serializers.IntegerField(source='package.id', read_only=True)
+    car_wash_id = serializers.IntegerField(source='package.car_wash.id', read_only=True)
+
+    class Meta:
+        model = Offer
+        fields = '__all__'
+
 class CarWashPackageSerializer(serializers.ModelSerializer):
     wash_types = serializers.SerializerMethodField()
+    offer = OfferSerializer(read_only=True)
 
     class Meta:
         model = CarWashPackage
@@ -330,14 +339,6 @@ class CarWashCodeSerializer(DynamicFieldsSerializerMixin, serializers.ModelSeria
     
     class Meta:
         model = CarWashCode
-        fields = '__all__'
-
-class OfferSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
-    package_id = serializers.IntegerField(source='package.id', read_only=True)
-    car_wash_id = serializers.IntegerField(source='package.car_wash.id', read_only=True)
-    
-    class Meta:
-        model = Offer
         fields = '__all__'
 
 
