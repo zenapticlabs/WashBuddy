@@ -50,7 +50,7 @@ export function CarOfferCard({ data, onClick, isSelected }: CarOfferCardProps) {
               </div>
             </div>
             <Badge
-              variant="green"
+              variant="blue"
               className="text-title-3 text-white w-fit hidden md:block px-2 py-1 rounded-lg mt-2"
             >
               Special Washbuddy Price. Claim the best deal we have

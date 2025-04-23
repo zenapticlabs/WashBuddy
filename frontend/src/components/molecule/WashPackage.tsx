@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import axiosInstance from "@/lib/axios";
+import { Badge } from "../ui/badge";
 
 // Initialize Stripe
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
@@ -82,6 +83,26 @@ const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
   const [showPurchase, setShowPurchase] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
 
+  const validOffer = () => {
+    if (data.offer && data.offer.status === "ACTIVE") {
+      const offer = data.offer;
+      if (offer.offer_type === "TIME_DEPENDENT") {
+        const now = new Date();
+        const currentTime = now.toLocaleTimeString('en-US', { hour12: false });
+        // Convert offer times to 24-hour format for comparison
+        const startTime = offer.start_time.substring(0, 5); // "HH:mm"
+        const endTime = offer.end_time.substring(0, 5); // "HH:mm"
+
+        return currentTime >= startTime && currentTime <= endTime;
+      } else if (offer.offer_type === "ONE_TIME") {
+        return true;
+      } else {
+        return false;
+      }
+    }
+    return false;
+  }
+
   useEffect(() => {
     if (showPurchase && !clientSecret) {
       const fetchClientSecret = async () => {
@@ -124,8 +145,21 @@ const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
       >
         <div className="text-title-2 text-neutral-900">{data.name}</div>
         <div className="flex items-center gap-1 text-headline-5 my-1">
-          <span className="text-neutral-900">${data.price}</span>
+          {validOffer() && (
+            <div className="flex items-center gap-1">
+              <span className="text-green-500 text-headline-5">${Math.floor(data.offer.offer_price)}</span>
+              <span className="text-neutral-500 text-sm line-through">${Math.floor(data.price)}</span>
+            </div>
+          )}
+          {!validOffer() && (
+            <span className="text-neutral-900">${Math.floor(data.price)}</span>
+          )}
         </div>
+        {validOffer() && (
+          <Badge variant={data.offer?.offer_type === "TIME_DEPENDENT" ? "green" : "yellow"} className="text-title-3 text-white w-fit px-2 py-1 rounded-lg">
+            {data.offer?.offer_type === "TIME_DEPENDENT" ? "Time Dependent offer" : "One Time offer"}
+          </Badge>
+        )}
       </div>
 
       <Dialog open={isModalOpen} onOpenChange={handleModalClose}>
