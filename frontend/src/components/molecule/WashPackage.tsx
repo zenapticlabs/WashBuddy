@@ -139,26 +139,26 @@ const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="px-6 py-4 overflow-y-auto flex-1">
+          <div className="py-1 overflow-y-auto flex-1">
             {!showPurchase ? (
               <>
                 <div className="flex flex-col gap-4">
                   {Object.entries(washTypesBySubclass).map(([subclass, types]) => (
-                    <div key={subclass} className="flex flex-col gap-2">
-                      <div className="text-body-2 font-semibold text-neutral-900">
+                    <div key={subclass} className="flex flex-col gap-2 border-b border-neutral-100 pb-4 px-6 ">
+                      <div className="text-body-1 font-semibold text-neutral-900">
                         {subclass}
                       </div>
                       <div className="flex gap-2 flex-wrap">
                         {types.map((washType) => (
                           <div
                             key={washType.id}
-                            className="flex flex-col items-center gap-1"
+                            className="flex flex-col items-center gap-2 w-[100px] py-2 px-2"
                           >
                             <Image
                               src={washType.icon}
                               alt={washType.name}
-                              width={24}
-                              height={24}
+                              width={36}
+                              height={36}
                               className={`${data.wash_types
                                 .map((type: any) => type.id)
                                 .includes(Number(washType.id))
@@ -166,7 +166,7 @@ const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
                                 : "text-gray-300 opacity-30"
                                 }`}
                             />
-                            <span className="text-xs text-neutral-600 text-center max-w-[80px] line-clamp-2">
+                            <span className="text-sm text-neutral-600 text-center line-clamp-2">
                               {washType.name}
                             </span>
                           </div>
