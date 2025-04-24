@@ -19,7 +19,8 @@ from .models import (
     AmenityCarWashMapping,
     Offer,
     CarWashCode,
-    CarWashCodeUsage
+    CarWashCodeUsage,
+    Payment
 )
 
 @admin.register(WashType)
@@ -210,3 +211,15 @@ class CarWashCodeUsageAdmin(admin.ModelAdmin):
     def user_email(self, obj):
         return obj.user_metadata.get('email', '')
     user_email.short_description = 'User Email'
+
+
+@admin.register(Payment)
+class PaymentAdmin(ModelAdmin):
+    list_display = ('payment_intent_id', 'offer', 'amount', 'status', 'user_email', 'created_at')
+    list_filter = ('status', 'created_at')
+    search_fields = ('payment_intent_id', 'user_email', 'offer__name')
+    raw_id_fields = ('offer',)
+    readonly_fields = ('payment_intent_id', 'created_at', 'updated_at')
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related('offer__package__car_wash')

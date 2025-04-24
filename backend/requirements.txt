@@ -31,6 +31,7 @@ phonenumbers==9.0.0
 pillow==11.1.0
 psycopg2-binary==2.9.10
 pyjwt==2.10.1
+stripe==12.0.1
 sniffio==1.3.1
 sqlparse==0.5.3
 supabase==2.14.0
