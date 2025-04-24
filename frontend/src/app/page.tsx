@@ -22,8 +22,8 @@ import { Loader2 } from "lucide-react";
 import useLocationData from "@/hooks/useLocationData";
 import { RadarAddress } from "radar-sdk-js/dist/types";
 import { useAuth } from "@/contexts/AuthContext";
-import { useOffers } from "@/hooks/userOffers";
 import { CarOfferCard } from "@/components/organism/carOfferCard";
+import { useHiddenOffers } from "@/hooks/useHiddenOffers";
 
 export default function Home() {
   return (
@@ -62,8 +62,8 @@ function HomeContent() {
   const { filters, setFilters } = useCarWashFilters();
   const { carWashes, isLoading, count } =
     useCarWashes(filters);
-  const { offers, isLoading: isLoadingOffers } =
-    useOffers(filters);
+  const { hiddenOffers, isLoading: isLoadingOffers } =
+    useHiddenOffers(filters);
   useEffect(() => {
     fetchLocationData();
   }, []);
@@ -239,7 +239,7 @@ function HomeContent() {
                 {!isLoading && !isLoadingOffers &&
                   (
                     <>
-                      {offers?.filter((offer) => offer.offer_type == "GEOGRAPHICAL").map((offer) => (
+                      {hiddenOffers?.filter((offer) => offer.offer_type == "GEOGRAPHICAL").map((offer) => (
                         <div key={offer.id}>
                           <CarOfferCard data={offer} onClick={() => { }} />
                         </div>

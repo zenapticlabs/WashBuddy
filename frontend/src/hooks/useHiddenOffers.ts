@@ -4,8 +4,8 @@ import { FilterState } from "@/types/filters";
 import { ICarOffer } from "@/types/CarServices";
 import { getOffers } from '@/services/OfferService';
 
-export function useOffers(filters: FilterState) {
-  const [offers, setOffers] = useState<ICarOffer[]>([]);
+export function useHiddenOffers(filters: FilterState) {
+  const [hiddenOffers, setHiddenOffers] = useState<ICarOffer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
     fetchData();
@@ -15,10 +15,11 @@ export function useOffers(filters: FilterState) {
     setIsLoading(true);
     if (filters.userLat != 0 && filters.userLng != 0) {
       const result = await getOffers(filters.userLat, filters.userLng);
-      setOffers(result.data);
+      const hOffers = result.data.filter((offer: ICarOffer) => offer.offer_type == "GEOGRAPHICAL" && parseFloat(offer.radius_miles) <= filters.distance);
+      setHiddenOffers(hOffers);
     }
     setIsLoading(false);
   };
 
-  return { offers, isLoading };
+  return { hiddenOffers, isLoading };
 } 
