@@ -4,8 +4,8 @@ from drf_spectacular.types import OpenApiTypes
 from rest_framework import viewsets, status, generics
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from .models import CarWash, CarWashReview, WashType, Amenity, Offer, CarWashCode
-from .serializers import CarWashListSerializer, CarWashPostPatchSerializer, CarWashReviewListSerializer, CarWashReviewPostPatchSerializer, PreSignedUrlSerializer, WashTypeSerializer, AmenitySerializer, OfferSerializer, CarWashCodeSerializer, OfferCreatePatchSerializer, CarWashCodeCreatePatchSerializer, CarWashCodeUsageCreateSerializer
+from .models import CarWash, CarWashReview, WashType, Amenity, Offer, CarWashCode, Payment
+from .serializers import CarWashListSerializer, CarWashPostPatchSerializer, CarWashReviewListSerializer, CarWashReviewPostPatchSerializer, PaymentStatusSerializer, PreSignedUrlSerializer, WashTypeSerializer, AmenitySerializer, OfferSerializer, CarWashCodeSerializer, OfferCreatePatchSerializer, CarWashCodeCreatePatchSerializer, CarWashCodeUsageCreateSerializer, CreatePaymentIntentSerializer
 from django.db.models import Q
 from datetime import datetime
 from django.contrib.gis.geos import Point
@@ -26,6 +26,9 @@ from django.core.exceptions import ValidationError
 from django.db.models import Case, When, BooleanField, F
 from django.utils import timezone
 from . import utils
+import stripe
+
+stripe.api_key = settings.STRIPE_SECRET_KEY
 
 class WashTypeListAPIView(generics.ListAPIView):
     queryset = WashType.objects.all()
@@ -289,14 +292,9 @@ class OfferRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     def patch(self, request, *args, **kwargs):
         return super().patch(request, *args, **kwargs)
 
-
-class CarWashCodeCreateView(generics.CreateAPIView):
-    serializer_class = CarWashCodeCreatePatchSerializer
-    permission_classes = [AllowAny]
-
 @extend_schema(
     summary="Mark Car Wash Code as Used",
-    description="Validates and marks a car wash code as used, checking time, location, and usage restrictions",
+    description="Validates and marks a car wash code as used, checking usage restrictions",
     request=CarWashCodeUsageCreateSerializer,
     parameters=[
         OpenApiParameter(
@@ -314,17 +312,7 @@ class CarWashCodeCreateView(generics.CreateAPIView):
     },
     examples=[
         OpenApiExample(
-            'Geographical Offer Example',
-            value={
-                'code': 'WASH123',
-                'location': {
-                    'lat': 37.7749,
-                    'lng': -122.4194
-                }
-            }
-        ),
-        OpenApiExample(
-            'Time-Dependent or One-Time Offer Example',
+            'One-Time Offer Example',
             value={
                 'code': 'WASH123'
             }
@@ -350,40 +338,12 @@ class CarWashCodeMarkAsUsedView(generics.CreateAPIView):
             
         # Validate offer based on type
         offer = code.offer
-        now = timezone.now()
         
-        if offer.offer_type == 'TIME_DEPENDENT':
-            if not (offer.start_time <= now.time() <= offer.end_time):
-                return Response(
-                    {"error": "This offer is only valid between {} and {}".format(
-                        offer.start_time.strftime('%H:%M'), 
-                        offer.end_time.strftime('%H:%M')
-                    )},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-                
-        elif offer.offer_type == 'GEOGRAPHICAL':
-            user_location = request.data.get('location')
-            if not user_location:
-                return Response(
-                    {"error": "Location is required for geographical offers"},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-                
-            try:
-                user_point = Point(float(user_location['lng']), float(user_location['lat']), srid=4326)
-                distance = user_point.distance(offer.package.car_wash.location) * 100  # Convert to km
-                
-                if float(distance) > float(offer.radius_miles) * 1.60934:  # Convert miles to km
-                    return Response(
-                        {"error": "You are outside the offer's geographical range"},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
-            except (KeyError, ValueError):
-                return Response(
-                    {"error": "Invalid location format"},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+        if offer.offer_type in ['TIME_DEPENDENT', 'GEOGRAPHICAL']:
+            return Response(
+                {"error": "Cannot use this code from here"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
                 
         elif offer.offer_type == 'ONE_TIME':
             user_metadata = utils.handle_user_meta_data(request.headers.get("Authorization"))
@@ -395,34 +355,6 @@ class CarWashCodeMarkAsUsedView(generics.CreateAPIView):
         
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-class CarWashCodeRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = CarWashCode.objects.all().prefetch_related('usages', 'offer__package__car_wash')
-    permission_classes = [AllowAny]
-    lookup_field = "id"
-
-    def get_serializer_class(self):
-        if self.request.method == "GET":
-            return CarWashCodeSerializer
-        return CarWashCodeCreatePatchSerializer
-
-    @extend_schema(
-        summary="Retrieve Car Wash Code",
-        description="Retrieve a Car Wash Code by ID",
-        responses={200: CarWashCodeSerializer}
-    )
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
-
-    @extend_schema(
-        summary="Update Car Wash Code",
-        description="Update Car Wash Code details",
-        request=CarWashCodeCreatePatchSerializer,
-        responses={200: CarWashCodeSerializer}
-    )
-    @transaction.atomic
-    def patch(self, request, *args, **kwargs):
-        return super().patch(request, *args, **kwargs)
 
 class ListCarWashCodeAPIView(DynamicFieldsViewMixin, ListAPIView):
     permission_classes = (AllowAny, )
@@ -627,3 +559,98 @@ class ListOfferAPIView(DynamicFieldsViewMixin, ListAPIView):
         self.response_format["message"] = ["Success"]
 
         return Response(self.response_format)
+    
+
+class CreatePaymentIntentView(APIView):
+    permission_classes = [AllowAny]
+
+    @extend_schema(
+        summary="Create Payment Intent",
+        description="Creates a Stripe payment intent for an offer",
+        request=CreatePaymentIntentSerializer,
+        responses={
+            200: OpenApiResponse(description="Payment intent created successfully"),
+            400: OpenApiResponse(description="Invalid request"),
+            404: OpenApiResponse(description="Offer not found")
+        }
+    )
+    def post(self, request, *args, **kwargs):
+        serializer = CreatePaymentIntentSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        try:
+            offer = Offer.objects.get(id=serializer.validated_data['offer_id'])
+            user_metadata = utils.handle_user_meta_data(request.headers.get("Authorization"))
+            
+            if not user_metadata or not user_metadata.get('email'):
+                return Response(
+                    {'error': 'User email is required'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # Create payment intent
+            intent = stripe.PaymentIntent.create(
+                amount=int(offer.offer_price * 100),
+                currency='usd',
+                metadata={
+                    'offer_id': offer.id,
+                    'user_email': user_metadata['email'],
+                    'package_id': offer.package.id,
+                    'car_wash_id': offer.package.car_wash.id
+                }
+            )
+
+            # Save payment information
+            payment = Payment.objects.create(
+                offer=offer,
+                payment_intent_id=intent.id,
+                amount=offer.offer_price,
+                user_email=user_metadata['email'],
+                metadata={
+                    'package_id': offer.package.id,
+                    'car_wash_id': offer.package.car_wash.id,
+                    'user_metadata': user_metadata
+                }
+            )
+
+            return Response({
+                'clientSecret': intent.client_secret,
+                'payment_id': payment.id
+            })
+
+        except Offer.DoesNotExist:
+            return Response(
+                {'error': 'Offer not found'}, 
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except stripe.error.StripeError as e:
+            return Response(
+                {'error': str(e)}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+class CheckPaymentStatusView(generics.RetrieveAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = PaymentStatusSerializer
+    lookup_field = 'payment_intent_id'
+    queryset = Payment.objects.all()
+
+    @extend_schema(
+        summary="Check Payment Status",
+        description="Get the current status of a payment using payment_intent_id",
+        parameters=[
+            OpenApiParameter(
+                name="payment_intent_id",
+                location=OpenApiParameter.PATH,
+                description="Stripe Payment Intent ID",
+                required=True,
+                type=str
+            )
+        ],
+        responses={
+            200: PaymentStatusSerializer,
+            404: OpenApiResponse(description="Payment not found")
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)

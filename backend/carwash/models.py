@@ -349,3 +349,34 @@ class CarWashReviewImage(CustomModelMixin):
 
     def __str__(self):
         return f"{self.id}-{self.carwash_review.id}"
+    
+class Payment(CustomModelMixin):
+    PAYMENT_STATUS = [
+        ('pending', 'Pending'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+        ('refunded', 'Refunded')
+    ]
+
+    offer = models.ForeignKey('Offer', on_delete=models.CASCADE, related_name='payments')
+    carwash_code = models.ForeignKey('CarWashCode', on_delete=models.SET_NULL, related_name='payments', null=True, blank=True)
+    payment_intent_id = models.CharField(max_length=255, unique=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='pending')
+    user_email = models.EmailField()
+    metadata = models.JSONField(null=True, blank=True)
+    error_message = models.TextField(null=True, blank=True)
+
+    def clean(self):
+        if self.carwash_code and self.carwash_code.offer_id != self.offer_id:
+            raise ValidationError({
+                'carwash_code': 'Car wash code must belong to the selected offer'
+            })
+        super().clean()
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Payment {self.payment_intent_id} - {self.offer.name}"
