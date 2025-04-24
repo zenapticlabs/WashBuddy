@@ -48,14 +48,14 @@ export const CarWashTypes = [
 
 export const SortBy = {
   [Car_Wash_Type.AUTOMATIC]: [
-    // {
-    //   label: "Recommended",
-    //   value: "recommended",
-    // },
-    // {
-    //   label: "Price (high to low)",
-    //   value: "price_high_to_low",
-    // },
+    {
+      label: "Recommended",
+      value: "recommended",
+    },
+    {
+      label: "Price (high to low)",
+      value: "price_high_to_low",
+    },
     {
       label: "Price (low to high)",
       value: "price_low_to_high",
