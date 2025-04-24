@@ -1,12 +1,13 @@
 from django.urls import path, include
+
+from .webhook import StripeWebhookView
 from .views import (
-    WashTypeListAPIView, AmenityListAPIView,
+    CheckPaymentStatusView, CreatePaymentIntentView, WashTypeListAPIView, AmenityListAPIView,
     CarWashCreateView, CarWashRetrieveUpdateDestroyView,
     ListCarWashAPIView, S3APIView,
     CarWashReviewCreateView, CarWashReviewRetrieveUpdateDestroyView,
     ListCarWashReviewAPIView, OfferCreateView, OfferRetrieveUpdateDestroyView, ListOfferAPIView,
-    CarWashCodeCreateView, CarWashCodeRetrieveUpdateDestroyView, ListCarWashCodeAPIView,
-    CarWashCodeMarkAsUsedView
+    ListCarWashCodeAPIView, CarWashCodeMarkAsUsedView
 )
 
 urlpatterns = [
@@ -27,7 +28,9 @@ urlpatterns = [
     path('offers/<int:id>/', OfferRetrieveUpdateDestroyView.as_view(), name='offers-detail'),
     
     path('car-wash-codes/mark-used/', CarWashCodeMarkAsUsedView.as_view(), name='car-wash-codes-mark-used'),
-    path('car-wash-codes/search/', ListCarWashCodeAPIView.as_view(), name='car-wash-codes-list'),
-    path('car-wash-codes/create/', CarWashCodeCreateView.as_view(), name='car-wash-codes-create'),
-    path('car-wash-codes/<int:id>/', CarWashCodeRetrieveUpdateDestroyView.as_view(), name='car-wash-codes-detail')
+    # path('car-wash-codes/search/', ListCarWashCodeAPIView.as_view(), name='car-wash-codes-list'),
+
+    path('create-payment-intent/', CreatePaymentIntentView.as_view(), name='create-payment-intent'),
+    path('webhook/stripe/', StripeWebhookView.as_view(), name='stripe-webhook'),
+    path('payment-status/<str:payment_intent_id>/', CheckPaymentStatusView.as_view(), name='payment-status'),
 ]

@@ -3,7 +3,7 @@ from rest_framework.exceptions import ValidationError
 from django.contrib.gis.geos import Point
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
 from .models import (
-    CarWash, CarWashOperatingHours, CarWashImage, CarWashReview, CarWashReviewImage, 
+    CarWash, CarWashOperatingHours, CarWashImage, CarWashReview, CarWashReviewImage, Payment, 
     WashType, Amenity, CarWashPackage, Offer, CarWashCode, CarWashCodeUsage
 )
 from utilities.mixins import DynamicFieldsSerializerMixin
@@ -368,3 +368,14 @@ class CarWashCodeUsageCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"code": "Invalid code"})
         validated_data['code'] = code
         return super().create(validated_data)
+    
+class CreatePaymentIntentSerializer(serializers.Serializer):
+    offer_id = serializers.IntegerField()
+
+class PaymentStatusSerializer(serializers.ModelSerializer):
+    carwash_code = serializers.IntegerField(source='carwash_code.code', read_only=True)
+
+    class Meta:
+        model = Payment
+        fields = ['payment_intent_id', 'status', 'error_message', 'carwash_code']
+        read_only_fields = ['payment_intent_id', 'status', 'error_message', 'carwash_code']
