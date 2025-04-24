@@ -23,7 +23,7 @@ import useLocationData from "@/hooks/useLocationData";
 import { RadarAddress } from "radar-sdk-js/dist/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { CarOfferCard } from "@/components/organism/carOfferCard";
-import { useHiddenOffers } from "@/hooks/useHiddenOffers";
+import { useHiddenOffer } from "@/hooks/useHiddenOffer";
 
 export default function Home() {
   return (
@@ -62,8 +62,8 @@ function HomeContent() {
   const { filters, setFilters } = useCarWashFilters();
   const { carWashes, isLoading, count } =
     useCarWashes(filters);
-  const { hiddenOffers, isLoading: isLoadingOffers } =
-    useHiddenOffers(filters);
+  const { hiddenOffer, isLoading: isLoadingOffers } =
+    useHiddenOffer(filters);
   useEffect(() => {
     fetchLocationData();
   }, []);
@@ -239,11 +239,7 @@ function HomeContent() {
                 {!isLoading && !isLoadingOffers &&
                   (
                     <>
-                      {hiddenOffers?.filter((offer) => offer.offer_type == "GEOGRAPHICAL").map((offer) => (
-                        <div key={offer.id}>
-                          <CarOfferCard data={offer} onClick={() => { }} />
-                        </div>
-                      ))}
+                      {hiddenOffer && <CarOfferCard data={hiddenOffer} onClick={() => { }} />}
                       {carWashes?.map((carWash) => (
                         <div
                           key={carWash.id}
