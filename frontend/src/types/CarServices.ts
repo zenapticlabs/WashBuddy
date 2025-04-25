@@ -75,6 +75,7 @@ export interface CarWashPackage {
   price: number;
   wash_types: any[];
   minutes?: number;
+  offer?: any
 }
 
 export interface CarWashImage {
@@ -136,6 +137,7 @@ export interface CarWashResponse {
   verified: boolean;
   created_by: string | null;
   updated_by: string | null;
+  lowestPack?: any;
 }
 
 export interface ICarWashPurchaseHistory {
@@ -145,3 +147,24 @@ export interface ICarWashPurchaseHistory {
   purchaseDate: string;
   washCode: string;
 }
+
+export interface ICarOffer {
+  id: string;
+  package_id: number;
+  car_wash_id: number;
+  created_at: string;
+  updated_at: string;
+  status: string;
+  name: string;
+  description: string;
+  offer_price: string;
+  offer_type: string;
+  start_time: string;
+  end_time: string;
+  radius_miles: string;
+  created_by: string | null;
+  updated_by: string | null;
+  package: number;
+  image: string;
+}
+

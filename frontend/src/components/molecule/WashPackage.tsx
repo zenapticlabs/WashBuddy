@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import axiosInstance from "@/lib/axios";
+import { Badge } from "../ui/badge";
 
 // Initialize Stripe
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
@@ -82,6 +83,26 @@ const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
   const [showPurchase, setShowPurchase] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
 
+  const validOffer = () => {
+    if (data.offer && data.offer.status === "ACTIVE") {
+      const offer = data.offer;
+      if (offer.offer_type === "TIME_DEPENDENT") {
+        const now = new Date();
+        const currentTime = now.toLocaleTimeString('en-US', { hour12: false });
+        // Convert offer times to 24-hour format for comparison
+        const startTime = offer.start_time.substring(0, 5); // "HH:mm"
+        const endTime = offer.end_time.substring(0, 5); // "HH:mm"
+
+        return currentTime >= startTime && currentTime <= endTime;
+      } else if (offer.offer_type === "ONE_TIME") {
+        return true;
+      } else {
+        return false;
+      }
+    }
+    return false;
+  }
+
   useEffect(() => {
     if (showPurchase && !clientSecret) {
       const fetchClientSecret = async () => {
@@ -124,8 +145,21 @@ const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
       >
         <div className="text-title-2 text-neutral-900">{data.name}</div>
         <div className="flex items-center gap-1 text-headline-5 my-1">
-          <span className="text-neutral-900">${data.price}</span>
+          {validOffer() && (
+            <div className="flex items-center gap-1">
+              <span className="text-green-500 text-headline-5">${Math.floor(data.offer.offer_price)}</span>
+              <span className="text-neutral-500 text-sm line-through">${Math.floor(data.price)}</span>
+            </div>
+          )}
+          {!validOffer() && (
+            <span className="text-neutral-900">${Math.floor(data.price)}</span>
+          )}
         </div>
+        {validOffer() && (
+          <Badge variant={data.offer?.offer_type === "TIME_DEPENDENT" ? "green" : "yellow"} className="text-title-3 text-white w-fit px-2 py-1 rounded-lg">
+            {data.offer?.offer_type === "TIME_DEPENDENT" ? "Time Dependent offer" : "One Time offer"}
+          </Badge>
+        )}
       </div>
 
       <Dialog open={isModalOpen} onOpenChange={handleModalClose}>
@@ -139,26 +173,26 @@ const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="px-6 py-4 overflow-y-auto flex-1">
+          <div className="py-1 overflow-y-auto flex-1">
             {!showPurchase ? (
               <>
                 <div className="flex flex-col gap-4">
                   {Object.entries(washTypesBySubclass).map(([subclass, types]) => (
-                    <div key={subclass} className="flex flex-col gap-2">
-                      <div className="text-body-2 font-semibold text-neutral-900">
+                    <div key={subclass} className="flex flex-col gap-2 border-b border-neutral-100 pb-4 px-6 ">
+                      <div className="text-body-1 font-semibold text-neutral-900">
                         {subclass}
                       </div>
                       <div className="flex gap-2 flex-wrap">
                         {types.map((washType) => (
                           <div
                             key={washType.id}
-                            className="flex flex-col items-center gap-1"
+                            className="flex flex-col items-center gap-2 w-[100px] py-2 px-2"
                           >
                             <Image
                               src={washType.icon}
                               alt={washType.name}
-                              width={24}
-                              height={24}
+                              width={36}
+                              height={36}
                               className={`${data.wash_types
                                 .map((type: any) => type.id)
                                 .includes(Number(washType.id))
@@ -166,7 +200,7 @@ const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
                                 : "text-gray-300 opacity-30"
                                 }`}
                             />
-                            <span className="text-xs text-neutral-600 text-center max-w-[80px] line-clamp-2">
+                            <span className="text-sm text-neutral-600 text-center line-clamp-2">
                               {washType.name}
                             </span>
                           </div>
@@ -175,12 +209,12 @@ const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
                     </div>
                   ))}
                 </div>
-                {/* <div className="flex items-center justify-end mt-4">
+                <div className="flex items-center justify-end mt-4">
                   <Button size="sm" onClick={handleBuyNowClick}>Buy now</Button>
-                </div> */}
+                </div>
               </>
             ) : (
-              <>
+              <div className="px-6 pb-3">
                 <div className="flex justify-between mb-6">
                   <div className="flex gap-2 flex-1">
                     <Image src={carWash.image_url} alt={carWash.car_wash_name} width={48} height={48} className="rounded-lg" />
@@ -200,7 +234,8 @@ const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
                     <StripePaymentForm carWashPackage={data} onSuccess={handlePaymentSuccess} />
                   </Elements>
                 )}
-              </>
+                
+              </div>
             )}
           </div>
         </DialogContent>

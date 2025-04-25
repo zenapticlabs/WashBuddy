@@ -12,10 +12,12 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import { CarWashResponse } from "@/types/CarServices";
+import { CarWashPackage, CarWashResponse, ICarOffer } from "@/types/CarServices";
 import { CarWashSkeleton } from "@/components/organism/carWashSkeleton";
 import { CustomPagination } from "@/components/molecule/CustomPagination";
+import { CarOfferCard } from "@/components/organism/carOfferCard";
 interface MobileCarWashViewProps {
+  hiddenOffer: ICarOffer | null;
   showMap: boolean;
   carWashes: CarWashResponse[];
   selectedCarWash: CarWashResponse | null;
@@ -27,6 +29,7 @@ interface MobileCarWashViewProps {
 }
 
 export function MobileCarWashView({
+  hiddenOffer,
   showMap,
   carWashes,
   onCarWashSelect,
@@ -38,9 +41,8 @@ export function MobileCarWashView({
   const [openSortBy, setOpenSortBy] = useState(false);
   return (
     <div
-      className={`block md:hidden absolute bottom-0 left-0 right-0 w-full bg-white transition-all z-10 duration-300 ease-in-out ${
-        showMap ? "h-[300px] rounded-t-2xl" : "h-full"
-      } px-5 flex flex-col`}
+      className={`block md:hidden absolute bottom-0 left-0 right-0 w-full bg-white transition-all z-10 duration-300 ease-in-out ${showMap ? "h-[300px] rounded-t-2xl" : "h-full"
+        } px-5 flex flex-col`}
     >
       {showMap && (
         <div className="w-20 h-1 bg-neutral-50 rounded-full mx-auto mt-4"></div>
@@ -66,13 +68,16 @@ export function MobileCarWashView({
               <CarWashSkeleton />
             </div>
           ) : (
-            carWashes.map((carWash) => (
-              <CarWashCard
-                key={carWash.id}
-                data={carWash}
-                onClick={() => onCarWashSelect(carWash)}
-              />
-            ))
+            <>
+              {hiddenOffer && <CarOfferCard data={hiddenOffer} onClick={() => { }} />}
+              {carWashes.map((carWash) => (
+                <CarWashCard
+                  key={carWash.id}
+                  data={carWash}
+                  onClick={() => onCarWashSelect(carWash)}
+                />
+              ))}
+            </>
           )}
         </div>
       </ScrollArea>

@@ -5,7 +5,7 @@ import { Star } from "lucide-react";
 import Link from "next/link";
 import { CarWashResponse } from "@/types/CarServices";
 import { ImageModal } from "@/components/molecule/ImageModal";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 
 const emptyImageURL =
@@ -18,18 +18,56 @@ export default function CarWashAbout({ data, selectedWashTypes }: { data: CarWas
     setSelectedImage(imageUrl);
   };
 
-  const getFilteredPackages = () => {
-    return data.packages.filter((wp) => wp.wash_types.some((wt) => selectedWashTypes.includes(wt?.name)));
-  }
+  const sortedPackages = useMemo(() => {
+    return [...data.packages].sort((a, b) => {
+      // Get effective prices considering offers
+      const getEffectivePrice = (pkg: any) => {
+        if (!pkg.offer || pkg.offer.status !== 'ACTIVE') return parseFloat(pkg.price);
+
+        // Skip geographical offers
+        if (pkg.offer.offer_type === 'GEOGRAPHICAL') return parseFloat(pkg.price);
+
+        // For time-dependent offers, check if current time is within range
+        if (pkg.offer.offer_type === 'TIME_DEPENDENT') {
+          const now = new Date();
+          const currentTime = now.getHours().toString().padStart(2, '0') + ':' +
+            now.getMinutes().toString().padStart(2, '0') + ':' +
+            now.getSeconds().toString().padStart(2, '0');
+
+          if (currentTime >= pkg.offer.start_time && currentTime <= pkg.offer.end_time) {
+            return parseFloat(pkg.offer.offer_price);
+          }
+        }
+        if (pkg.offer.offer_type === 'ONE_TIME') {
+          return parseFloat(pkg.offer.offer_price);
+        }
+
+        return parseFloat(pkg.price);
+      };
+
+      const priceA = getEffectivePrice(a);
+      const priceB = getEffectivePrice(b);
+
+      // First sort by price
+      if (priceA !== priceB) {
+        return priceA - priceB;
+      }
+
+      // Then sort alphabetically by name
+      return (a.name || '').localeCompare(b.name || '');
+    });
+  }, [data.packages]);
+
+
   return (
     <>
       <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-3 relative">
           <div className="flex gap-2 overflow-x-auto pb-4 w-full max-w-[100vw] px-4 -mx-4">
-            {data.packages.length > 0 && data.packages.map((wp) => (
+            {sortedPackages.length > 0 && sortedPackages.map((wp) => (
               <WashPackage key={wp.id} data={wp} carWash={data} />
             ))}
-            {data.packages.length === 0 && (
+            {sortedPackages.length === 0 && (
               <div className="text-body-3 text-neutral-500">
                 There is no package yet
               </div>

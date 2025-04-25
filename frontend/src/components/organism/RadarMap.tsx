@@ -316,8 +316,8 @@ export function RadarMap({
         <Skeleton className="w-full h-full min-h-[400px] rounded-lg" />
       ) : (
         <Button
-          variant="ghost"
-          className={`absolute top-10 left-10 z-10 bg-white rounded-full shadow-lg transition-all duration-300 ${showSearchButton
+          variant="default"
+          className={`absolute top-1/2 left-1/2 z-10 bg-blue-500 text-white rounded-full shadow-lg transition-all duration-300 ${showSearchButton
               ? "opacity-100 transform translate-y-0"
               : "opacity-0 transform -translate-y-4 pointer-events-none"
             }`}

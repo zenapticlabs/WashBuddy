@@ -3,6 +3,7 @@ import { MapPinIcon, StarIcon } from "lucide-react";
 import Image from "next/image";
 import { ImageModal } from "../molecule/ImageModal";
 import { useState } from "react";
+import { Badge } from "../ui/badge";
 
 interface CarWashCardProps {
   data: CarWashResponse;
@@ -24,11 +25,10 @@ export function CarWashCard({ data, onClick, isSelected }: CarWashCardProps) {
   return (
     <>
       <div
-        className={`p-3 border rounded-lg cursor-pointer transition-all duration-300 ${
-          isSelected
-            ? "border-blue-500 bg-blue-50"
-            : "border-neutral-50 hover:border-blue-500"
-        }`}
+        className={`p-3 border rounded-lg cursor-pointer transition-all duration-300 ${isSelected
+          ? "border-blue-500 bg-blue-50"
+          : "border-neutral-50 hover:border-blue-500"
+          }`}
         onClick={onClick}
       >
         <div className="flex gap-2 rounded-lg w-full">
@@ -68,6 +68,14 @@ export function CarWashCard({ data, onClick, isSelected }: CarWashCardProps) {
                   {Number(data.distance).toFixed(2)} miles
                 </div>
               </div>
+              {data.lowestPack?.isOffer && (
+                <Badge
+                  variant={data.lowestPack?.offerType === "TIME_DEPENDENT" ? "green" : "yellow"}
+                  className="text-title-3 text-white w-fit hidden md:block px-2 py-1 rounded-lg mt-2"
+                >
+                  Special WashBuddy Price. {data.lowestPack?.offerType === "TIME_DEPENDENT" ? "Time Dependent offer" : "One Time offer"}
+                </Badge>
+              )}
             </div>
             <div className="md:hidden flex items-center justify-between">
               <div className="flex items-center gap-0.5">
@@ -83,9 +91,7 @@ export function CarWashCard({ data, onClick, isSelected }: CarWashCardProps) {
               <div className="text-headline-4 py-1 text-neutral-900 text-right pl-4">
                 $
                 {data.packages?.length > 0
-                  ? `${Math.min(
-                      ...data.packages.map((pkg) => Number(pkg.price))
-                    )}`
+                  ? `${data.lowestPack?.lowestPrice}`
                   : "N/A"}
               </div>
               <div className="flex-1 text-body-3 text-neutral-900 text-right">
@@ -109,26 +115,25 @@ export function CarWashCard({ data, onClick, isSelected }: CarWashCardProps) {
             <div className="text-headline-4 py-1 text-neutral-900 text-right">
               $
               {data.packages?.length > 0
-                ? `${Math.min(
-                    ...data.packages.map((pkg) => Number(pkg.price))
-                  )}`
+                ? `${data.lowestPack?.lowestPrice}`
                 : "N/A"}
             </div>
             <div className="flex-1 text-body-3 text-neutral-900 text-right">
               {data.packages?.length > 0 &&
-                data.packages.reduce((lowest, pkg) =>
-                  Number(pkg.price) < Number(lowest.price) ? pkg : lowest
-                ).name}
+                data.lowestPack?.name}
             </div>
           </div>
         </div>
-        {/* <Badge
-          variant="green"
-          className="text-title-3 text-white w-fit block md:hidden px-2 py-1 rounded-lg mt-2"
-        >
-          Student Discount - 20% Off
-        </Badge> */}
+        {data.lowestPack?.isOffer && (
+          <Badge
+            variant={data.lowestPack?.offerType === "TIME_DEPENDENT" ? "green" : "yellow"}
+            className="text-title-3 text-white w-fit md:hidden px-2 py-1 rounded-lg mt-2"
+          > hELLO
+            Special WashBuddy Price. {data.lowestPack?.offerType === "TIME_DEPENDENT" ? "Time Dependent offer" : "One Time offer"}
+          </Badge>
+        )}
       </div>
+
 
       <ImageModal
         isOpen={isImageModalOpen}

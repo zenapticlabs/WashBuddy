@@ -22,6 +22,9 @@ import { Loader2 } from "lucide-react";
 import useLocationData from "@/hooks/useLocationData";
 import { RadarAddress } from "radar-sdk-js/dist/types";
 import { useAuth } from "@/contexts/AuthContext";
+import { CarOfferCard } from "@/components/organism/carOfferCard";
+import { useHiddenOffer } from "@/hooks/useHiddenOffer";
+import OfferModal from "@/components/pages/main/OfferModal";
 
 export default function Home() {
   return (
@@ -51,6 +54,7 @@ function HomeContent() {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [selectedLocation, setSelectedLocation] = useState<any>(null);
   const [address, setAddress] = useState<RadarAddress | null>(null);
+  const [offerOpen, setOfferOpen] = useState(false);
   const {
     locationData,
     fetchLocationData,
@@ -60,7 +64,8 @@ function HomeContent() {
   const { filters, setFilters } = useCarWashFilters();
   const { carWashes, isLoading, count } =
     useCarWashes(filters);
-
+  const { hiddenOffer, isLoading: isLoadingOffers } =
+    useHiddenOffer(filters);
   useEffect(() => {
     fetchLocationData();
   }, []);
@@ -199,6 +204,9 @@ function HomeContent() {
       userLng: center.longitude,
     });
   };
+  const handleOfferClick = () => {
+    setOfferOpen(true);
+  };
   return (
     <ProtectedRoute>
       <div className="flex flex-col h-screen">
@@ -223,7 +231,7 @@ function HomeContent() {
             </div>
             <ScrollArea ref={scrollAreaRef} className="w-full flex-1 px-2">
               <div className="flex flex-col gap-2 pr-4">
-                {(isLoading || !locationData) && (
+                {(isLoading || isLoadingOffers || !locationData) && (
                   <div className="flex flex-col gap-2">
                     <CarWashSkeleton />
                     <CarWashSkeleton />
@@ -233,21 +241,26 @@ function HomeContent() {
                     <CarWashSkeleton />
                   </div>
                 )}
-                {!isLoading &&
-                  carWashes?.map((carWash) => (
-                    <div
-                      key={carWash.id}
-                      ref={(el) => {
-                        if (el) cardRefs.current.set(String(carWash.id), el);
-                      }}
-                    >
-                      <CarWashCard
-                        data={carWash}
-                        onClick={() => handleOpenAbout(carWash)}
-                        isSelected={selectedCarWash?.id === carWash.id}
-                      />
-                    </div>
-                  ))}
+                {!isLoading && !isLoadingOffers &&
+                  (
+                    <>
+                      {hiddenOffer && <CarOfferCard data={hiddenOffer} onClick={handleOfferClick} />}
+                      {carWashes?.map((carWash) => (
+                        <div
+                          key={carWash.id}
+                          ref={(el) => {
+                            if (el) cardRefs.current.set(String(carWash.id), el);
+                          }}
+                        >
+                          <CarWashCard
+                            data={carWash}
+                            onClick={() => handleOpenAbout(carWash)}
+                            isSelected={selectedCarWash?.id === carWash.id}
+                          />
+                        </div>
+                      ))}
+                    </>
+                  )}
               </div>
             </ScrollArea>
             <div className="px-4 py-4">
@@ -286,6 +299,7 @@ function HomeContent() {
           </div>
           <div className="md:hidden h-[300px]"></div>
           <MobileCarWashView
+            hiddenOffer={hiddenOffer}
             totalCount={count}
             isLoading={isLoading}
             showMap={showMap}
@@ -295,6 +309,7 @@ function HomeContent() {
             filters={filters}
             setFilters={setFilters}
           />
+          {hiddenOffer && <OfferModal open={offerOpen} onOpenChange={setOfferOpen} data={hiddenOffer} />}
         </div>
       </div>
     </ProtectedRoute>
