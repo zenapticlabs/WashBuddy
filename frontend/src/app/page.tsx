@@ -24,6 +24,7 @@ import { RadarAddress } from "radar-sdk-js/dist/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { CarOfferCard } from "@/components/organism/carOfferCard";
 import { useHiddenOffer } from "@/hooks/useHiddenOffer";
+import OfferModal from "@/components/pages/main/OfferModal";
 
 export default function Home() {
   return (
@@ -53,6 +54,7 @@ function HomeContent() {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const [selectedLocation, setSelectedLocation] = useState<any>(null);
   const [address, setAddress] = useState<RadarAddress | null>(null);
+  const [offerOpen, setOfferOpen] = useState(false);
   const {
     locationData,
     fetchLocationData,
@@ -202,6 +204,9 @@ function HomeContent() {
       userLng: center.longitude,
     });
   };
+  const handleOfferClick = () => {
+    setOfferOpen(true);
+  };
   return (
     <ProtectedRoute>
       <div className="flex flex-col h-screen">
@@ -239,7 +244,7 @@ function HomeContent() {
                 {!isLoading && !isLoadingOffers &&
                   (
                     <>
-                      {hiddenOffer && <CarOfferCard data={hiddenOffer} onClick={() => { }} />}
+                      {hiddenOffer && <CarOfferCard data={hiddenOffer} onClick={handleOfferClick} />}
                       {carWashes?.map((carWash) => (
                         <div
                           key={carWash.id}
@@ -294,6 +299,7 @@ function HomeContent() {
           </div>
           <div className="md:hidden h-[300px]"></div>
           <MobileCarWashView
+            hiddenOffer={hiddenOffer}
             totalCount={count}
             isLoading={isLoading}
             showMap={showMap}
@@ -303,6 +309,7 @@ function HomeContent() {
             filters={filters}
             setFilters={setFilters}
           />
+          {hiddenOffer && <OfferModal open={offerOpen} onOpenChange={setOfferOpen} data={hiddenOffer} />}
         </div>
       </div>
     </ProtectedRoute>

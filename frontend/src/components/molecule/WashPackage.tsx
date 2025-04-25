@@ -209,12 +209,12 @@ const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
                     </div>
                   ))}
                 </div>
-                {/* <div className="flex items-center justify-end mt-4">
+                <div className="flex items-center justify-end mt-4">
                   <Button size="sm" onClick={handleBuyNowClick}>Buy now</Button>
-                </div> */}
+                </div>
               </>
             ) : (
-              <>
+              <div className="px-6 pb-3">
                 <div className="flex justify-between mb-6">
                   <div className="flex gap-2 flex-1">
                     <Image src={carWash.image_url} alt={carWash.car_wash_name} width={48} height={48} className="rounded-lg" />
@@ -234,7 +234,8 @@ const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
                     <StripePaymentForm carWashPackage={data} onSuccess={handlePaymentSuccess} />
                   </Elements>
                 )}
-              </>
+                
+              </div>
             )}
           </div>
         </DialogContent>

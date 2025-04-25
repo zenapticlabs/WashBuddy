@@ -33,7 +33,7 @@ export function CarOfferCard({ data, onClick, isSelected }: CarOfferCardProps) {
             className="relative cursor-pointer group"
             onClick={handleImageClick}
           >
-            <div className="w-16 h-16 md:w-24 md:h-24 object-cover rounded transition-transform group-hover:scale-105 text-red-500 text-8xl font-bold bg-neutral-50 flex items-center justify-center">?</div>
+            <div className="w-16 h-16 md:w-24 md:h-24 object-cover rounded transition-transform group-hover:scale-105 text-red-500 md:text-8xl text-5xl font-bold bg-neutral-50 flex items-center justify-center">?</div>
             <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-20 rounded transition-opacity" />
           </div>
           <div className="flex flex-col justify-between flex-1">
