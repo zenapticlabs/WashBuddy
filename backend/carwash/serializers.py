@@ -349,25 +349,11 @@ class CarWashCodeCreatePatchSerializer(serializers.ModelSerializer):
 
 class CarWashCodeUsageCreateSerializer(serializers.ModelSerializer):
     code = serializers.CharField(write_only=True)
+    offer_id = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = CarWashCodeUsage
-        fields = ["code"]
-
-    def create(self, validated_data):
-        authorization_header = self.context.get('authorization_header')
-        if not authorization_header or not authorization_header.startswith("Bearer "):
-            raise PermissionDenied({"message": "Invalid or missing token"})
-        
-        if authorization_header:
-            user_metadata = utils.handle_user_meta_data(authorization_header)
-            if user_metadata:
-                validated_data['user_metadata'] = user_metadata
-        code = CarWashCode.objects.filter(code=validated_data['code']).first()
-        if not code:
-            raise serializers.ValidationError({"code": "Invalid code"})
-        validated_data['code'] = code
-        return super().create(validated_data)
+        fields = ["code", "offer_id"]
     
 class CreatePaymentIntentSerializer(serializers.Serializer):
     offer_id = serializers.IntegerField()
@@ -379,3 +365,21 @@ class PaymentStatusSerializer(serializers.ModelSerializer):
         model = Payment
         fields = ['payment_intent_id', 'status', 'error_message', 'carwash_code']
         read_only_fields = ['payment_intent_id', 'status', 'error_message', 'carwash_code']
+
+class UserPaymentHistorySerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
+    carwash_name = serializers.CharField(source='offer.package.car_wash.car_wash_name', read_only=True)
+    package_name = serializers.CharField(source='offer.package.name', read_only=True)
+    offer_name = serializers.CharField(source='offer.name', read_only=True)
+    carwash_code = serializers.CharField(source='carwash_code.code', read_only=True)
+    offer_id = serializers.IntegerField(source='offer.id', read_only=True)
+    package_id = serializers.IntegerField(source='offer.package.id', read_only=True)
+    car_wash_id = serializers.IntegerField(source='offer.package.car_wash.id', read_only=True)
+
+    class Meta:
+        model = Payment
+        fields = [
+            'id', 'payment_intent_id', 'amount', 'status', 'created_at',
+            'carwash_name', 'package_name', 'offer_name', 'carwash_code', 'error_message',
+            'offer_id', 'package_id', 'car_wash_id'
+        ]
+        read_only_fields = fields
