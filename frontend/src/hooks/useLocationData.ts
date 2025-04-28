@@ -66,7 +66,6 @@ const useLocationData = () => {
   const fetchLocationData = useCallback(async () => {
     if (!navigator.geolocation) {
       setError("Geolocation is not supported by this browser.");
-      console.log("Geolocation is not supported by this browser.");
       return;
     }
 

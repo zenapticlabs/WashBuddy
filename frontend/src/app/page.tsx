@@ -244,7 +244,7 @@ function HomeContent() {
                 {!isLoading && !isLoadingOffers &&
                   (
                     <>
-                      {hiddenOffer && <CarOfferCard data={hiddenOffer} onClick={handleOfferClick} />}
+                      {hiddenOffer && <CarOfferCard data={hiddenOffer} onClick={() => handleOfferClick()} />}
                       {carWashes?.map((carWash) => (
                         <div
                           key={carWash.id}
@@ -308,6 +308,7 @@ function HomeContent() {
             onCarWashSelect={handleOpenAbout}
             filters={filters}
             setFilters={setFilters}
+            onOfferClick={handleOfferClick}
           />
           {hiddenOffer && <OfferModal open={offerOpen} onOpenChange={setOfferOpen} data={hiddenOffer} />}
         </div>
