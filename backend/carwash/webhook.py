@@ -56,10 +56,12 @@ def handle_successful_payment(payment_intent):
 
         codes = CarWashCode.objects.filter(
             offer=payment_object.offer
-        ).order_by('?')
+        ).exclude(
+            usages__user_metadata__email=payment_object.metadata.get('user_metadata').get('email'),
+        )
         
         if not codes.exists():
-            print("No available codes for this offer")
+            print("No available codes for this offer", flush=True)
         
         code = codes.first()
         
@@ -76,7 +78,7 @@ def handle_successful_payment(payment_intent):
         )
 
     except Exception as e:
-        print(f"Error processing payment: {e}")
+        print(f"Error processing payment: {e}", flush=True)
 
 def handle_failed_payment(payment_intent):
     """Handle failed payment logic"""

@@ -7,7 +7,7 @@ from .views import (
     ListCarWashAPIView, S3APIView,
     CarWashReviewCreateView, CarWashReviewRetrieveUpdateDestroyView,
     ListCarWashReviewAPIView, OfferCreateView, OfferRetrieveUpdateDestroyView, ListOfferAPIView,
-    ListCarWashCodeAPIView, CarWashCodeMarkAsUsedView
+    ListFreeCarWashCodeAPIView, CarWashCodeMarkAsUsedView, UserPaymentHistoryView
 )
 
 urlpatterns = [
@@ -28,9 +28,10 @@ urlpatterns = [
     path('offers/<int:id>/', OfferRetrieveUpdateDestroyView.as_view(), name='offers-detail'),
     
     path('car-wash-codes/mark-used/', CarWashCodeMarkAsUsedView.as_view(), name='car-wash-codes-mark-used'),
-    # path('car-wash-codes/search/', ListCarWashCodeAPIView.as_view(), name='car-wash-codes-list'),
+    path('car-wash-codes/free-codes/', ListFreeCarWashCodeAPIView.as_view(), name='free-car-wash-codes-list'),
 
     path('create-payment-intent/', CreatePaymentIntentView.as_view(), name='create-payment-intent'),
     path('webhook/stripe/', StripeWebhookView.as_view(), name='stripe-webhook'),
     path('payment-status/<str:payment_intent_id>/', CheckPaymentStatusView.as_view(), name='payment-status'),
+    path('payments/history/', UserPaymentHistoryView.as_view(), name='user-payment-history'),
 ]
