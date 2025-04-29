@@ -259,7 +259,7 @@ const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
               ))}
             </div>
             {validOffer() && (
-              <div className="flex items-center justify-end mt-4">
+              <div className="flex items-center justify-end my-4 mx-4">
                 <Button size="sm" onClick={handleBuyNowClick}>Buy now</Button>
               </div>
             )}
@@ -368,11 +368,13 @@ const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
           </SheetHeader>
           <SheetContent
             side="bottom"
-            className="p-0 rounded-t-xl overflow-hidden h-[80vh]">
-            <div className="text-headline-4 p-4">
+            className="p-0 rounded-t-xl flex flex-col max-h-[80vh]">
+            <div className="text-headline-4 p-4 border-b border-neutral-100">
               {showPurchase ? "Your Purchase" : "Wash Types"}
             </div>
-            {packageModalContent()}
+            <div className="flex-1 overflow-y-auto">
+              {packageModalContent()}
+            </div>
           </SheetContent>
         </Sheet >
       }

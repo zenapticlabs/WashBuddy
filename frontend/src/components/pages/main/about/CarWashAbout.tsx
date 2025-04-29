@@ -6,6 +6,8 @@ import Link from "next/link";
 import { CarWashResponse } from "@/types/CarServices";
 import { ImageModal } from "@/components/molecule/ImageModal";
 import { useState, useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 
 const emptyImageURL =
@@ -14,6 +16,7 @@ const emptyImageURL =
 export default function CarWashAbout({ data, selectedWashTypes }: { data: CarWashResponse, selectedWashTypes: string[] }) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
+  const router = useRouter();
   const handleImageClick = (imageUrl: string) => {
     setSelectedImage(imageUrl);
   };
@@ -58,6 +61,16 @@ export default function CarWashAbout({ data, selectedWashTypes }: { data: CarWas
     });
   }, [data.packages]);
 
+  const handleNavigateEditPage = () => {
+    const currentUrl = window.location.href;
+    const urlParams = new URLSearchParams(currentUrl.split('?')[1]);
+    const params = Object.fromEntries(urlParams.entries());
+    
+    if (params) {
+      sessionStorage.setItem('dashboardFilters', JSON.stringify(params));
+    }
+    router.push(`/carwash?id=${data.id}`);
+  }
 
   return (
     <>
@@ -89,12 +102,12 @@ export default function CarWashAbout({ data, selectedWashTypes }: { data: CarWas
                 </span>
               </div>
             </div>
-            <Link
-              href={`/carwash?id=${data.id}`}
+            <Button
+              onClick={handleNavigateEditPage}
               className="bg-blue-500 text-title-2 text-white rounded-md px-4 py-2"
             >
               Update Info
-            </Link>
+            </Button>
           </div>
           <div className="text-body-3 text-neutral-500 pt-2">
             Wrong price? New photos? Upload a photo – earn points towards a free
