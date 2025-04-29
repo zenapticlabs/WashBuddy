@@ -14,7 +14,7 @@ import OperatingHours from "../../../molecule/OperatingHoursCheckboxes";
 import { Button } from "../../../ui/button";
 import AmenitiesCheckboxes from "../../../molecule/AmenitiesCheckboxes";
 import { FilterState } from "@/types/filters";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Amenities, Car_Wash_Type, Car_Wash_Type_Value, SortBy, WashTypes } from "@/utils/constants";
 import useMediaQuery from "@/hooks/useMediaQuery";
 import AutomaticIcon from "@/assets/icons/automatic.svg";
@@ -69,11 +69,12 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   const pathname = usePathname();
   const router = useRouter();
   const isMobile = useMediaQuery("(max-width: 768px)");
+
   // const [amenities, setAmenities] = useState<CarServiceAmenity[]>([]);
   // const [washTypes, setWashTypes] = useState<CarServiceWashType[]>([]);
-  // useEffect(() => {
-  //   setInlineFilters(filters);
-  // }, [filters]);
+  useEffect(() => {
+    setInlineFilters(filters);
+  }, [filters]);
 
   // useEffect(() => {
   //   const fetchAmenities = async () => {

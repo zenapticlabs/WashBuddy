@@ -65,7 +65,7 @@ export function InputOTP({ value, onChange, length = 6 }: InputOTPProps) {
           onChange={(e) => handleChange(index, e.target.value)}
           onKeyDown={(e) => handleKeyDown(index, e)}
           onPaste={(e) => handlePaste(e, index)}
-          className="w-16 h-16 text-center border rounded-md text-lg focus:border-blue-500 focus:outline-none font-bold text-neutral-900"
+          className="w-12 h-12 md:w-16 md:h-16 text-center border rounded-md text-lg focus:border-blue-500 focus:outline-none font-bold text-neutral-900"
         />
       ))}
     </div>

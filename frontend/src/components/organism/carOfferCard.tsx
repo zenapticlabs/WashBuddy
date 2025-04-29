@@ -15,10 +15,9 @@ const emptyImageURL =
   "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx4dHRsdHR4dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR3/2wBDAR0XFyAeIRshIRshHRsdIR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR3/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=";
 
 export function CarOfferCard({ data, onClick, isSelected }: CarOfferCardProps) {
-  const handleImageClick = (e: React.MouseEvent) => {
-
-  };
-
+  const handleClick = () => {
+    onClick();
+  }
   return (
     <>
       <div
@@ -26,12 +25,11 @@ export function CarOfferCard({ data, onClick, isSelected }: CarOfferCardProps) {
           ? "border-blue-500 bg-blue-50"
           : "border-neutral-50 hover:border-blue-500"
           }`}
-        onClick={onClick}
+        onClick={handleClick}
       >
         <div className="flex gap-2 rounded-lg w-full">
           <div
             className="relative cursor-pointer group"
-            onClick={handleImageClick}
           >
             <div className="w-16 h-16 md:w-24 md:h-24 object-cover rounded transition-transform group-hover:scale-105 text-red-500 md:text-8xl text-5xl font-bold bg-neutral-50 flex items-center justify-center">?</div>
             <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-20 rounded transition-opacity" />
@@ -58,13 +56,12 @@ export function CarOfferCard({ data, onClick, isSelected }: CarOfferCardProps) {
           </div>
         </div>
         <Badge
-          variant="green"
+          variant="blue"
           className="text-title-3 text-white w-fit block md:hidden px-2 py-1 rounded-lg mt-2"
         >
           Special Washbuddy Price. Claim the best deal we have
         </Badge>
       </div>
-
     </>
   );
 }

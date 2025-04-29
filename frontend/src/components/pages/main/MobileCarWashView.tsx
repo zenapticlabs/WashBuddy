@@ -16,6 +16,7 @@ import { CarWashPackage, CarWashResponse, ICarOffer } from "@/types/CarServices"
 import { CarWashSkeleton } from "@/components/organism/carWashSkeleton";
 import { CustomPagination } from "@/components/molecule/CustomPagination";
 import { CarOfferCard } from "@/components/organism/carOfferCard";
+
 interface MobileCarWashViewProps {
   hiddenOffer: ICarOffer | null;
   showMap: boolean;
@@ -26,6 +27,7 @@ interface MobileCarWashViewProps {
   setFilters: React.Dispatch<React.SetStateAction<FilterState>>;
   isLoading: boolean;
   totalCount: number;
+  onOfferClick: () => void;
 }
 
 export function MobileCarWashView({
@@ -37,6 +39,7 @@ export function MobileCarWashView({
   setFilters,
   isLoading,
   totalCount,
+  onOfferClick,
 }: MobileCarWashViewProps) {
   const [openSortBy, setOpenSortBy] = useState(false);
   return (
@@ -69,7 +72,7 @@ export function MobileCarWashView({
             </div>
           ) : (
             <>
-              {hiddenOffer && <CarOfferCard data={hiddenOffer} onClick={() => { }} />}
+              {hiddenOffer && <CarOfferCard data={hiddenOffer} onClick={onOfferClick} />}
               {carWashes.map((carWash) => (
                 <CarWashCard
                   key={carWash.id}

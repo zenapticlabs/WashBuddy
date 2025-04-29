@@ -8,6 +8,8 @@ import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import axiosInstance from "@/lib/axios";
 import { Badge } from "@/components/ui/badge";
+import { Sheet, SheetTitle } from "@/components/ui/sheet";
+import { SheetContent } from "@/components/ui/sheet";
 
 // Initialize Stripe
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
@@ -74,6 +76,11 @@ const OfferModal: React.FC<OfferModalProps> = ({ open, onOpenChange, data }) => 
     const [showConfirmation, setShowConfirmation] = useState(true);
     const [showStripeForm, setShowStripeForm] = useState(false);
     const [clientSecret, setClientSecret] = useState<string | null>(null);
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        setIsMobile(window.innerWidth < 768);
+    }, []);
 
     const handleClose = () => {
         setShowConfirmation(true);
@@ -103,44 +110,65 @@ const OfferModal: React.FC<OfferModalProps> = ({ open, onOpenChange, data }) => 
         onOpenChange(false);
     };
 
-    return (
-        <Dialog open={open} onOpenChange={handleClose}>
-            <DialogContent className="sm:max-w-[480px] p-0 max-h-[90vh] overflow-hidden flex flex-col">
-                <DialogHeader className="border-b border-neutral-100 pb-4 py-4 px-6">
-                    <DialogTitle className="text-headline-4">
-                        Do you want to purchase this offer?
-                    </DialogTitle>
-                </DialogHeader>
-
-                <div className="py-1 overflow-y-auto flex-1 px-4">
-                    {showConfirmation && (
-                        <div className="flex flex-col gap-6 pb-2">
-                            <div className="text-center ">
-                                <div className="flex justify-center gap-4">
-                                    <Button className="w-full" variant="outline" onClick={handleClose}>
-                                        No, Cancel
-                                    </Button>
-                                    <Button className="w-full" onClick={handleConfirmPurchase}>
-                                        Yes, Continue to Payment
-                                    </Button>
-                                </div>
+    const mainContent = () => {
+        return (
+            <div className="py-1 overflow-y-auto flex-1 px-4">
+                {showConfirmation && (
+                    <div className="flex flex-col gap-6 pb-2">
+                        <div className="text-center ">
+                            <div className="flex justify-center gap-4">
+                                <Button className="w-full" variant="outline" onClick={handleClose}>
+                                    No, Cancel
+                                </Button>
+                                <Button className="w-full" onClick={handleConfirmPurchase}>
+                                    Yes, Continue to Payment
+                                </Button>
                             </div>
                         </div>
-                    )}
+                    </div>
+                )}
 
-                    {showStripeForm && clientSecret && (
-                        <div className="mt-4">
-                            <Elements stripe={stripePromise} options={{ clientSecret }}>
-                                <StripePaymentForm
-                                    carOffer={data}
-                                    onSuccess={handlePaymentSuccess}
-                                />
-                            </Elements>
-                        </div>
-                    )}
-                </div>
-            </DialogContent>
-        </Dialog>
+                {showStripeForm && clientSecret && (
+                    <div className="mt-4">
+                        <Elements stripe={stripePromise} options={{ clientSecret }}>
+                            <StripePaymentForm
+                                carOffer={data}
+                                onSuccess={handlePaymentSuccess}
+                            />
+                        </Elements>
+                    </div>
+                )}
+            </div>
+        )
+    }
+
+    return (
+        <>
+            {!isMobile ? (
+                <Dialog open={open} onOpenChange={handleClose}>
+                    <DialogContent className="sm:max-w-[480px] p-0 max-h-[90vh] overflow-hidden flex flex-col">
+                        <DialogHeader className="border-b border-neutral-100 pb-4 py-4 px-6">
+                            <DialogTitle className="text-headline-4">
+                                Do you want to purchase this offer?
+                            </DialogTitle>
+                        </DialogHeader>
+
+                        {mainContent()}
+                    </DialogContent>
+                </Dialog>
+            ) : (
+                <Sheet open={open} onOpenChange={handleClose}>
+                    <SheetContent
+                        side="bottom"
+                        className="p-0 rounded-t-xl overflow-hidden">
+                        <SheetTitle className="text-headline-4 p-4">
+                            Do you want to purchase this offer?
+                        </SheetTitle>
+                        {mainContent()}
+                    </SheetContent>
+                </Sheet>
+            )}
+        </>
     );
 };
 
