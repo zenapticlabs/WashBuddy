@@ -573,10 +573,11 @@ class ListOfferAPIView(DynamicFieldsViewMixin, ListAPIView):
 
         user_metadata = utils.handle_user_meta_data(self.request.headers.get("Authorization"))
         if not user_metadata:
-            return Response(
-                {"error": "Valid authentication required"},
-                status=status.HTTP_403_FORBIDDEN
+            queryset = queryset.filter(
+                offer_type="ONE_TIME"
             )
+            return queryset
+            
 
         queryset = queryset.annotate(
             total_codes=Count('codes', distinct=True),
