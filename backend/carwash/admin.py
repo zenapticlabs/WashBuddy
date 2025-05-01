@@ -25,13 +25,27 @@ from .models import (
 
 @admin.register(WashType)
 class WashTypeAdmin(ModelAdmin):
-    list_display = ('name', 'category', 'subclass')
-    search_fields = ('name',)
+    list_display = ('name', 'category', 'subclass', 'created_by', 'updated_by')
+    search_fields = ('name', )
+    readonly_fields = ('created_by', 'updated_by')
+
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
 
 @admin.register(Amenity)
 class AmenityAdmin(ModelAdmin):
-    list_display = ('name', 'category')
+    list_display = ('name', 'category', 'created_by', 'updated_by')
     search_fields = ('name',)
+    readonly_fields = ('created_by', 'updated_by')
+    
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
 
 class BusinessOperatingHoursForm(forms.ModelForm):
     day_of_week = forms.ChoiceField(
@@ -66,21 +80,41 @@ class BusinessOperatingHoursForm(forms.ModelForm):
         model = CarWashOperatingHours
         fields = ['day_of_week', 'opening_time', 'closing_time', 'is_closed']
 
+class CustomModelAdmin(ModelAdmin):
+    def save_formset(self, request, form, formset, change):
+        if formset.is_valid():
+            instances = formset.save(commit=False)
+            
+            for instance in instances:
+                if not change or not instance.pk:
+                    instance.created_by = request.user
+                instance.updated_by = request.user
+                instance.save()
+            
+            for obj in formset.deleted_forms:
+                if obj.instance.pk:
+                    obj.instance.delete()
+            
+            formset.save_m2m()
 
-class CarWashOperatingHoursInline(admin.TabularInline):
+class CustomTabularInline(admin.TabularInline):
+    readonly_fields = ('created_by', 'updated_by')
+    can_delete = True 
+
+class CarWashOperatingHoursInline(CustomTabularInline):
     model = CarWashOperatingHours
     form = BusinessOperatingHoursForm
     extra = 0
 
-class CarWashImageInline(admin.TabularInline):
+class CarWashImageInline(CustomTabularInline):
     model = CarWashImage
     extra = 0
 
-class AmenityCarWashMappingInline(admin.TabularInline):
+class AmenityCarWashMappingInline(CustomTabularInline):
     model = AmenityCarWashMapping
     extra = 1
 
-class PackageInline(admin.TabularInline):
+class PackageInline(CustomTabularInline):
     model = CarWashPackage
     extra = 1
 
@@ -159,13 +193,14 @@ class CarWashResource(resources.ModelResource):
         )
        
 @admin.register(CarWash)
-class CarWashAdmin(ImportExportModelAdmin, ModelAdmin):
+class CarWashAdmin(ImportExportModelAdmin, CustomModelAdmin):
     import_form_class = ImportForm
     export_form_class = ExportForm
     resource_class = CarWashResource
     list_display = ['car_wash_name', 'city', 'state', 'phone', 'verified']
     list_filter = ['verified', 'state', 'automatic_car_wash', 'self_service_car_wash', 'open_24_hours']
     search_fields = ['car_wash_name', 'formatted_address', 'city']
+    readonly_fields = ('created_by', 'updated_by')
     inlines = [
         CarWashOperatingHoursInline,
         PackageInline,
@@ -173,53 +208,96 @@ class CarWashAdmin(ImportExportModelAdmin, ModelAdmin):
         AmenityCarWashMappingInline
     ]
 
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
 @admin.register(CarWashPackage)
 class CarWashPackageAdmin(ModelAdmin):
-    list_display = ('name', 'car_wash', 'price', 'rate_duration', 'category')
+    list_display = ('name', 'car_wash', 'price', 'rate_duration', 'category', 'created_by', 'updated_by')
     list_filter = ('car_wash',)
     search_fields = ('name', 'car_wash__car_wash_name')
-    raw_id_fields = ('car_wash',)
+    raw_id_fields = ('car_wash', )
+    readonly_fields = ('created_by', 'updated_by')
+
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
 
 @admin.register(Offer)
 class OfferAdmin(admin.ModelAdmin):
-    list_display = ('name', 'package', 'offer_type', 'offer_price')
+    list_display = ('name', 'package', 'offer_type', 'offer_price', 'created_by', 'updated_by')
     list_filter = ('offer_type', )
     search_fields = ('name', 'package__name')
-    raw_id_fields = ('package',)
+    raw_id_fields = ('package', )
+    readonly_fields = ('created_by', 'updated_by')
+    
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
     
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related('package__car_wash')
+        return super().get_queryset(request).select_related('package__car_wash', 'created_by', 'updated_by')
 
 @admin.register(CarWashCode)
 class CarWashCodeAdmin(admin.ModelAdmin):
-    list_display = ('code', 'offer', 'usage_count')
+    list_display = ('code', 'offer', 'usage_count', 'created_by', 'updated_by')
     list_filter = ('offer__offer_type',)
     search_fields = ('code', 'offer__name')
-    raw_id_fields = ('offer',)
+    raw_id_fields = ('offer', )
+    readonly_fields = ('created_by', 'updated_by')
     
     def usage_count(self, obj):
         return obj.usages.count()
     usage_count.short_description = 'Usage Count'
+
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
 
 @admin.register(CarWashCodeUsage)
 class CarWashCodeUsageAdmin(admin.ModelAdmin):
     list_display = ('code', 'used_at', 'user_email')
     list_filter = ('used_at',)
     search_fields = ('code__code', 'user_metadata')
-    raw_id_fields = ('code',)
+    readonly_fields = ('created_by', 'updated_by')
     
     def user_email(self, obj):
         return obj.user_metadata.get('email', '')
     user_email.short_description = 'User Email'
 
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
 
 @admin.register(Payment)
 class PaymentAdmin(ModelAdmin):
-    list_display = ('payment_intent_id', 'offer', 'amount', 'status', 'user_email', 'created_at')
+    list_display = ('payment_intent_id', 'offer', 'amount', 'status', 'created_by', 'updated_by')
     list_filter = ('status', 'created_at')
-    search_fields = ('payment_intent_id', 'user_email', 'offer__name')
-    raw_id_fields = ('offer',)
-    readonly_fields = ('payment_intent_id', 'created_at', 'updated_at')
+    search_fields = ('payment_intent_id', 'offer__name')
+    raw_id_fields = ('offer', )
+    readonly_fields = ('payment_intent_id', 'created_at', 'updated_at', 'created_by', 'updated_by')
+    
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
     
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related('offer__package__car_wash')
+        return super().get_queryset(request).select_related(
+            'offer__package__car_wash',
+            'created_by',
+            'updated_by'
+        )
