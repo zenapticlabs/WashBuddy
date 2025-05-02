@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 def handle_user_meta_data(authorization_header):
     """
     Extract and validate user metadata and sub from JWT token in request headers
-    Returns dictionary containing user_id (sub) and user_metadata if valid, None otherwise
+    Returns user_metadata dictionary with user_id added if valid, None otherwise
     """
     
     if not authorization_header:
@@ -30,10 +30,8 @@ def handle_user_meta_data(authorization_header):
         if not user_id:
             raise AuthenticationFailed('User ID (sub) not found in token')
             
-        return {
-            "user_id": user_id,
-            "user_metadata": user_metadata
-        }
+        user_metadata['user_id'] = user_id
+        return user_metadata
     except jwt.ExpiredSignatureError:
         raise AuthenticationFailed('Token expired')
     except jwt.InvalidTokenError:
