@@ -313,10 +313,11 @@ class CarWashReview(CustomModelMixin):
         Maximum rating = 5
     """
     car_wash = models.ForeignKey(CarWash, on_delete=models.CASCADE, related_name="reviews")
+    user_id = models.CharField(max_length=255, db_index=True, null=True, blank=True)
     user_metadata = models.JSONField()
     comment = models.TextField()
     overall_rating = models.SmallIntegerField(validators=[
-            MinValueValidator(0, "Rating must be at least 0"),      
+            MinValueValidator(0, "Rating must be at least 0"),
             MaxValueValidator(5, "Rating must be at most 5")
         ])
     wash_quality_rating = models.SmallIntegerField(validators=[

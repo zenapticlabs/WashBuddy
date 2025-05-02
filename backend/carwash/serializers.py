@@ -271,6 +271,7 @@ class PreSignedUrlSerializer(serializers.Serializer):
 
 class CarWashReviewPostPatchSerializer(serializers.ModelSerializer):
     images = CarWashReviewImagesPostPatchSerializer(many=True, required=False)
+    user_id = serializers.CharField(read_only=True)
 
     class Meta:
         model = CarWashReview
@@ -279,7 +280,9 @@ class CarWashReviewPostPatchSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         images = validated_data.pop("images", [])  
         authorization_header = self.context.get("authorization_header")
-        self.handle_user_meta_data(validated_data, authorization_header)
+        user_data = self.handle_user_meta_data(authorization_header)
+        validated_data["user_id"] = user_data["user_id"]
+        validated_data["user_metadata"] = user_data["user_metadata"]
 
         car_wash_review = CarWashReview.objects.create(**validated_data)
 
@@ -287,16 +290,15 @@ class CarWashReviewPostPatchSerializer(serializers.ModelSerializer):
 
         return car_wash_review
     
-    def handle_user_meta_data(self, validated_data, authorization_header): 
+    def handle_user_meta_data(self, authorization_header): 
         if not authorization_header or not authorization_header.startswith("Bearer "):
             raise PermissionDenied({"message": "Invalid or missing token"})
             
         try:
-            user_metadata = utils.handle_user_meta_data(authorization_header)
-            if not user_metadata:
-                raise AuthenticationFailed("Invalid user metadata")
-                
-            validated_data["user_metadata"] = user_metadata
+            user_data = utils.handle_user_meta_data(authorization_header)
+            if not user_data:
+                raise AuthenticationFailed("Invalid user data")
+            return user_data
         except Exception as e:
             raise AuthenticationFailed(str(e))
 
