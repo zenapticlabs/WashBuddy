@@ -2,12 +2,15 @@ from django.contrib import admin
 from unfold.admin import ModelAdmin
 from import_export.admin import ImportExportModelAdmin
 from unfold.contrib.import_export.forms import ExportForm, ImportForm
+from import_export.forms import ImportForm as ImportExportForm
+from html import escape
+from import_export import exceptions
+from django.utils.translation import gettext_lazy as _
 
-# from import_export.admin import ImportExportMixin
 from import_export import resources
 from django import forms
 from unfold.widgets import UnfoldAdminSingleTimeWidget, UnfoldBooleanSwitchWidget
-# from unfold.contrib.import_export.forms import ExportForm, ImportForm
+from django.contrib.admin.widgets import AutocompleteSelect
 
 from .models import (
     CarWash, 
@@ -228,13 +231,23 @@ class CarWashPackageAdmin(ModelAdmin):
         obj.updated_by = request.user
         super().save_model(request, obj, form, change)
 
+
 @admin.register(Offer)
-class OfferAdmin(admin.ModelAdmin):
-    list_display = ('name', 'package', 'offer_type', 'offer_price', 'created_by', 'updated_by')
-    list_filter = ('offer_type', )
-    search_fields = ('name', 'package__name')
-    raw_id_fields = ('package', )
+class OfferAdmin(ModelAdmin):
+    list_display = ('name', 'package', 'package_car_wash', 'offer_type', 'codes_count', 'offer_price', 'created_by', 'updated_by')
+    list_filter = ('offer_type', 'package__name', 'package__car_wash')
+    search_fields = ('name', 'package__name', 'package__car_wash__car_wash_name')
     readonly_fields = ('created_by', 'updated_by')
+    autocomplete_fields = ('package',)
+
+    def codes_count(self, obj):
+        return obj.codes.count()
+    codes_count.short_description = 'Codes'
+
+    def package_car_wash(self, obj):
+        return obj.package.car_wash.car_wash_name if obj.package and obj.package.car_wash else ''
+    package_car_wash.short_description = 'Car Wash'
+    package_car_wash.admin_order_field = 'package__car_wash__car_wash_name'
     
     def save_model(self, request, obj, form, change):
         if not change:
@@ -243,15 +256,114 @@ class OfferAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
     
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related('package__car_wash', 'created_by', 'updated_by')
+        return super().get_queryset(request).select_related(
+            'package__car_wash',
+            'created_by',
+            'updated_by'
+        )
+
+class CarWashCodeResource(resources.ModelResource):
+    offer = resources.Field(attribute='offer')
+    created_by = resources.Field(attribute='created_by')
+    updated_by = resources.Field(attribute='updated_by')
+
+    def before_import_row(self, row, **kwargs):
+        offer = kwargs.get('offer')
+
+        if offer:
+            row['offer'] = Offer.objects.get(id=offer)
+
+        row['created_by'] = kwargs.get('user')
+        row['updated_by'] = kwargs.get('user')
+
+    class Meta:
+        model = CarWashCode
+        import_id_fields = ('code', 'offer')
+        fields = ('code', 'offer', 'created_by', 'updated_by')
+
+    def _check_import_id_fields(self, headers):
+        import_id_fields = []
+        missing_fields = []
+        missing_headers = []
+
+        if self.get_import_id_fields() == ["id"]:
+            # this is the default case, so ok if not present
+            return
+
+        for field_name in self.get_import_id_fields():
+            if field_name not in self.fields:
+                missing_fields.append(field_name)
+            else:
+                import_id_fields.append(self.fields[field_name])
+
+        if missing_fields:
+            raise exceptions.FieldError(
+                _(
+                    "The following fields are declared in 'import_id_fields' but "
+                    "are not present in the resource fields: %s"
+                    % ", ".join(missing_fields)
+                )
+            )
+
+        for field in import_id_fields:
+            if not headers or field.column_name not in headers:
+                # escape to be safe (exception could end up in logs)
+                col = escape(field.column_name)
+                missing_headers.append(col)
+        
+        if 'offer' in missing_headers:
+            # offer is not a required field
+            missing_headers.remove('offer')
+
+        if missing_headers:
+            raise exceptions.FieldError(
+                _(
+                    "The following fields are declared in 'import_id_fields' but "
+                    "are not present in the file headers: %s"
+                    % ", ".join(missing_headers)
+                )
+            )
+        
+
+class CustomImportForm(ImportExportForm):
+    offer = forms.ModelChoiceField(
+        queryset=Offer.objects.all(), 
+        required=True, 
+        empty_label="Select an offer",
+        widget=AutocompleteSelect(
+            CarWashCode._meta.get_field('offer'),
+            admin_site=admin.site
+        )
+    )
 
 @admin.register(CarWashCode)
-class CarWashCodeAdmin(admin.ModelAdmin):
+class CarWashCodeAdmin(ImportExportModelAdmin, ModelAdmin):
+    import_form_class = CustomImportForm
+    resource_class = CarWashCodeResource
     list_display = ('code', 'offer', 'usage_count', 'created_by', 'updated_by')
     list_filter = ('offer__offer_type',)
     search_fields = ('code', 'offer__name')
-    raw_id_fields = ('offer', )
     readonly_fields = ('created_by', 'updated_by')
+    autocomplete_fields = ('offer',)
+    offer_global = None
+
+    def get_import_data_kwargs(self, **kwargs):
+        """
+        Prepare kwargs for import_data.
+        """
+        form = kwargs.get("form")
+        if form:
+            form = kwargs.pop("form")
+            try:
+                offer = form['offer']
+                kwargs['offer'] = offer.value()
+                self.offer_global = offer.value()
+            except:
+                offer = self.offer_global
+                kwargs['offer'] = offer
+            
+            return kwargs
+        return kwargs
     
     def usage_count(self, obj):
         return obj.usages.count()
