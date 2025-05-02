@@ -106,10 +106,10 @@ export function CarWashCard({ data, onClick, isSelected }: CarWashCardProps) {
             <div className="flex items-center gap-0.5 justify-end">
               <StarIcon className="w-3.5 h-3.5 text-accent-yellow fill-accent-yellow" />
               <span className="text-title-2 text-accent-yellow">
-                {data.reviews_average}
+                {data?.reviews_summary?.average_rating || 0}
               </span>
               <span className="text-body-3 text-neutral-300">
-                ({data.reviews_count})
+                ({data.reviews_summary?.total_reviews || 0})
               </span>
             </div>
             <div className="text-headline-4 py-1 text-neutral-900 text-right">
