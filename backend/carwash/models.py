@@ -284,10 +284,19 @@ class Offer(CustomModelMixin):
 
 class CarWashCode(CustomModelMixin):
     offer = models.ForeignKey(Offer, on_delete=models.CASCADE, related_name="codes")
-    code = models.CharField(max_length=50, unique=True)
+    code = models.CharField(max_length=50)
     
     objects = models.Manager()
     active_objects = ActiveManager()
+
+    class Meta:
+        unique_together = ('code', 'offer')
+        constraints = [
+            models.UniqueConstraint(
+                fields=['code', 'offer'],
+                name='unique_code_per_offer'
+            )
+        ]
     
     def __str__(self):
         return f"{self.code} - {self.offer.name}"

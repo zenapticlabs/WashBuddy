@@ -2,12 +2,15 @@ from django.contrib import admin
 from unfold.admin import ModelAdmin
 from import_export.admin import ImportExportModelAdmin
 from unfold.contrib.import_export.forms import ExportForm, ImportForm
+from import_export.forms import ImportForm as ImportExportForm
+from html import escape
+from import_export import exceptions
+from django.utils.translation import gettext_lazy as _
 
-# from import_export.admin import ImportExportMixin
 from import_export import resources
 from django import forms
 from unfold.widgets import UnfoldAdminSingleTimeWidget, UnfoldBooleanSwitchWidget
-# from unfold.contrib.import_export.forms import ExportForm, ImportForm
+from django.contrib.admin.widgets import AutocompleteSelect
 
 from .models import (
     CarWash, 
@@ -25,13 +28,27 @@ from .models import (
 
 @admin.register(WashType)
 class WashTypeAdmin(ModelAdmin):
-    list_display = ('name', 'category', 'subclass')
-    search_fields = ('name',)
+    list_display = ('name', 'category', 'subclass', 'created_by', 'updated_by')
+    search_fields = ('name', )
+    readonly_fields = ('created_by', 'updated_by')
+
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
 
 @admin.register(Amenity)
 class AmenityAdmin(ModelAdmin):
-    list_display = ('name', 'category')
+    list_display = ('name', 'category', 'created_by', 'updated_by')
     search_fields = ('name',)
+    readonly_fields = ('created_by', 'updated_by')
+    
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
 
 class BusinessOperatingHoursForm(forms.ModelForm):
     day_of_week = forms.ChoiceField(
@@ -66,21 +83,41 @@ class BusinessOperatingHoursForm(forms.ModelForm):
         model = CarWashOperatingHours
         fields = ['day_of_week', 'opening_time', 'closing_time', 'is_closed']
 
+class CustomModelAdmin(ModelAdmin):
+    def save_formset(self, request, form, formset, change):
+        if formset.is_valid():
+            instances = formset.save(commit=False)
+            
+            for instance in instances:
+                if not change or not instance.pk:
+                    instance.created_by = request.user
+                instance.updated_by = request.user
+                instance.save()
+            
+            for obj in formset.deleted_forms:
+                if obj.instance.pk:
+                    obj.instance.delete()
+            
+            formset.save_m2m()
 
-class CarWashOperatingHoursInline(admin.TabularInline):
+class CustomTabularInline(admin.TabularInline):
+    readonly_fields = ('created_by', 'updated_by')
+    can_delete = True 
+
+class CarWashOperatingHoursInline(CustomTabularInline):
     model = CarWashOperatingHours
     form = BusinessOperatingHoursForm
     extra = 0
 
-class CarWashImageInline(admin.TabularInline):
+class CarWashImageInline(CustomTabularInline):
     model = CarWashImage
     extra = 0
 
-class AmenityCarWashMappingInline(admin.TabularInline):
+class AmenityCarWashMappingInline(CustomTabularInline):
     model = AmenityCarWashMapping
     extra = 1
 
-class PackageInline(admin.TabularInline):
+class PackageInline(CustomTabularInline):
     model = CarWashPackage
     extra = 1
 
@@ -159,13 +196,14 @@ class CarWashResource(resources.ModelResource):
         )
        
 @admin.register(CarWash)
-class CarWashAdmin(ImportExportModelAdmin, ModelAdmin):
+class CarWashAdmin(ImportExportModelAdmin, CustomModelAdmin):
     import_form_class = ImportForm
     export_form_class = ExportForm
     resource_class = CarWashResource
     list_display = ['car_wash_name', 'city', 'state', 'phone', 'verified']
     list_filter = ['verified', 'state', 'automatic_car_wash', 'self_service_car_wash', 'open_24_hours']
     search_fields = ['car_wash_name', 'formatted_address', 'city']
+    readonly_fields = ('created_by', 'updated_by')
     inlines = [
         CarWashOperatingHoursInline,
         PackageInline,
@@ -173,53 +211,205 @@ class CarWashAdmin(ImportExportModelAdmin, ModelAdmin):
         AmenityCarWashMappingInline
     ]
 
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
 @admin.register(CarWashPackage)
 class CarWashPackageAdmin(ModelAdmin):
-    list_display = ('name', 'car_wash', 'price', 'rate_duration', 'category')
+    list_display = ('name', 'car_wash', 'price', 'rate_duration', 'category', 'created_by', 'updated_by')
     list_filter = ('car_wash',)
     search_fields = ('name', 'car_wash__car_wash_name')
-    raw_id_fields = ('car_wash',)
+    raw_id_fields = ('car_wash', )
+    readonly_fields = ('created_by', 'updated_by')
+
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
 
 @admin.register(Offer)
-class OfferAdmin(admin.ModelAdmin):
-    list_display = ('name', 'package', 'offer_type', 'offer_price')
-    list_filter = ('offer_type', )
-    search_fields = ('name', 'package__name')
-    raw_id_fields = ('package',)
+class OfferAdmin(ModelAdmin):
+    list_display = ('name', 'package', 'package_car_wash', 'offer_type', 'codes_count', 'offer_price', 'created_by', 'updated_by')
+    list_filter = ('offer_type', 'package__name', 'package__car_wash')
+    search_fields = ('name', 'package__name', 'package__car_wash__car_wash_name')
+    readonly_fields = ('created_by', 'updated_by')
+    autocomplete_fields = ('package',)
+
+    def codes_count(self, obj):
+        return obj.codes.count()
+    codes_count.short_description = 'Codes'
+
+    def package_car_wash(self, obj):
+        return obj.package.car_wash.car_wash_name if obj.package and obj.package.car_wash else ''
+    package_car_wash.short_description = 'Car Wash'
+    package_car_wash.admin_order_field = 'package__car_wash__car_wash_name'
+    
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
     
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related('package__car_wash')
+        return super().get_queryset(request).select_related(
+            'package__car_wash',
+            'created_by',
+            'updated_by'
+        )
+
+class CarWashCodeResource(resources.ModelResource):
+    offer = resources.Field(attribute='offer')
+    created_by = resources.Field(attribute='created_by')
+    updated_by = resources.Field(attribute='updated_by')
+
+    def before_import_row(self, row, **kwargs):
+        offer = kwargs.get('offer')
+
+        if offer:
+            row['offer'] = Offer.objects.get(id=offer)
+
+        row['created_by'] = kwargs.get('user')
+        row['updated_by'] = kwargs.get('user')
+
+    class Meta:
+        model = CarWashCode
+        import_id_fields = ('code', 'offer')
+        fields = ('code', 'offer', 'created_by', 'updated_by')
+
+    def _check_import_id_fields(self, headers):
+        import_id_fields = []
+        missing_fields = []
+        missing_headers = []
+
+        if self.get_import_id_fields() == ["id"]:
+            # this is the default case, so ok if not present
+            return
+
+        for field_name in self.get_import_id_fields():
+            if field_name not in self.fields:
+                missing_fields.append(field_name)
+            else:
+                import_id_fields.append(self.fields[field_name])
+
+        if missing_fields:
+            raise exceptions.FieldError(
+                _(
+                    "The following fields are declared in 'import_id_fields' but "
+                    "are not present in the resource fields: %s"
+                    % ", ".join(missing_fields)
+                )
+            )
+
+        for field in import_id_fields:
+            if not headers or field.column_name not in headers:
+                # escape to be safe (exception could end up in logs)
+                col = escape(field.column_name)
+                missing_headers.append(col)
+        
+        if 'offer' in missing_headers:
+            # offer is not a required field
+            missing_headers.remove('offer')
+
+        if missing_headers:
+            raise exceptions.FieldError(
+                _(
+                    "The following fields are declared in 'import_id_fields' but "
+                    "are not present in the file headers: %s"
+                    % ", ".join(missing_headers)
+                )
+            )
+        
+
+class CustomImportForm(ImportExportForm):
+    offer = forms.ModelChoiceField(
+        queryset=Offer.objects.all(), 
+        required=True, 
+        empty_label="Select an offer",
+        widget=AutocompleteSelect(
+            CarWashCode._meta.get_field('offer'),
+            admin_site=admin.site
+        )
+    )
 
 @admin.register(CarWashCode)
-class CarWashCodeAdmin(admin.ModelAdmin):
-    list_display = ('code', 'offer', 'usage_count')
+class CarWashCodeAdmin(ImportExportModelAdmin, ModelAdmin):
+    import_form_class = CustomImportForm
+    resource_class = CarWashCodeResource
+    list_display = ('code', 'offer', 'usage_count', 'created_by', 'updated_by')
     list_filter = ('offer__offer_type',)
     search_fields = ('code', 'offer__name')
-    raw_id_fields = ('offer',)
+    readonly_fields = ('created_by', 'updated_by')
+    autocomplete_fields = ('offer',)
+    offer_global = None
+
+    def get_import_data_kwargs(self, **kwargs):
+        """
+        Prepare kwargs for import_data.
+        """
+        form = kwargs.get("form")
+        if form:
+            form = kwargs.pop("form")
+            try:
+                offer = form['offer']
+                kwargs['offer'] = offer.value()
+                self.offer_global = offer.value()
+            except:
+                offer = self.offer_global
+                kwargs['offer'] = offer
+            
+            return kwargs
+        return kwargs
     
     def usage_count(self, obj):
         return obj.usages.count()
     usage_count.short_description = 'Usage Count'
+
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
 
 @admin.register(CarWashCodeUsage)
 class CarWashCodeUsageAdmin(admin.ModelAdmin):
     list_display = ('code', 'used_at', 'user_email')
     list_filter = ('used_at',)
     search_fields = ('code__code', 'user_metadata')
-    raw_id_fields = ('code',)
+    readonly_fields = ('created_by', 'updated_by')
     
     def user_email(self, obj):
         return obj.user_metadata.get('email', '')
     user_email.short_description = 'User Email'
 
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
+
 
 @admin.register(Payment)
 class PaymentAdmin(ModelAdmin):
-    list_display = ('payment_intent_id', 'offer', 'amount', 'status', 'user_email', 'created_at')
+    list_display = ('payment_intent_id', 'offer', 'amount', 'status', 'created_by', 'updated_by')
     list_filter = ('status', 'created_at')
-    search_fields = ('payment_intent_id', 'user_email', 'offer__name')
-    raw_id_fields = ('offer',)
-    readonly_fields = ('payment_intent_id', 'created_at', 'updated_at')
+    search_fields = ('payment_intent_id', 'offer__name')
+    raw_id_fields = ('offer', )
+    readonly_fields = ('payment_intent_id', 'created_at', 'updated_at', 'created_by', 'updated_by')
+    
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
     
     def get_queryset(self, request):
-        return super().get_queryset(request).select_related('offer__package__car_wash')
+        return super().get_queryset(request).select_related(
+            'offer__package__car_wash',
+            'created_by',
+            'updated_by'
+        )

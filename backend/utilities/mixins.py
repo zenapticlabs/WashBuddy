@@ -41,9 +41,9 @@ class CustomModelMixin(models.Model):
     Mixin class for creating util details.
     """
 
-    created_by = models.ForeignKey("carwash.UserProfile", null=True, blank=True,
+    created_by = models.ForeignKey("auth.User", null=True, blank=True,
                                    on_delete=models.CASCADE, related_name="created_by_%(class)s")
-    updated_by = models.ForeignKey("carwash.UserProfile", null=True, blank=True,
+    updated_by = models.ForeignKey("auth.User", null=True, blank=True,
                                    on_delete=models.CASCADE, related_name="updated_by_%(class)s")
     created_at = models.DateTimeField(auto_now_add=timezone.now)
     updated_at = models.DateTimeField(auto_now=timezone.now)
