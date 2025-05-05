@@ -48,7 +48,7 @@ function LoginContent() {
       toast.success("OTP verified successfully");
       window.location.href = "/";
     } catch (error: any) {
-      toast.error(error?.message || "Failed to verify OTP");
+      toast.error("Failed to verify OTP");
     } finally {
       setLoading(false);
     }

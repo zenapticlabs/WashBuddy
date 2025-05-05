@@ -7,7 +7,6 @@ import { useState, useEffect } from "react";
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import axiosInstance from "@/lib/axios";
-import { Badge } from "../ui/badge";
 import useMediaQuery from "@/hooks/useMediaQuery";
 import {
   Sheet,
@@ -41,10 +40,6 @@ const StripePaymentForm = ({ carWashPackage, onSuccess }: { carWashPackage: CarW
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [paymentStatus, setPaymentStatus] = useState<string | null>(null);
-
-  const extractPaymentIntentId = (clientSecret: string) => {
-    return clientSecret.split('_secret_')[0];
-  };
 
   const checkPaymentStatus = async (paymentIntentId: string) => {
     try {
@@ -172,11 +167,7 @@ const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
     }
     return false;
   }
-
-  const handleCodeChange = (code: string) => {
-    setCode(code);
-  }
-
+  
   useEffect(() => {
     if (showPurchase && !clientSecret) {
       const fetchClientSecret = async () => {

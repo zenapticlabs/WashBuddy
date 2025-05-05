@@ -4,7 +4,6 @@ import { Separator } from "@/components/ui/separator";
 import { SelectRate } from "@/components/ui/selectRate";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Star, XIcon } from "lucide-react";
-import ImageUploadZone from "@/components/ui/imageUploadZone";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -16,8 +15,6 @@ import {
 import useMediaQuery from "@/hooks/useMediaQuery";
 import { useState } from "react";
 import UploadedImageCard from "@/components/ui/uploadedImageCard";
-import { uploadFile } from "@/services/UploadService";
-import { getPresignedUrl } from "@/services/UploadService";
 import { toast } from "sonner";
 import { createReview } from "@/services/ReviewService";
 import { IReviewCreate } from "@/types/Review";
@@ -26,10 +23,6 @@ import Image from "next/image";
 
 const defaultAvatar =
   "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde";
-const NEXT_PUBLIC_STORAGE_ENDPOINT = process.env.NEXT_PUBLIC_STORAGE_ENDPOINT;
-const NEXT_PUBLIC_STORAGE_BUCKET_NAME =
-  process.env.NEXT_PUBLIC_STORAGE_BUCKET_NAME;
-
 const CreateCarWashReviewModal: React.FC<{
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -45,33 +38,8 @@ const CreateCarWashReviewModal: React.FC<{
   const [customer_service_rating, setCustomerServiceRating] = useState(0);
   const [amenities_extra_rating, setAmenitiesExtraRating] = useState(0);
   const [overall_rating, setOverallRating] = useState(0);
-  const [uploading, setUploading] = useState(false);
   const [images, setImages] = useState<{ image_url: string }[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleFileChange = async (file: File | null) => {
-    if (!file) return;
-    setUploading(true);
-
-    try {
-      const sanitizedFileName = file.name.replace(/\s+/g, "-");
-      const presignedUrl = await getPresignedUrl(sanitizedFileName);
-      await uploadFile(presignedUrl.signed_url, file);
-      const fileUrl = `${NEXT_PUBLIC_STORAGE_ENDPOINT}/object/public/${NEXT_PUBLIC_STORAGE_BUCKET_NAME}/${presignedUrl.path}`;
-
-      handleUploadImage(fileUrl);
-      toast.success("File uploaded successfully!");
-    } catch (error) {
-      console.error("Error uploading file:", error);
-      toast.error("Failed to upload file");
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const handleUploadImage = (image_url: string) => {
-    setImages([...images, { image_url }]);
-  };
 
   const handleDeleteImage = (image_url: string) => {
     setImages(images.filter((image) => image.image_url !== image_url));
@@ -233,16 +201,12 @@ const CreateCarWashReviewModal: React.FC<{
                     canDelete={true}
                   />
                 ))}
-                {uploading && (
+                {/* {uploading && (
                   <div className="p-2 bg-neutral-50 rounded-lg w-32 h-32 relative flex items-center justify-center">
                     <Loader2 className="w-10 h-10 text-blue-500 animate-spin" />
                   </div>
-                )}
+                )} */}
               </div>
-              {/* <ImageUploadZone
-                required={true}
-                onFileChange={(file) => handleFileChange(file)}
-              /> */}
             </div>
           </div>
         </div>

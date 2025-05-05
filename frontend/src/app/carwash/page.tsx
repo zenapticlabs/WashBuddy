@@ -17,8 +17,6 @@ import {
 import AddressAutoComplete from "@/components/molecule/AddressAutoComplete";
 import { RadarAddress } from "radar-sdk-js/dist/types";
 import Topbar from "@/components/pages/main/Topbar";
-// import { useAmenities } from "@/hooks/useAmenities";
-// import { useWashTypes } from "@/hooks/useWashTypes";
 import { Amenities, Car_Wash_Type_Value, CarWashTypes, DEFAULT_PAYLOAD, FORM_CONFIG } from "@/utils/constants";
 import { Switch } from "@/components/ui/switch";
 import { useSearchParams } from "next/navigation";
@@ -167,11 +165,10 @@ const CarWashContent = () => {
 
       payload = handleFilterOperatingHours(payload);
       payload = handleFilterPhone(payload);
-      let response: any;
       if (isEdit) {
-        response = await updateCarwash(carwashId || "", payload);
+        await updateCarwash(carwashId || "", payload);
       } else {
-        response = await createCarwash(payload);
+        await createCarwash(payload);
       }
       toast.success(
         isEdit
@@ -230,12 +227,6 @@ const CarWashContent = () => {
     }
   };
 
-  // const handleDeleteSitePhoto = () => {
-  //   setFormData((prevData: any) => ({
-  //     ...prevData,
-  //     image_url: null,
-  //   }));
-  // };
 
   const handleUploadImage = (images: any[]) => {
     setFormData((prevData: any) => ({

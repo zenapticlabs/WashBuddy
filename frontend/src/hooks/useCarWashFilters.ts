@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { FilterState } from "@/types/filters";
-import { Car_Wash_Type, INITIAL_FILTER_STATE, SortBy } from "@/utils/constants";
+import { Car_Wash_Type, SortBy } from "@/utils/constants";
 import { useSearchParams } from 'next/navigation';
 
 function getFiltersFromParams(params: URLSearchParams): FilterState {
