@@ -215,8 +215,8 @@ class CarWashPostPatchSerializer(serializers.ModelSerializer):
                     car_wash=instance,
                     **operating_hour_object
                 )
-                return
-            existing_object.update(**operating_hour_object)
+            else:
+                existing_object.update(**operating_hour_object)
 
     def handle_images(self, instance, images): 
         for image_object in images:
@@ -310,8 +310,8 @@ class CarWashReviewPostPatchSerializer(serializers.ModelSerializer):
                     carwash_review=instance,
                     **image_object
                 )
-                return
-            existing_object.update(**image_object)
+            else:
+                existing_object.update(**image_object)
 
 
 class CarWashReviewImagesGetSerializer(serializers.ModelSerializer):
