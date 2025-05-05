@@ -209,6 +209,7 @@ const CarWashContent = () => {
           params.append(key, value as string);
         }
       });
+      console.log(params.toString());
       router.push(`/?${params.toString()}`);
     } else {
       router.push(`/`);
@@ -227,6 +228,9 @@ const CarWashContent = () => {
     }
   };
 
+  useEffect(() => {
+    console.log(formData);
+  }, [formData]);
 
   const handleUploadImage = (images: any[]) => {
     setFormData((prevData: any) => ({
