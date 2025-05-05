@@ -1,11 +1,12 @@
 "use client";
 
 import Topbar from "@/components/pages/main/Topbar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { RadarMap } from "@/components/organism/RadarMap";
 import { MobileRewardView } from "@/components/pages/main/MobileRewardView";
-import reviews from "@/mocks/myReviewData";
 import { RewardList } from "@/components/pages/rewards/RewardList";
+import axiosInstance from "@/lib/axios";
+
 const SortOptions = [
   {
     label: "Newest",
@@ -16,10 +17,29 @@ const SortOptions = [
     value: "oldest",
   },
 ];
+
 export default function Rewards() {
   const RADAR_KEY = process.env.NEXT_PUBLIC_RADAR_API_KEY;
   const [sortBy, setSortBy] = useState<string>(SortOptions[0].value);
   const [showMap, setShowMap] = useState<boolean>(false);
+  const [rewards, setRewards] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const fetchRewards = async () => {
+      try {
+        setLoading(true);
+        const response = await axiosInstance.get("/api/v1/users/reviews/");
+        setRewards(response.data);
+      } catch (error) {
+        console.error("Error fetching rewards:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRewards();
+  }, []);
+
   return (
     <>
       <div className="flex flex-col h-screen">
@@ -29,12 +49,12 @@ export default function Rewards() {
             <RewardList
               sortBy={sortBy}
               setSortBy={setSortBy}
-              reviews={reviews}
+              reviews={rewards}
             />
           </div>
           <div className="flex-1 flex items-center justify-center">
             <RadarMap
-              loading={false}
+              loading={loading}
               showMap={showMap}
               publishableKey={RADAR_KEY || ""}
               carWashes={[]}
@@ -46,7 +66,7 @@ export default function Rewards() {
             setShowMap={setShowMap}
             sortBy={sortBy}
             setSortBy={setSortBy}
-            reviews={reviews}
+            reviews={rewards}
           />
         </div>
       </div>

@@ -17,7 +17,7 @@ const useGeoLocationData = () => {
           setError(null);
           setLoading(false);
         },
-        (err) => {
+        () => {
           setError("Failed to detect location. Please try again.");
           setLoading(false);
         }

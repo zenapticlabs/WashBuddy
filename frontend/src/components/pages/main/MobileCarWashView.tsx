@@ -12,7 +12,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import { CarWashPackage, CarWashResponse, ICarOffer } from "@/types/CarServices";
+import { CarWashResponse, ICarOffer } from "@/types/CarServices";
 import { CarWashSkeleton } from "@/components/organism/carWashSkeleton";
 import { CustomPagination } from "@/components/molecule/CustomPagination";
 import { CarOfferCard } from "@/components/organism/carOfferCard";
@@ -72,7 +72,7 @@ export function MobileCarWashView({
             </div>
           ) : (
             <>
-              {hiddenOffer && <CarOfferCard data={hiddenOffer} onClick={onOfferClick} />}
+              {hiddenOffer && <CarOfferCard onClick={onOfferClick} />}
               {carWashes.map((carWash) => (
                 <CarWashCard
                   key={carWash.id}

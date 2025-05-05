@@ -1,13 +1,11 @@
-import { CarWashPackage, CarWashResponse, ICarOffer } from "@/types/CarServices";
-import { WashTypes } from "@/utils/constants";
+import { CarWashResponse, ICarOffer } from "@/types/CarServices";
 import Image from "next/image";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import axiosInstance from "@/lib/axios";
-import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetTitle } from "@/components/ui/sheet";
 import { SheetContent } from "@/components/ui/sheet";
 import { Copy, Check } from "lucide-react";
@@ -28,10 +26,6 @@ const StripePaymentForm = ({ carOffer, onSuccess }: { carOffer: ICarOffer, onSuc
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [paymentStatus, setPaymentStatus] = useState<string | null>(null);
-
-    const extractPaymentIntentId = (clientSecret: string) => {
-        return clientSecret.split('_secret_')[0];
-    };
 
     const checkPaymentStatus = async (paymentIntentId: string) => {
         try {

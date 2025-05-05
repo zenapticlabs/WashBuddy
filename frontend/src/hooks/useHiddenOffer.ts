@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { getCarwashes } from "@/services/CarwashService";
 import { FilterState } from "@/types/filters";
 import { ICarOffer } from "@/types/CarServices";
 import { getOffers } from '@/services/OfferService';

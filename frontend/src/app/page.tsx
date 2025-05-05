@@ -124,33 +124,41 @@ function HomeContent() {
     const automaticCarWash = searchParams.get("automaticCarWash");
     const selfServiceCarWash = searchParams.get("selfServiceCarWash");
     const sortBy = searchParams.get("sortBy");
+    const washTypeNames = searchParams.getAll("washTypeName");
+    const ratings = searchParams.getAll("ratings").map(Number);
+    const distance = searchParams.get("distance");
+    const priceRange = searchParams.get("priceRange");
+    const amenityNames = searchParams.getAll("amenityName");
+    const page = searchParams.get("page");
+    const pageSize = searchParams.get("page_size");
 
+    // Only update if there are any filter parameters in the URL
     if (
       automaticCarWash !== null ||
       selfServiceCarWash !== null ||
-      sortBy !== null
+      sortBy !== null ||
+      washTypeNames.length > 0 ||
+      ratings.length > 0 ||
+      distance !== null ||
+      priceRange !== null ||
+      amenityNames.length > 0 ||
+      page !== null ||
+      pageSize !== null
     ) {
-      // Add a check to prevent unnecessary updates
-      const newAutomaticCarWash = automaticCarWash === "true";
-      const newSelfServiceCarWash = selfServiceCarWash === "true";
-      const newSortBy = sortBy
-        ? [sortBy]
-        : [SortBy[Car_Wash_Type.AUTOMATIC][0].value];
-
-      if (
-        filters.automaticCarWash !== newAutomaticCarWash ||
-        filters.selfServiceCarWash !== newSelfServiceCarWash ||
-        JSON.stringify(filters.sortBy) !== JSON.stringify(newSortBy)
-      ) {
-        setFilters((prev) => ({
-          ...prev,
-          automaticCarWash: newAutomaticCarWash,
-          selfServiceCarWash: newSelfServiceCarWash,
-          sortBy: newSortBy,
-        }));
-      }
+      setFilters((prev) => ({
+        ...prev,
+        automaticCarWash: automaticCarWash === "true",
+        selfServiceCarWash: selfServiceCarWash === "true",
+        sortBy: sortBy ? [sortBy] : prev.sortBy,
+        washTypeName: washTypeNames.length > 0 ? washTypeNames : prev.washTypeName,
+        ratings: ratings.length > 0 ? ratings : prev.ratings,
+        distance: distance ? Number(distance) : prev.distance,
+        priceRange: priceRange ? Number(priceRange) : prev.priceRange,
+        amenityName: amenityNames.length > 0 ? amenityNames : prev.amenityName,
+        page: page ? Number(page) : prev.page,
+        page_size: pageSize ? Number(pageSize) : prev.page_size
+      }));
     }
-    // Remove setFilters from dependencies array since it's stable
   }, [searchParams]);
 
   const handleMapReady = (map: maplibregl.Map) => (mapRef.current = map);
@@ -244,7 +252,7 @@ function HomeContent() {
                 {!isLoading && !isLoadingOffers &&
                   (
                     <>
-                      {hiddenOffer && <CarOfferCard data={hiddenOffer} onClick={() => handleOfferClick()} />}
+                      {hiddenOffer && <CarOfferCard onClick={() => handleOfferClick()} />}
                       {carWashes?.map((carWash) => (
                         <div
                           key={carWash.id}
