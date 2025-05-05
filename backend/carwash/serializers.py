@@ -226,8 +226,8 @@ class CarWashPostPatchSerializer(serializers.ModelSerializer):
                     car_wash=instance,
                     **image_object
                 )
-                return
-            existing_object.update(**image_object)
+            else:
+                existing_object.update(**image_object)
 
     def handle_packages(self, instance, packages):  
         new_packages_ids = []         
