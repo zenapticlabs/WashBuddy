@@ -25,7 +25,7 @@ export function ReviewShow({ data }: ReviewShowProps) {
 
   return (
     <div className="flex gap-4 border-b py-2">
-      {data?.user_metadata?.avatar_url && (
+      {data?.user_metadata?.avatar_url ? (
         <Image
           src={data?.user_metadata?.avatar_url}
           alt={`${data.user_metadata?.full_name}'s avatar`}
@@ -33,6 +33,10 @@ export function ReviewShow({ data }: ReviewShowProps) {
           width={40}
           height={40}
         />
+      ) : (
+        <div className="w-10 h-10 rounded-full bg-green-700 text-white flex items-center justify-center">
+          {data?.user_metadata?.full_name?.charAt(0).toUpperCase()}
+        </div>
       )}
       <div className="flex flex-col gap-1 min-w-0">
         <div className="text-title-2 text-neutral-900">
@@ -46,9 +50,8 @@ export function ReviewShow({ data }: ReviewShowProps) {
         </div>
         <div
           ref={textRef}
-          className={`mt-3 text-body-2 text-neutral-800 break-words ${
-            !isExpanded ? "line-clamp-3" : ""
-          }`}
+          className={`mt-3 text-body-2 text-neutral-800 break-words ${!isExpanded ? "line-clamp-3" : ""
+            }`}
         >
           {data.comment}
         </div>
