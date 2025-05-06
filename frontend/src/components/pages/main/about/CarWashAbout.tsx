@@ -7,6 +7,8 @@ import { ImageModal } from "@/components/molecule/ImageModal";
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 
 const emptyImageURL =
@@ -14,7 +16,8 @@ const emptyImageURL =
 
 export default function CarWashAbout({ data }: { data: CarWashResponse }) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-
+  const { user } = useAuth();
+  const { toast } = useToast()
   const router = useRouter();
   const handleImageClick = (imageUrl: string) => {
     setSelectedImage(imageUrl);
@@ -61,10 +64,18 @@ export default function CarWashAbout({ data }: { data: CarWashResponse }) {
   }, [data.packages]);
 
   const handleNavigateEditPage = () => {
+    if (!user) {
+      toast({
+        title: "Please login to update your local carwash",
+        description: "Login to update your local carwash and earn 25 points",
+        variant: "destructive",
+        action: <Button variant="destructive" className="border border-white" onClick={() => router.push("/login")}>Login</Button>
+      })
+      return;
+    }
     const currentUrl = window.location.href;
     const urlParams = new URLSearchParams(currentUrl.split('?')[1]);
     const params = Object.fromEntries(urlParams.entries());
-    
     if (params) {
       sessionStorage.setItem('dashboardFilters', JSON.stringify(params));
     }

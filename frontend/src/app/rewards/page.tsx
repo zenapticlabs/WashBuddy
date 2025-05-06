@@ -6,7 +6,7 @@ import { RadarMap } from "@/components/organism/RadarMap";
 import { MobileRewardView } from "@/components/pages/main/MobileRewardView";
 import { RewardList } from "@/components/pages/rewards/RewardList";
 import axiosInstance from "@/lib/axios";
-
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 const SortOptions = [
   {
     label: "Newest",
@@ -41,7 +41,7 @@ export default function Rewards() {
   }, []);
 
   return (
-    <>
+    <ProtectedRoute>
       <div className="flex flex-col h-screen">
         <Topbar sideBarAlwaysOpen={true} />
         <div className="flex flex-row md:ml-[210px] h-[calc(100vh-66px)] relative">
@@ -70,6 +70,6 @@ export default function Rewards() {
           />
         </div>
       </div>
-    </>
+    </ProtectedRoute>
   );
 }
