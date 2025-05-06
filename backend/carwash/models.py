@@ -285,6 +285,8 @@ class Offer(CustomModelMixin):
 class CarWashCode(CustomModelMixin):
     offer = models.ForeignKey(Offer, on_delete=models.CASCADE, related_name="codes")
     code = models.CharField(max_length=50)
+    user_metadata = models.JSONField(null=True, blank=True)
+    used_at = models.DateTimeField(null=True, blank=True)
     
     objects = models.Manager()
     active_objects = ActiveManager()
@@ -300,11 +302,6 @@ class CarWashCode(CustomModelMixin):
     
     def __str__(self):
         return f"{self.code} - {self.offer.name}"
-
-class CarWashCodeUsage(CustomModelMixin):
-    code = models.ForeignKey(CarWashCode, on_delete=models.CASCADE, related_name="usages")
-    user_metadata = models.JSONField()
-    used_at = models.DateTimeField(default=timezone.now)
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)

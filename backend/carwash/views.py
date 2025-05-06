@@ -328,9 +328,16 @@ class CarWashCodeMarkAsUsedView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
+        authorization_header = self.request.headers.get("Authorization")
+        if not authorization_header or not authorization_header.startswith("Bearer "):
+            return Response(
+                {"error": "Invalid or missing token"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
         
-        offer_id = serializer.validated_data.pop("offer_id")
-        code = CarWashCode.objects.filter(code=serializer.validated_data['code'], offer=offer_id).first()
+        offer_id = serializer.validated_data.get("offer_id")
+        code = CarWashCode.objects.filter(code=serializer.validated_data['code'], offer=offer_id, user_metadata__isnull=True).first()
         if not code:
             return Response({"error": "Invalid code"}, status=status.HTTP_404_NOT_FOUND)
             
@@ -345,28 +352,24 @@ class CarWashCodeMarkAsUsedView(generics.CreateAPIView):
                 
         elif offer.offer_type == 'ONE_TIME':
             user_metadata = utils.handle_user_meta_data(request.headers.get("Authorization"))
-            if user_metadata and code.usages.filter(user_metadata__email=user_metadata['email']).exists():
-                return Response(
-                    {"error": "You have already used this one-time offer"},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            
-        authorization_header = self.request.headers.get("Authorization")
-        if not authorization_header or not authorization_header.startswith("Bearer "):
-            return Response(
-                {"error": "Invalid or missing token"},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
-        
-        if authorization_header:
-            user_metadata = utils.handle_user_meta_data(authorization_header)
             if user_metadata:
-                serializer.validated_data['user_metadata'] = user_metadata
-
-        serializer.validated_data['code'] = code
+                existing_usage = CarWashCode.objects.filter(offer=offer_id, user_metadata__email=user_metadata['email'])
+                if existing_usage.exists():
+                    return Response(
+                        {"error": "You have already used this one-time offer"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
         
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+                serializer.validated_data['user_metadata'] = user_metadata
+                serializer.validated_data['used_at'] = datetime.now()
+
+                serializer.validated_data['code'] = code
+                
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        return Response({"error": "Something went wrong"}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class ListCarWashCodeAPIView(DynamicFieldsViewMixin, ListAPIView):
     permission_classes = (AllowAny, )
@@ -480,9 +483,8 @@ class ListFreeCarWashCodeAPIView(DynamicFieldsViewMixin, ListAPIView):
         # Get one-time offer codes for the specified package that haven't been used by this user
         return CarWashCode.objects.filter(
             offer__package_id=package_id,
-            offer__offer_type='ONE_TIME'
-        ).exclude(
-            usages__user_metadata__email=self.user_metadata['email']
+            offer__offer_type='ONE_TIME',
+            user_metadata__isnull=True
         ).distinct()
 
     @extend_schema(
@@ -578,16 +580,15 @@ class ListOfferAPIView(DynamicFieldsViewMixin, ListAPIView):
             )
             return queryset
             
+        # Filter out offers that has codes not used by the user
+        queryset = queryset.filter(
+            codes__user_metadata__isnull=True
+        )
 
-        queryset = queryset.annotate(
-            total_codes=Count('codes', distinct=True),
-            used_codes=Count(
-                'codes__usages',
-                filter=Q(codes__usages__user_metadata__email=user_metadata.get('email')),
-                distinct=True
-            )
-        ).filter(
-            total_codes__gt=F('used_codes')
+        # Filter out one-time offers that have been used by the user
+        queryset = queryset.exclude(
+            codes__user_metadata__email=user_metadata['email'],
+            offer_type="ONE_TIME"
         )
 
         # Handle time dependent offers

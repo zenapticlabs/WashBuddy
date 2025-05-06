@@ -22,7 +22,6 @@ from .models import (
     AmenityCarWashMapping,
     Offer,
     CarWashCode,
-    CarWashCodeUsage,
     Payment
 )
 
@@ -340,7 +339,7 @@ class CustomImportForm(ImportExportForm):
 class CarWashCodeAdmin(ImportExportModelAdmin, ModelAdmin):
     import_form_class = CustomImportForm
     resource_class = CarWashCodeResource
-    list_display = ('code', 'offer', 'usage_count', 'created_by', 'updated_by')
+    list_display = ('code', 'offer', 'used_at', 'created_by', 'updated_by')
     list_filter = ('offer__offer_type',)
     search_fields = ('code', 'offer__name')
     readonly_fields = ('created_by', 'updated_by')
@@ -364,27 +363,6 @@ class CarWashCodeAdmin(ImportExportModelAdmin, ModelAdmin):
             
             return kwargs
         return kwargs
-    
-    def usage_count(self, obj):
-        return obj.usages.count()
-    usage_count.short_description = 'Usage Count'
-
-    def save_model(self, request, obj, form, change):
-        if not change:
-            obj.created_by = request.user
-        obj.updated_by = request.user
-        super().save_model(request, obj, form, change)
-
-@admin.register(CarWashCodeUsage)
-class CarWashCodeUsageAdmin(admin.ModelAdmin):
-    list_display = ('code', 'used_at', 'user_email')
-    list_filter = ('used_at',)
-    search_fields = ('code__code', 'user_metadata')
-    readonly_fields = ('created_by', 'updated_by')
-    
-    def user_email(self, obj):
-        return obj.user_metadata.get('email', '')
-    user_email.short_description = 'User Email'
 
     def save_model(self, request, obj, form, change):
         if not change:

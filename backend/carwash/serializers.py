@@ -4,7 +4,7 @@ from django.contrib.gis.geos import Point
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
 from .models import (
     CarWash, CarWashOperatingHours, CarWashImage, CarWashReview, CarWashReviewImage, Payment, 
-    WashType, Amenity, CarWashPackage, Offer, CarWashCode, CarWashCodeUsage
+    WashType, Amenity, CarWashPackage, Offer, CarWashCode
 )
 from utilities.mixins import DynamicFieldsSerializerMixin
 from rest_framework_gis.fields import GeometryField
@@ -332,11 +332,6 @@ class OfferCreatePatchSerializer(serializers.ModelSerializer):
         model = Offer
         fields = '__all__'
 
-class CarWashCodeUsageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CarWashCodeUsage
-        fields = '__all__'
-
 class CarWashCodeSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer):
     
     class Meta:
@@ -352,10 +347,12 @@ class CarWashCodeCreatePatchSerializer(serializers.ModelSerializer):
 class CarWashCodeUsageCreateSerializer(serializers.ModelSerializer):
     code = serializers.CharField(write_only=True)
     offer_id = serializers.IntegerField(write_only=True)
+    user_metadata = serializers.JSONField(required=False, write_only=True)
+    used_at = serializers.DateTimeField(required=False, write_only=True)
 
     class Meta:
-        model = CarWashCodeUsage
-        fields = ["code", "offer_id"]
+        model = CarWashCode
+        fields = ["code", "offer_id", "user_metadata", "used_at"]
     
 class CreatePaymentIntentSerializer(serializers.Serializer):
     offer_id = serializers.IntegerField()
