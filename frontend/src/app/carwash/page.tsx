@@ -72,6 +72,11 @@ const CarWashContent = () => {
   const [knowHours, setKnowHours] = useState(true);
   const [knowPhone, setKnowPhone] = useState(false);
 
+  const validatePhoneNumber = (phone: string) => {
+    const phoneRegex = /^\+1\d{10}$/;
+    return phoneRegex.test(phone);
+  };
+
   useEffect(() => { }, [locationData]);
 
   useEffect(() => {
@@ -117,10 +122,61 @@ const CarWashContent = () => {
 
   const handleChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prevData: any) => ({
-      ...prevData,
-      [name]: value,
-    }));
+    const fieldConfig = FORM_CONFIG.find(field => field.name === name);
+
+    if (name === 'phone') {
+      // Only allow digits and + at the start
+      const sanitizedValue = value.replace(/[^\d+]/g, '');
+      // Ensure only one + at the start
+      const formattedValue = sanitizedValue.startsWith('+') 
+        ? '+' + sanitizedValue.slice(1).replace(/\+/g, '')
+        : sanitizedValue;
+      
+      setFormData((prevData: any) => ({
+        ...prevData,
+        [name]: formattedValue,
+      }));
+
+      // Validate phone number if it's not empty
+      if (formattedValue && !validatePhoneNumber(formattedValue)) {
+        setErrorMessage((prev: any) => ({
+          ...prev,
+          phone: 'Phone number must be in format +1xxxxxxxxxx',
+        }));
+      } else {
+        setErrorMessage((prev: any) => ({
+          ...prev,
+          phone: null,
+        }));
+      }
+    } else {
+      setFormData((prevData: any) => ({
+        ...prevData,
+        [name]: value,
+      }));
+
+      // Validate field if it has validation rules
+      if (fieldConfig?.validation) {
+        const { validation } = fieldConfig;
+        
+        if (validation.required && !value) {
+          setErrorMessage((prev: any) => ({
+            ...prev,
+            [name]: validation.message,
+          }));
+        } else if (validation.pattern && value && !validation.pattern.test(value)) {
+          setErrorMessage((prev: any) => ({
+            ...prev,
+            [name]: validation.message,
+          }));
+        } else {
+          setErrorMessage((prev: any) => ({
+            ...prev,
+            [name]: null,
+          }));
+        }
+      }
+    }
   };
 
   const handleFilterOperatingHours = (payload: any) => {
@@ -150,22 +206,59 @@ const CarWashContent = () => {
     if (!knowPhone) {
       return { ...payload, phone: "" };
     }
+    return payload;
   };
+
+  const validateForm = () => {
+    const errors: any = {};
+    let isValid = true;
+
+    // Validate required fields and patterns from FORM_CONFIG
+    FORM_CONFIG.forEach((field) => {
+      const value = formData[field.name];
+      
+      if (field.validation?.required && !value) {
+        errors[field.name] = field.validation.message;
+        isValid = false;
+      } else if (field.validation?.pattern && value && !field.validation.pattern.test(value)) {
+        errors[field.name] = field.validation.message;
+        isValid = false;
+      }
+    });
+
+    // Validate phone if knowPhone is true
+    if (knowPhone && formData.phone && !validatePhoneNumber(formData.phone)) {
+      errors.phone = 'Phone number must be in format +1xxxxxxxxxx';
+      isValid = false;
+    }
+
+    // Validate location for new carwash
+    if (!isEdit && !address) {
+      errors.location = "Please enter a valid address";
+      isValid = false;
+    }
+
+    setErrorMessage(errors);
+    return isValid;
+  };
+
   const handleSubmit = async () => {
     try {
+      // Validate form before submission
+      if (!validateForm()) {
+        toast.error("Please fix the errors in the form before submitting");
+        return;
+      }
+
       setIsLoading(true);
       let payload = { ...DEFAULT_PAYLOAD, ...formData };
       if (!isEdit) {
-        setErrorMessage({
-          ...errorMessage,
-          location: address ? null : "Please enter a valid address",
-        });
-        if (!address) return;
         payload = { ...payload, ...address };
       }
-
+      
       payload = handleFilterOperatingHours(payload);
       payload = handleFilterPhone(payload);
+      
       if (isEdit) {
         await updateCarwash(carwashId || "", payload);
       } else {
@@ -515,8 +608,13 @@ const CarWashContent = () => {
                             value={formData.phone}
                             onChange={handleChangeInput}
                             className="px-3 py-2.5"
-                            placeholder="Enter phone number"
+                            placeholder="Enter phone number (e.g. +12345678901)"
                           />
+                          {errorMessage?.phone && (
+                            <p className="text-body-2 mt-1 text-red-500">
+                              {errorMessage.phone}
+                            </p>
+                          )}
                         </AccordionContent>
                       </AccordionItem>
                     </Accordion>

@@ -51,6 +51,12 @@ const CarWashDetail: React.FC<CarWashDetailProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [closingTime, setClosingTime] = useState<string>("");
   const [activeTab, setActiveTab] = useState("about");
+
+  useEffect(() => {
+    setActiveTab("about");
+    setReviewOpen(false);
+  }, [data]);
+
   useEffect(() => {
     setImageLoading(true);
     if (data?.open_24_hours) {
@@ -216,7 +222,7 @@ const CarWashDetail: React.FC<CarWashDetailProps> = ({
                   )}
                   <Star className="w-4 h-4 text-accent-yellow fill-accent-yellow" />
                   <span className="text-title-2 text-accent-yellow">
-                    {data?.reviews_summary?.average_rating}
+                    {data?.reviews_summary?.average_rating || 0}
                     <span className="pl-1 text-body-3 text-neutral-300">
                       ({data.reviews_summary?.total_reviews || 0})
                     </span>
@@ -279,7 +285,7 @@ const CarWashDetail: React.FC<CarWashDetailProps> = ({
   return (
     <>
       {open && data && (
-        <div className="hidden md:block absolute top-0 left-[560px] text-black z-10 h-full pb-4">
+        <div className="hidden md:block absolute top-0 left-[560px] text-black z-20 h-full pb-4">
           <CarWashDetailContent data={data} />
         </div>
       )}

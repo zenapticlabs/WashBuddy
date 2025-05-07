@@ -110,18 +110,32 @@ export const FORM_CONFIG = [
     type: "text",
     placeholder: "Enter car wash name",
     required: true,
+    validation: {
+      required: true,
+      message: "Car wash name is required"
+    }
   },
   {
     name: "website",
     label: "Website",
     type: "text",
-    placeholder: "Enter website",
+    placeholder: "Enter website (e.g. www.example.com)",
+    required: false,
+    validation: {
+      pattern: /^(https?:\/\/)?(www\.)?[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?$/,
+      message: "Please enter a valid website URL"
+    }
   },
   {
     name: "email",
     label: "Email",
-    type: "text",
-    placeholder: "Enter email",
+    type: "email",
+    placeholder: "Enter email address",
+    required: false,
+    validation: {
+      pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+      message: "Please enter a valid email address"
+    }
   },
 ];
 
