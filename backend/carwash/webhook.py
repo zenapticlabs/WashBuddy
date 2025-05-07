@@ -4,7 +4,7 @@ from rest_framework.views import APIView
 from django.http import HttpResponse
 from rest_framework.permissions import AllowAny
 from drf_spectacular.utils import extend_schema, OpenApiResponse 
-from .models import CarWashCode, CarWashCodeUsage, Payment
+from .models import CarWashCode, Payment
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -55,9 +55,8 @@ def handle_successful_payment(payment_intent):
         )
 
         codes = CarWashCode.objects.filter(
-            offer=payment_object.offer
-        ).exclude(
-            usages__user_metadata__email=payment_object.metadata.get('user_metadata').get('email'),
+            offer=payment_object.offer,
+            user_metadata__isnull=True
         )
         
         if not codes.exists():
@@ -71,11 +70,9 @@ def handle_successful_payment(payment_intent):
         payment_object.save()
 
         # Mark the code as used
-        CarWashCodeUsage.objects.create(
-            code=code, 
-            user_metadata=payment_object.metadata.get('user_metadata'),
-            used_at=payment_object.created_at
-        )
+        code.user_metadata = payment_object.metadata['user_metadata']
+        code.used_at = payment_object.created_at
+        code.save()
 
     except Exception as e:
         print(f"Error processing payment: {e}", flush=True)
