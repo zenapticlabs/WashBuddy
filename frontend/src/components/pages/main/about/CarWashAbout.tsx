@@ -130,13 +130,13 @@ export default function CarWashAbout({ data }: { data: CarWashResponse }) {
           {data.images?.map((image, index) => (
             <div
               key={index}
-              className="relative cursor-pointer group"
+              className="relative cursor-pointer group border border-neutral-100 rounded-xl overflow-hidden"
               onClick={() => handleImageClick(image.image_url)}
             >
               <Image
                 src={image.image_url}
                 alt="photo"
-                className="w-24 h-24 object-cover rounded transition-transform group-hover:scale-105"
+                className="w-24 h-24 object-cover transition-transform group-hover:scale-105"
                 width={100}
                 height={100}
                 priority={true}
@@ -145,7 +145,7 @@ export default function CarWashAbout({ data }: { data: CarWashResponse }) {
                 blurDataURL={emptyImageURL}
                 placeholder="blur"
               />
-              <div className="absolute -inset-2 bg-black opacity-0 group-hover:opacity-20 rounded transition-opacity" />
+              <div className="absolute -inset-2 bg-black opacity-0 group-hover:opacity-5 rounded transition-opacity" />
             </div>
           ))}
         </div>
