@@ -167,9 +167,11 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
             >
               {config.icon}
               <div className="text-body-2 text-neutral-900">{config.label}</div>
-              <div className="text-body-2 text-neutral-900">
-                {config.additionalText}
-              </div>
+              {config.additionalText && (
+                <div className="text-body-2 text-neutral-900 w-14">
+                  {config.additionalText}
+                </div>
+              )}
               <ChevronDown className="text-neutral-500" />
             </Button>
           </DropdownMenuTrigger>

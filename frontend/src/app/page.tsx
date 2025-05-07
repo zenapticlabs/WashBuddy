@@ -216,111 +216,109 @@ function HomeContent() {
     setOfferOpen(true);
   };
   return (
-    <ProtectedRoute>
-      <div className="flex flex-col h-screen">
-        <Topbar
-          filters={filters}
-          setFilters={setFilters}
-          locationData={locationData}
-        />
-        <SearchAndFilterBar
-          filters={filters}
-          setFilters={setFilters}
-          showMap={showMap}
-          setShowMap={setShowMap}
-          currentLocation={currentLocation}
-          setAddress={setAddress}
-          selectedLocation={selectedLocation}
-        />
-        <div className="flex flex-1 overflow-hidden bg-neutral-100 relative md:flex-row flex-col">
-          <div className="w-[550px] relative bg-white hidden md:flex flex-col">
-            <div className="flex justify-end py-2 px-4">
-              <SortBySelect filters={filters} setFilters={setFilters} />
-            </div>
-            <ScrollArea ref={scrollAreaRef} className="w-full flex-1 px-2">
-              <div className="flex flex-col gap-2 pr-4">
-                {(isLoading || isLoadingOffers || !locationData) && (
-                  <div className="flex flex-col gap-2">
-                    <CarWashSkeleton />
-                    <CarWashSkeleton />
-                    <CarWashSkeleton />
-                    <CarWashSkeleton />
-                    <CarWashSkeleton />
-                    <CarWashSkeleton />
-                  </div>
+    <div className="flex flex-col h-screen">
+      <Topbar
+        filters={filters}
+        setFilters={setFilters}
+        locationData={locationData}
+      />
+      <SearchAndFilterBar
+        filters={filters}
+        setFilters={setFilters}
+        showMap={showMap}
+        setShowMap={setShowMap}
+        currentLocation={currentLocation}
+        setAddress={setAddress}
+        selectedLocation={selectedLocation}
+      />
+      <div className="flex flex-1 overflow-hidden bg-neutral-100 relative md:flex-row flex-col">
+        <div className="w-[550px] relative bg-white hidden md:flex flex-col">
+          <div className="flex justify-end py-2 px-4">
+            <SortBySelect filters={filters} setFilters={setFilters} />
+          </div>
+          <ScrollArea ref={scrollAreaRef} className="w-full flex-1 px-2">
+            <div className="flex flex-col gap-2 pr-4">
+              {(isLoading || isLoadingOffers || !locationData) && (
+                <div className="flex flex-col gap-2">
+                  <CarWashSkeleton />
+                  <CarWashSkeleton />
+                  <CarWashSkeleton />
+                  <CarWashSkeleton />
+                  <CarWashSkeleton />
+                  <CarWashSkeleton />
+                </div>
+              )}
+              {!isLoading && !isLoadingOffers &&
+                (
+                  <>
+                    {hiddenOffer && <CarOfferCard onClick={() => handleOfferClick()} />}
+                    {carWashes?.map((carWash) => (
+                      <div
+                        key={carWash.id}
+                        ref={(el) => {
+                          if (el) cardRefs.current.set(String(carWash.id), el);
+                        }}
+                      >
+                        <CarWashCard
+                          data={carWash}
+                          onClick={() => handleOpenAbout(carWash)}
+                          isSelected={selectedCarWash?.id === carWash.id}
+                        />
+                      </div>
+                    ))}
+                  </>
                 )}
-                {!isLoading && !isLoadingOffers &&
-                  (
-                    <>
-                      {hiddenOffer && <CarOfferCard onClick={() => handleOfferClick()} />}
-                      {carWashes?.map((carWash) => (
-                        <div
-                          key={carWash.id}
-                          ref={(el) => {
-                            if (el) cardRefs.current.set(String(carWash.id), el);
-                          }}
-                        >
-                          <CarWashCard
-                            data={carWash}
-                            onClick={() => handleOpenAbout(carWash)}
-                            isSelected={selectedCarWash?.id === carWash.id}
-                          />
-                        </div>
-                      ))}
-                    </>
-                  )}
-              </div>
-            </ScrollArea>
-            <div className="px-4 py-4">
-              <CustomPagination
-                currentPage={filters.page}
-                totalItems={count}
-                pageSize={filters.page_size}
-                onPageChange={(page: number) =>
-                  setFilters({ ...filters, page })
-                }
-              />
             </div>
-            <CarWashDetail
-              selectedWashTypes={filters.washTypeName}
-              data={selectedCarWash}
-              open={openAbout}
-              setOpen={setOpenAbout}
-              onNavigate={handleNavigateToLocation}
+          </ScrollArea>
+          <div className="px-4 py-4">
+            <CustomPagination
+              currentPage={filters.page}
+              totalItems={count}
+              pageSize={filters.page_size}
+              onPageChange={(page: number) =>
+                setFilters({ ...filters, page })
+              }
             />
           </div>
-          <div className="flex-1 flex items-center justify-center">
-            <RadarMap
-              loading={locationData === null}
-              presentCenter={{
-                longitude: filters.userLng,
-                latitude: filters.userLat,
-              }}
-              userId={user?.id}
-              showMap={showMap}
-              publishableKey={RADAR_KEY || ""}
-              carWashes={carWashes}
-              onMapReady={handleMapReady}
-              onSearchArea={handleSearchArea}
-              onMarkerClick={handleOpenAbout}
-            />
-          </div>
-          <div className="md:hidden h-[300px]"></div>
-          <MobileCarWashView
-            hiddenOffer={hiddenOffer}
-            totalCount={count}
-            isLoading={isLoading}
-            showMap={showMap}
-            carWashes={carWashes}
-            selectedCarWash={selectedCarWash}
-            onCarWashSelect={handleOpenAbout}
-            filters={filters}
-            setFilters={setFilters}
-            onOfferClick={handleOfferClick}
+          <CarWashDetail
+            selectedWashTypes={filters.washTypeName}
+            data={selectedCarWash}
+            open={openAbout}
+            setOpen={setOpenAbout}
+            onNavigate={handleNavigateToLocation}
           />
-          {hiddenOffer && <OfferModal open={offerOpen} onOpenChange={setOfferOpen} data={hiddenOffer} />}
         </div>
+        <div className="flex-1 flex items-center justify-center">
+          <RadarMap
+            loading={locationData === null}
+            presentCenter={{
+              longitude: filters.userLng,
+              latitude: filters.userLat,
+            }}
+            userId={user?.id}
+            showMap={showMap}
+            publishableKey={RADAR_KEY || ""}
+            carWashes={carWashes}
+            onMapReady={handleMapReady}
+            onSearchArea={handleSearchArea}
+            onMarkerClick={handleOpenAbout}
+          />
+        </div>
+        <div className="md:hidden h-[300px]"></div>
+        <MobileCarWashView
+          hiddenOffer={hiddenOffer}
+          totalCount={count}
+          isLoading={isLoading}
+          showMap={showMap}
+          carWashes={carWashes}
+          selectedCarWash={selectedCarWash}
+          onCarWashSelect={handleOpenAbout}
+          filters={filters}
+          setFilters={setFilters}
+          onOfferClick={handleOfferClick}
+        />
+        {hiddenOffer && <OfferModal open={offerOpen} onOpenChange={setOfferOpen} data={hiddenOffer} />}
       </div>
-    </ProtectedRoute>
+    </div>
   );
 }

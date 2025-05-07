@@ -75,13 +75,21 @@ const CarWashReviews: React.FC<CarWashReviewsProps> = ({
           Rate and review
         </div>
         <div className="flex gap-2 items-center flex-wrap">
-          <Image
-            src={user?.user_metadata?.avatar_url || defaultAvatar}
-            alt={`${user?.user_metadata?.full_name}'s avatar`}
-            className="w-10 h-10 rounded-full"
-            width={40}
-            height={40}
-          />
+          {
+            user?.user_metadata?.avatar_url ? (
+              <Image
+                src={user?.user_metadata?.avatar_url || defaultAvatar}
+                alt={`${user?.user_metadata?.full_name}'s avatar`}
+                className="w-10 h-10 rounded-full"
+                width={40}
+                height={40}
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-green-700 text-white flex items-center justify-center">
+                {user?.user_metadata?.full_name?.charAt(0).toUpperCase()}
+              </div>
+            )
+          }
           <span onClick={() => setReviewOpen(true)}>
             <Rate
               value={reviewsSummary?.average_rating}

@@ -26,7 +26,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 const StatusBadge = ({ status }: { status: string }) => {
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -144,7 +144,7 @@ export default function PurchaseHistory() {
   }
 
   return (
-    <>
+    <ProtectedRoute>
       <div className="flex flex-col h-screen">
         <Topbar sideBarAlwaysOpen={true} />
         <div className="flex flex-col lg:ml-[210px] px-6 flex-1 overflow-hidden">
@@ -268,6 +268,6 @@ export default function PurchaseHistory() {
           </div>
         </div>
       </div>
-    </>
+    </ProtectedRoute>
   );
 }

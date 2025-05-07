@@ -19,6 +19,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
+import { Toaster } from "@/components/ui/toaster";
+import { useToast } from "@/hooks/use-toast";
 const defaultAvatar =
   "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde";
 
@@ -48,6 +51,7 @@ const Topbar: React.FC<TopbarProps> = ({
   sideBarAlwaysOpen,
   locationData,
 }) => {
+  const { toast } = useToast()
   const { signOut, user } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -56,10 +60,20 @@ const Topbar: React.FC<TopbarProps> = ({
   const [openSidebar, setOpenSidebar] = useState(false);
 
   const handleNavigateCreatePage = () => {
+    if (!user) {
+      toast({
+        title: "Please login to add your local carwash",
+        description: "Login to add your local carwash and earn 25 points",
+        variant: "destructive",
+        action: <Button variant="destructive" className="border border-white" onClick={() => router.push("/login")}>Login</Button>
+      })
+      return;
+    }
     if (filters) {
       sessionStorage.setItem('dashboardFilters', JSON.stringify(filters));
     }
     router.push("/carwash");
+
   };
 
   const handleSelectCarWashType = (value: boolean) => {
@@ -101,6 +115,7 @@ const Topbar: React.FC<TopbarProps> = ({
 
   return (
     <div className="bg-white">
+      <Toaster />
       <div
         className={`flex gap-2 items-center justify-between px-4 h-[66px] ${sideBarAlwaysOpen || openSidebar ? "border-b border-neutral-100" : ""
           }`}
@@ -166,34 +181,60 @@ const Topbar: React.FC<TopbarProps> = ({
           >
             + Add your local carwash
           </Button>
-          <div className="relative">
-            <Bell size={24} className="text-neutral-900" />
-            {notiCount > 0 && (
-              <span className="bg-[#FF6464] border border-white text-title-2 text-white absolute -top-2 -right-1.5 rounded-full w-5 h-5 flex items-center justify-center z-10">
-                {notiCount}
-              </span>
-            )}
-          </div>
-          <DropdownMenu>
-            <DropdownMenuTrigger className="flex items-center gap-2">
-              <Image
-                src={user?.user_metadata?.avatar_url || defaultAvatar}
-                alt={`${user?.user_metadata?.full_name}'s avatar`}
-                className="w-10 h-10 rounded-full"
-                width={40}
-                height={40}
-              />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuLabel>My Account</DropdownMenuLabel>
-              <DropdownMenuItem asChild>
-                <Link href="/profile">Profile Settings</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={handleLogout}>
-                Log out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {
+            user && (
+              <>
+                <div className="relative">
+                  <Bell size={24} className="text-neutral-900" />
+                  {notiCount > 0 && (
+                    <span className="bg-[#FF6464] border border-white text-title-2 text-white absolute -top-2 -right-1.5 rounded-full w-5 h-5 flex items-center justify-center z-10">
+                      {notiCount}
+                    </span>
+                  )}
+                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="flex items-center gap-2">
+                    {
+                      user?.user_metadata?.avatar_url ? (
+                        <Image
+                          src={user?.user_metadata?.avatar_url || defaultAvatar}
+                          alt={`${user?.user_metadata?.full_name}'s avatar`}
+                          className="w-10 h-10 rounded-full"
+                          width={40}
+                          height={40}
+                        />
+                      ) : (
+                        <div className="w-10 h-10 rounded-full bg-green-700 text-white flex items-center justify-center">
+                          {user?.user_metadata?.full_name?.charAt(0).toUpperCase()}
+                        </div>
+                      )
+                    }
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                    <DropdownMenuItem asChild>
+                      <Link href="/profile">Profile Settings</Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleLogout}>
+                      Log out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            )
+          }
+          {
+            !user && (
+              <div className="flex items-center gap-2">
+                <Button onClick={() => router.push("/login")} variant="outline" className="rounded-full shadow-none text-title-2 text-blue-500 border-blue-500 hover:text-blue-500 hidden md:block">
+                  Log in
+                </Button>
+                <Button onClick={() => router.push("/signup")} variant="default" className="rounded-full shadow-none text-title-2 text-white hover:text-white hidden md:block mr-4">
+                  Sign up
+                </Button>
+              </div>
+            )
+          }
         </div>
       </div>
       {/* <CreateCarWashDiaolog

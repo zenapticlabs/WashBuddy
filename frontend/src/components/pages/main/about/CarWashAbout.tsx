@@ -7,6 +7,8 @@ import { ImageModal } from "@/components/molecule/ImageModal";
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 
 const emptyImageURL =
@@ -14,7 +16,8 @@ const emptyImageURL =
 
 export default function CarWashAbout({ data }: { data: CarWashResponse }) {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-
+  const { user } = useAuth();
+  const { toast } = useToast()
   const router = useRouter();
   const handleImageClick = (imageUrl: string) => {
     setSelectedImage(imageUrl);
@@ -61,10 +64,18 @@ export default function CarWashAbout({ data }: { data: CarWashResponse }) {
   }, [data.packages]);
 
   const handleNavigateEditPage = () => {
+    if (!user) {
+      toast({
+        title: "Please login to update your local carwash",
+        description: "Login to update your local carwash and earn 25 points",
+        variant: "destructive",
+        action: <Button variant="destructive" className="border border-white" onClick={() => router.push("/login")}>Login</Button>
+      })
+      return;
+    }
     const currentUrl = window.location.href;
     const urlParams = new URLSearchParams(currentUrl.split('?')[1]);
     const params = Object.fromEntries(urlParams.entries());
-    
     if (params) {
       sessionStorage.setItem('dashboardFilters', JSON.stringify(params));
     }
@@ -119,13 +130,13 @@ export default function CarWashAbout({ data }: { data: CarWashResponse }) {
           {data.images?.map((image, index) => (
             <div
               key={index}
-              className="relative cursor-pointer group"
+              className="relative cursor-pointer group border border-neutral-100 rounded-xl overflow-hidden"
               onClick={() => handleImageClick(image.image_url)}
             >
               <Image
                 src={image.image_url}
                 alt="photo"
-                className="w-24 h-24 object-cover rounded transition-transform group-hover:scale-105"
+                className="w-24 h-24 object-cover transition-transform group-hover:scale-105"
                 width={100}
                 height={100}
                 priority={true}
@@ -134,7 +145,7 @@ export default function CarWashAbout({ data }: { data: CarWashResponse }) {
                 blurDataURL={emptyImageURL}
                 placeholder="blur"
               />
-              <div className="absolute -inset-2 bg-black opacity-0 group-hover:opacity-20 rounded transition-opacity" />
+              <div className="absolute -inset-2 bg-black opacity-0 group-hover:opacity-5 rounded transition-opacity" />
             </div>
           ))}
         </div>

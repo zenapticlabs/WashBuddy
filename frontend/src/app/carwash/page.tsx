@@ -32,6 +32,7 @@ import { AccordionItem, AccordionContent } from "@/components/ui/accordion";
 import { CustomIconToggle } from "@/components/ui/customIconToggle";
 import AutomaticIcon from "@/assets/icons/automatic.svg";
 import SelfServiceIcon from "@/assets/icons/self-service.svg";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 const UploadFormConfig = [
   {
@@ -263,7 +264,7 @@ const CarWashContent = () => {
     }
   };
   return (
-    <>
+    <ProtectedRoute>
       <Toaster position="top-center" />
       <div className="flex flex-col h-screen">
         <Topbar sideBarAlwaysOpen={true} />
@@ -584,7 +585,7 @@ const CarWashContent = () => {
           )}
         </div>
       </div>
-    </>
+    </ProtectedRoute>
   );
 };
 

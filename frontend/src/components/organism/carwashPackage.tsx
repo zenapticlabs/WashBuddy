@@ -84,13 +84,7 @@ export function CarwashPackage({
   }, [selectedPackage]);
 
   const handleSave = () => {
-    if (
-      !packageName ||
-      !price ||
-      (selectedCarWashType === CarWashTypes[0].value &&
-        selectedWashTypes.length === 0) ||
-      (selectedCarWashType === CarWashTypes[1].value && !minutes)
-    )
+    if (!packageName || !price)
       return;
 
     if (selectedPackage) {
@@ -404,13 +398,7 @@ export function CarwashPackage({
               <Button
                 className="w-full mb-2"
                 onClick={handleSave}
-                disabled={
-                  !packageName ||
-                  !price ||
-                  (selectedCarWashType === CarWashTypes[0].value &&
-                    selectedWashTypes.length === 0) ||
-                  (selectedCarWashType === CarWashTypes[1].value && !minutes)
-                }
+                disabled={!packageName || !price}
               >
                 Save
               </Button>
