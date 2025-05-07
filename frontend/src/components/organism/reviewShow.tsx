@@ -28,19 +28,19 @@ export function ReviewShow({ data }: ReviewShowProps) {
       {data?.user_metadata?.avatar_url ? (
         <Image
           src={data?.user_metadata?.avatar_url}
-          alt={`${data.user_metadata?.full_name}'s avatar`}
+          alt={`${data.user_metadata?.firstName}'s avatar`}
           className="w-10 h-10 rounded-full"
           width={40}
           height={40}
         />
       ) : (
         <div className="w-10 h-10 rounded-full bg-green-700 text-white flex items-center justify-center">
-          {data?.user_metadata?.full_name?.charAt(0).toUpperCase()}
+          {data?.user_metadata?.firstName?.charAt(0).toUpperCase()}
         </div>
       )}
       <div className="flex flex-col gap-1 min-w-0">
         <div className="text-title-2 text-neutral-900">
-          {data.user_metadata?.full_name}
+          {data.user_metadata?.firstName}
         </div>
         <div className="flex gap-2 items-center">
           <Rate value={data.overall_rating} max={5} size="xs" />

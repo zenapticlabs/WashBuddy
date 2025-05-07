@@ -198,14 +198,14 @@ const Topbar: React.FC<TopbarProps> = ({
                       user?.user_metadata?.avatar_url ? (
                         <Image
                           src={user?.user_metadata?.avatar_url || defaultAvatar}
-                          alt={`${user?.user_metadata?.full_name}'s avatar`}
+                          alt={`${user?.user_metadata?.firstName}'s avatar`}
                           className="w-10 h-10 rounded-full"
                           width={40}
                           height={40}
                         />
                       ) : (
                         <div className="w-10 h-10 rounded-full bg-green-700 text-white flex items-center justify-center">
-                          {user?.user_metadata?.full_name?.charAt(0).toUpperCase()}
+                          {user?.user_metadata?.firstName?.charAt(0).toUpperCase()}
                         </div>
                       )
                     }
