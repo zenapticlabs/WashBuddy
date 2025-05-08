@@ -1,10 +1,10 @@
 from rest_framework import generics, permissions
 from carwash.models import CarWashReview
-from carwash.serializers import CarWashReviewListSerializer
+from .serializers import UserReviewListSerializer
 from carwash import utils
 
 class UserReviewList(generics.ListAPIView):
-    serializer_class = CarWashReviewListSerializer
+    serializer_class = UserReviewListSerializer
     permission_classes = [permissions.AllowAny]
     
     def get_queryset(self):
@@ -15,7 +15,7 @@ class UserReviewList(generics.ListAPIView):
         return CarWashReview.objects.filter(user_id=user_metadata.get('user_id'))
 
 class UserReviewDetail(generics.RetrieveUpdateDestroyAPIView):
-    serializer_class = CarWashReviewListSerializer
+    serializer_class = UserReviewListSerializer
     permission_classes = [permissions.AllowAny]
     
     def get_queryset(self):
