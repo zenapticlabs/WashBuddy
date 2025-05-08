@@ -1,7 +1,6 @@
 import jwt
 import os
 import logging
-import base64
 from rest_framework.exceptions import AuthenticationFailed
 
 logger = logging.getLogger(__name__)
@@ -20,7 +19,7 @@ def handle_user_meta_data(authorization_header):
         logger.info(token)
         payload = jwt.decode(
             token,
-            "on758JWVybvfXgzyj5lRc9wSaPQqSLn8r3lnFAwhp2RfK/CCMDwxc45PMMVGLna2rzNpZdYzqugMUQjxDniOtA==",
+            os.getenv('JWT_SECRET_KEY'),
             algorithms=['HS256'],
             audience="authenticated"
         )

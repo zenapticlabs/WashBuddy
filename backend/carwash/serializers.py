@@ -281,10 +281,13 @@ class CarWashReviewPostPatchSerializer(serializers.ModelSerializer):
         images = validated_data.pop("images", [])  
         authorization_header = self.context.get("authorization_header")
         user_data = self.handle_user_meta_data(authorization_header)
-        validated_data["user_id"] = user_data["user_id"]
-        validated_data["user_metadata"] = user_data["user_metadata"]
-
-        car_wash_review = CarWashReview.objects.create(**validated_data)
+        
+        # Create the review with user data
+        car_wash_review = CarWashReview.objects.create(
+            **validated_data,
+            user_id=user_data["user_id"],
+            user_metadata=user_data
+        )
 
         self.handle_images(car_wash_review, images)
 
