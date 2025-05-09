@@ -1,14 +1,26 @@
 export interface IReviewShow {
   id: number;
+  images: {
+    id: number;
+    created_at: string;
+    updated_at: string;
+    status: string;
+    image_url: string;
+    created_by: string | null;
+    updated_by: string | null;
+    carwash_review: number;
+  }[];
   created_at: string;
   updated_at: string;
   status: string;
+  user_id: string;
   user_metadata: {
     iss: string;
     sub: string;
     name: string;
     email: string;
     picture: string;
+    user_id: string;
     lastName: string;
     firstName: string;
     full_name: string;

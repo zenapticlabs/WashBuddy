@@ -15,19 +15,26 @@ import {
 import useMediaQuery from "@/hooks/useMediaQuery";
 import { useState } from "react";
 import UploadedImageCard from "@/components/ui/uploadedImageCard";
-import { toast } from "sonner";
 import { createReview } from "@/services/ReviewService";
-import { IReviewCreate } from "@/types/Review";
+import { IReviewCreate, IReviewShow } from "@/types/Review";
 import { useAuth } from "@/hooks/useAuth";
 import Image from "next/image";
-
+import ImageUploadZone from "@/components/ui/imageUploadZone";
+import { getPresignedUrl, uploadFile } from "@/services/UploadService";
+import { useToast } from "@/hooks/use-toast";
 const defaultAvatar =
   "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde";
+
+const NEXT_PUBLIC_STORAGE_ENDPOINT = process.env.NEXT_PUBLIC_STORAGE_ENDPOINT;
+const NEXT_PUBLIC_STORAGE_BUCKET_NAME = process.env.NEXT_PUBLIC_STORAGE_BUCKET_NAME;
+
 const CreateCarWashReviewModal: React.FC<{
   open: boolean;
   onOpenChange: (open: boolean) => void;
   carWashId: number;
-}> = ({ open, onOpenChange, carWashId }) => {
+  onReviewCreated?: (review: IReviewShow) => void;
+}> = ({ open, onOpenChange, carWashId, onReviewCreated }) => {
+  const { toast } = useToast();
   const isMobile = useMediaQuery("(max-width: 768px)");
   const { user } = useAuth();
   const [comment, setComment] = useState("");
@@ -40,9 +47,37 @@ const CreateCarWashReviewModal: React.FC<{
   const [overall_rating, setOverallRating] = useState(0);
   const [images, setImages] = useState<{ image_url: string }[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const handleDeleteImage = (image_url: string) => {
     setImages(images.filter((image) => image.image_url !== image_url));
+  };
+
+  const handleFileChange = async (files: FileList | null) => {
+    if (!files) return;
+    setUploading(true);
+    try {
+      for (const file of files) {
+        const sanitizedFileName = file.name.replace(/\s+/g, '_');
+        const presignedUrl = await getPresignedUrl(sanitizedFileName);
+        await uploadFile(presignedUrl.signed_url, file);
+        const fileUrl = `${NEXT_PUBLIC_STORAGE_ENDPOINT}/object/public/${NEXT_PUBLIC_STORAGE_BUCKET_NAME}/${presignedUrl.path}`;
+        setImages(prev => [...prev, { image_url: fileUrl }]);
+      }
+      toast({
+        title: "Files uploaded successfully!",
+        description: "Files uploaded successfully!",
+      });
+    } catch (error) {
+      console.error("Error uploading files:", error);
+      toast({
+        title: "Failed to upload files",
+        description: "Failed to upload files",
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+    }
   };
 
   const calculateOverallRating = () => {
@@ -59,7 +94,11 @@ const CreateCarWashReviewModal: React.FC<{
 
   const handleSubmit = async () => {
     if (!comment || !overall_rating) {
-      toast.error("Please fill in all required fields");
+      toast({
+        title: "Please fill in all required fields",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
       return;
     }
     setIsSubmitting(true);
@@ -76,12 +115,24 @@ const CreateCarWashReviewModal: React.FC<{
         car_wash: carWashId,
       };
 
-      await createReview(reviewData);
-      toast.success("Review submitted successfully!");
+      const createdReview = await createReview(reviewData);
+      const reviewWithUserData = {
+        ...createdReview,
+        user_metadata: user?.user_metadata
+      };
+      toast({
+        title: "Review submitted successfully!",
+        description: "Review submitted successfully!",
+      });
+      onReviewCreated?.(reviewWithUserData);
       onOpenChange(false);
     } catch (error) {
       console.error("Error submitting review:", error);
-      toast.error("Failed to submit review");
+      toast({
+        title: "Failed to submit review",
+        description: "Failed to submit review",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -209,12 +260,17 @@ const CreateCarWashReviewModal: React.FC<{
                     canDelete={true}
                   />
                 ))}
-                {/* {uploading && (
+                {uploading && (
                   <div className="p-2 bg-neutral-50 rounded-lg w-32 h-32 relative flex items-center justify-center">
                     <Loader2 className="w-10 h-10 text-blue-500 animate-spin" />
                   </div>
-                )} */}
+                )}
               </div>
+              <ImageUploadZone
+                title="Upload photos"
+                required={false}
+                onFileChange={handleFileChange}
+              />
             </div>
           </div>
         </div>

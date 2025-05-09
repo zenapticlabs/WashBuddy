@@ -9,26 +9,69 @@ import { ReviewsSummary } from "@/types";
 import { IReviewShow } from "@/types/Review";
 import { SlidersVertical, Star, TextSearch } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 
 const defaultAvatar =
   "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde";
 
-const orders = ["Relevance", "Newest", "Highest", "Lowest"];
+const orders = ["Newest", "Relevance", "Highest", "Lowest"];
 
 interface CarWashReviewsProps {
   setReviewOpen: (open: boolean) => void;
   reviews: IReviewShow[];
   reviewsSummary: ReviewsSummary;
+  onReviewCreated?: (review: IReviewShow) => void;
 }
 
 const CarWashReviews: React.FC<CarWashReviewsProps> = ({
   setReviewOpen,
   reviews,
   reviewsSummary,
+  onReviewCreated,
 }) => {
   const { user } = useAuth();
   const [selectedOrder, setSelectedOrder] = useState<string>(orders[0]);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [localReviews, setLocalReviews] = useState<IReviewShow[]>(reviews);
+
+  // Update local reviews when prop reviews change
+  useEffect(() => {
+    setLocalReviews(reviews);
+  }, [reviews]);
+
+  const handleReviewCreated = (review: IReviewShow) => {
+    setLocalReviews(prev => [review, ...prev]);
+    onReviewCreated?.(review);
+  };
+
+  const filteredAndSortedReviews = useMemo(() => {
+    let filteredReviews = [...localReviews];
+    
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filteredReviews = filteredReviews.filter(
+        (review) =>
+          review.user_metadata?.name?.toLowerCase().includes(query) ||
+          review.comment?.toLowerCase().includes(query)
+      );
+    }
+
+    // Sort the filtered reviews
+    switch (selectedOrder) {
+      case "Newest":
+        return filteredReviews.sort((a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+      case "Highest":
+        return filteredReviews.sort((a, b) => b.overall_rating - a.overall_rating);
+      case "Lowest":
+        return filteredReviews.sort((a, b) => a.overall_rating - b.overall_rating);
+      default:
+        return filteredReviews;
+    }
+  }, [localReviews, selectedOrder, searchQuery]);
+
   return (
     <div className="flex flex-col gap-3">
       <div className="flex gap-2">
@@ -113,9 +156,11 @@ const CarWashReviews: React.FC<CarWashReviewsProps> = ({
       <div className="flex items-center gap-2 relative">
         <TextSearch className="text-neutral-500 absolute left-3" size={16} />
         <Input
-          placeholder="Search review"
+          placeholder="Search by name or comment"
           className="w-full p-3 pl-8"
           maxLength={1000}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
         />
         <SlidersVertical size={16} className="text-neutral-800 mx-1" />
       </div>
@@ -129,7 +174,7 @@ const CarWashReviews: React.FC<CarWashReviewsProps> = ({
           />
         ))}
       </div>
-      {reviews.map((review) => (
+      {filteredAndSortedReviews.map((review) => (
         <ReviewShow key={review.id} data={review} />
       ))}
     </div>

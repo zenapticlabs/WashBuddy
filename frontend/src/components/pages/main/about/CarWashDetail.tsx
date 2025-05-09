@@ -24,6 +24,8 @@ import {
 import useMediaQuery from "@/hooks/useMediaQuery";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getReviews } from "@/services/ReviewService";
+import { IReviewShow } from "@/types/Review";
+import { ReviewsSummary } from "@/types";
 
 interface CarWashDetailProps {
   data?: CarWashResponse | null;
@@ -34,7 +36,7 @@ interface CarWashDetailProps {
 }
 
 const emptyImageURL =
-  "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx4dHRsdHR4dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR3/2wBDAR0XFyAeIRshIRshHRsdIR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR3/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=";
+  "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx4dHRsdHR4dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR3/2wBDAR0XFyAeIRshIRshHRsdIR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR3/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=";
 
 const CarWashDetail: React.FC<CarWashDetailProps> = ({
   data,
@@ -51,6 +53,21 @@ const CarWashDetail: React.FC<CarWashDetailProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [closingTime, setClosingTime] = useState<string>("");
   const [activeTab, setActiveTab] = useState("about");
+
+  const handleReviewCreated = (newReview: IReviewShow) => {
+    setReviews(prev => [newReview, ...prev]);
+    // Update the reviews summary in the data object
+    if (data?.reviews_summary) {
+      const ratingKey = `rating_${newReview.overall_rating}` as keyof ReviewsSummary;
+      const currentRating = (data.reviews_summary as any)[ratingKey] || 0;
+      data.reviews_summary = {
+        ...data.reviews_summary,
+        total_reviews: (data.reviews_summary.total_reviews || 0) + 1,
+        average_rating: ((data.reviews_summary.average_rating || 0) * (data.reviews_summary.total_reviews || 0) + newReview.overall_rating) / ((data.reviews_summary.total_reviews || 0) + 1),
+        [ratingKey]: currentRating + 1
+      } as ReviewsSummary;
+    }
+  };
 
   useEffect(() => {
     setActiveTab("about");
@@ -267,6 +284,7 @@ const CarWashDetail: React.FC<CarWashDetailProps> = ({
                       setReviewOpen={setReviewOpen}
                       reviews={reviews}
                       reviewsSummary={data?.reviews_summary}
+                      onReviewCreated={handleReviewCreated}
                     />
                   </TabsContent>
                 </Tabs>
@@ -279,6 +297,7 @@ const CarWashDetail: React.FC<CarWashDetailProps> = ({
         open={reviewOpen}
         onOpenChange={setReviewOpen}
         carWashId={data?.id || 0}
+        onReviewCreated={handleReviewCreated}
       />
     </>
   );
