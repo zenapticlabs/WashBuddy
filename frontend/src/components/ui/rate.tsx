@@ -12,6 +12,7 @@ interface RateProps
   fullWidth?: boolean;
   color?: string;
   textColor?: string;
+  readonly?: boolean;
 }
 
 const Rate = React.forwardRef<HTMLDivElement, RateProps>(
@@ -24,6 +25,7 @@ const Rate = React.forwardRef<HTMLDivElement, RateProps>(
       fullWidth = false,
       color = "default-yellow",
       textColor = "default-yellow",
+      readonly = false,
       ...props
     },
     ref
@@ -33,24 +35,31 @@ const Rate = React.forwardRef<HTMLDivElement, RateProps>(
     const padding =
       size === "xs" ? 0.5 : size === "sm" ? 0.75 : size === "md" ? 1 : 1.5;
     const getStar = (index: number) => {
+      // Calculate the whole number and decimal parts
+      const whole = Math.floor(value);
+      const decimal = value - whole;
+      
+      // Determine if we should show a half star
+      const showHalfStar = decimal >= 0.5;
+      
       // Full star
-      if (index < Math.floor(value)) {
+      if (index < whole) {
         return (
           <Star
-            className={`h-${starSize} w-${starSize} cursor-pointer fill-${color} text-${textColor} stroke-1`}
+            className={`h-${starSize} w-${starSize} ${!readonly ? 'cursor-pointer' : ''} fill-${color} text-${textColor} stroke-1`}
           />
         );
       }
 
       // Half star
-      if (index === Math.floor(value) && value % 1 >= 0.5) {
+      if (index === whole && showHalfStar) {
         return (
           <div className="relative">
             <StarHalf
-              className={`h-${starSize} w-${starSize} cursor-pointer fill-${color} text-${textColor} stroke-1`}
+              className={`h-${starSize} w-${starSize} ${!readonly ? 'cursor-pointer' : ''} fill-${color} text-${textColor} stroke-1`}
             />
             <Star
-              className={`h-${starSize} w-${starSize} cursor-pointer fill-none text-${textColor} absolute top-0 left-0 stroke-1`}
+              className={`h-${starSize} w-${starSize} ${!readonly ? 'cursor-pointer' : ''} fill-none text-${textColor} absolute top-0 left-0 stroke-1`}
             />
           </div>
         );
@@ -59,7 +68,7 @@ const Rate = React.forwardRef<HTMLDivElement, RateProps>(
       // Empty star
       return (
         <Star
-          className={`h-${starSize} w-${starSize} cursor-pointer fill-none text-${textColor} stroke-1`}
+          className={`h-${starSize} w-${starSize} ${!readonly ? 'cursor-pointer' : ''} fill-none text-${textColor} stroke-1`}
         />
       );
     };

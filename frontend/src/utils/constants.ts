@@ -122,7 +122,7 @@ export const FORM_CONFIG = [
     placeholder: "Enter website (e.g. www.example.com)",
     required: false,
     validation: {
-      pattern: /^(https?:\/\/)?(www\.)?[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9]\.[a-zA-Z]{2,}(\.[a-zA-Z]{2,})?$/,
+      pattern: /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w-./?%&=]*)?$/,
       message: "Please enter a valid website URL"
     }
   },
