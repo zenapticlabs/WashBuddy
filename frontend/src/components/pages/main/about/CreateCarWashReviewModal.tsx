@@ -13,7 +13,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import useMediaQuery from "@/hooks/useMediaQuery";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import UploadedImageCard from "@/components/ui/uploadedImageCard";
 import { createReview } from "@/services/ReviewService";
 import { IReviewCreate, IReviewShow } from "@/types/Review";
@@ -92,6 +92,10 @@ const CreateCarWashReviewModal: React.FC<{
     setOverallRating(Math.round(average));
   };
 
+  useEffect(() => {
+    calculateOverallRating();
+  }, [wash_quality_rating, price_value_rating, facility_cleanliness_rating, customer_service_rating, amenities_extra_rating]);
+
   const handleSubmit = async () => {
     if (!comment || !overall_rating) {
       toast({
@@ -169,7 +173,8 @@ const CreateCarWashReviewModal: React.FC<{
                     </div>
                   )
                 }
-                <Rate value={overall_rating} max={5} size="md" />
+                <Rate value={overall_rating} max={5} size="md" readonly
+                  color="default-yellow" />
               </div>
               <div className="flex items-center gap-1">
                 <div className="h-6 w-6 rounded-full bg-gradient-to-t from-[#FFA100] to-[#FFC35C] flex items-center justify-center">
@@ -199,7 +204,6 @@ const CreateCarWashReviewModal: React.FC<{
                 value={wash_quality_rating}
                 onChange={(value) => {
                   setWashQualityRating(value);
-                  calculateOverallRating();
                 }}
               />
               <SelectRate
@@ -207,7 +211,6 @@ const CreateCarWashReviewModal: React.FC<{
                 value={price_value_rating}
                 onChange={(value) => {
                   setPriceValueRating(value);
-                  calculateOverallRating();
                 }}
               />
               <SelectRate
@@ -215,7 +218,6 @@ const CreateCarWashReviewModal: React.FC<{
                 value={facility_cleanliness_rating}
                 onChange={(value) => {
                   setFacilityCleanlinessRating(value);
-                  calculateOverallRating();
                 }}
               />
               <SelectRate
@@ -223,7 +225,6 @@ const CreateCarWashReviewModal: React.FC<{
                 value={customer_service_rating}
                 onChange={(value) => {
                   setCustomerServiceRating(value);
-                  calculateOverallRating();
                 }}
               />
               <SelectRate
@@ -231,7 +232,6 @@ const CreateCarWashReviewModal: React.FC<{
                 value={amenities_extra_rating}
                 onChange={(value) => {
                   setAmenitiesExtraRating(value);
-                  calculateOverallRating();
                 }}
               />
             </div>
