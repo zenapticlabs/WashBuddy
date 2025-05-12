@@ -44,10 +44,11 @@ export function useCarWashes(filters: FilterState) {
   const getLowestPricePackage = (packages: ExtendedCarWashPackage[]) => {
     let lowestPack: ExtendedCarWashPackage | null = null;
     let lowestPriceValue = Number.MAX_VALUE;
-
+    
     packages.forEach(pack => {
       // Check package base price
-      const packagePrice = pack.price;
+      const packagePrice: number = Number(pack.price);
+
       if (packagePrice < lowestPriceValue) {
         lowestPriceValue = packagePrice;
         lowestPack = { ...pack, lowestPrice: packagePrice, isOffer: false };
