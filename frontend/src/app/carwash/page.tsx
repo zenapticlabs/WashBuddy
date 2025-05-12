@@ -128,10 +128,10 @@ const CarWashContent = () => {
       // Only allow digits and + at the start
       const sanitizedValue = value.replace(/[^\d+]/g, '');
       // Ensure only one + at the start
-      const formattedValue = sanitizedValue.startsWith('+') 
+      const formattedValue = sanitizedValue.startsWith('+')
         ? '+' + sanitizedValue.slice(1).replace(/\+/g, '')
         : sanitizedValue;
-      
+
       setFormData((prevData: any) => ({
         ...prevData,
         [name]: formattedValue,
@@ -158,7 +158,7 @@ const CarWashContent = () => {
       // Validate field if it has validation rules
       if (fieldConfig?.validation) {
         const { validation } = fieldConfig;
-        
+
         if (validation.required && !value) {
           setErrorMessage((prev: any) => ({
             ...prev,
@@ -216,7 +216,7 @@ const CarWashContent = () => {
     // Validate required fields and patterns from FORM_CONFIG
     FORM_CONFIG.forEach((field) => {
       const value = formData[field.name];
-      
+
       if (field.validation?.required && !value) {
         errors[field.name] = field.validation.message;
         isValid = false;
@@ -255,10 +255,10 @@ const CarWashContent = () => {
       if (!isEdit) {
         payload = { ...payload, ...address };
       }
-      
+
       payload = handleFilterOperatingHours(payload);
       payload = handleFilterPhone(payload);
-      
+
       if (isEdit) {
         await updateCarwash(carwashId || "", payload);
       } else {
@@ -342,6 +342,7 @@ const CarWashContent = () => {
   };
 
   const handleSelectCarWashType = (carWashType: string) => {
+    console.log(carWashType);
     if (carWashType == Car_Wash_Type_Value.AUTOMATIC) {
       setFormData((prevData: any) => ({
         ...prevData,
@@ -494,7 +495,7 @@ const CarWashContent = () => {
                       Select Amenities
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {Amenities.map((amenity) => (
+                      {Amenities.filter((amenity) => amenity.category == (formData.automatic_car_wash ? Car_Wash_Type_Value.AUTOMATIC : Car_Wash_Type_Value.SELF_SERVICE)).map((amenity) => (
                         <CustomIconToggle
                           key={amenity.id}
                           label={amenity.name}
