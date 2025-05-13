@@ -349,6 +349,7 @@ const CarWashContent = () => {
   };
 
   const handleSelectCarWashType = (carWashType: string) => {
+    console.log(carWashType);
     if (carWashType == Car_Wash_Type_Value.AUTOMATIC) {
       setFormData((prevData: any) => ({
         ...prevData,
