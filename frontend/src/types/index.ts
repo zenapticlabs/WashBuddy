@@ -2,7 +2,7 @@ export * from "./CarServices";
 export * from "./filters";
 export * from "./Review";
 
-export interface Amenity {
+export interface IAmenity {
   id: string;
   name: string;
   category: string;
@@ -13,8 +13,19 @@ export interface Amenity {
 
 export interface WashType {
   id: string;
-  cagetory: string;
+  category: string;
   name: string;
   subclass: string;
+}
+
+export interface IWashType {
+  id: number;
+  status: string;
+  name: string;
+  description?: string;
+  category: string;
+  subclass: string;
+  created_by: string | null;
+  updated_by: string | null;
 }
 
