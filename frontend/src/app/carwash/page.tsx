@@ -33,6 +33,8 @@ import { CustomIconToggle } from "@/components/ui/customIconToggle";
 import AutomaticIcon from "@/assets/icons/automatic.svg";
 import SelfServiceIcon from "@/assets/icons/self-service.svg";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { IAmenity } from "@/types";
+import { getAmenities } from "@/services/AmenityService";
 
 const UploadFormConfig = [
   {
@@ -71,12 +73,23 @@ const CarWashContent = () => {
   const [originalImages, setOriginalImages] = useState<any>([]);
   const [knowHours, setKnowHours] = useState(true);
   const [knowPhone, setKnowPhone] = useState(false);
+  const [amenities, setAmenities] = useState<IAmenity[]>([]);
+  const [amenitiesLoading, setAmenitiesLoading] = useState(true);
 
   const validatePhoneNumber = (phone: string) => {
     const phoneRegex = /^\+1\d{10}$/;
     return phoneRegex.test(phone);
   };
 
+  useEffect(() => {
+    getAmenities().then((data: IAmenity[]) => {
+      setAmenities(data);
+      setAmenitiesLoading(false);
+    }).catch((error: any) => {
+      toast.error(error?.message || "Error fetching amenities");
+      setAmenitiesLoading(false);
+    });
+  }, []);
   useEffect(() => { }, [locationData]);
 
   useEffect(() => {
@@ -271,7 +284,6 @@ const CarWashContent = () => {
       );
       handleNavigateDashboard();
     } catch (error) {
-      console.log(error);
       toast.error(
         isEdit
           ? "Failed to update car wash. Please try again."
@@ -303,7 +315,6 @@ const CarWashContent = () => {
           params.append(key, value as string);
         }
       });
-      console.log(params.toString());
       router.push(`/?${params.toString()}`);
     } else {
       router.push(`/`);
@@ -322,10 +333,6 @@ const CarWashContent = () => {
     }
   };
 
-  useEffect(() => {
-    console.log(formData);
-  }, [formData]);
-
   const handleUploadImage = (images: any[]) => {
     setFormData((prevData: any) => ({
       ...prevData,
@@ -342,7 +349,6 @@ const CarWashContent = () => {
   };
 
   const handleSelectCarWashType = (carWashType: string) => {
-    console.log(carWashType);
     if (carWashType == Car_Wash_Type_Value.AUTOMATIC) {
       setFormData((prevData: any) => ({
         ...prevData,
@@ -495,24 +501,36 @@ const CarWashContent = () => {
                       Select Amenities
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      {Amenities.filter((amenity) => amenity.category == (formData.automatic_car_wash ? Car_Wash_Type_Value.AUTOMATIC : Car_Wash_Type_Value.SELF_SERVICE)).map((amenity) => (
-                        <CustomIconToggle
-                          key={amenity.id}
-                          label={amenity.name}
-                          icon={amenity.icon}
-                          checked={formData.amenities.includes(amenity.id)}
-                          onChange={(checked) =>
-                            setFormData({
-                              ...formData,
-                              amenities: checked
-                                ? [...formData.amenities, amenity.id]
-                                : formData.amenities.filter(
-                                  (id: any) => id !== amenity.id
-                                ),
-                            })
-                          }
-                        />
-                      ))}
+                      {amenitiesLoading ? (
+                        <p className="text-neutral-600">Loading...</p>
+                      ) : (
+                        amenities
+                          .filter((amenity) => amenity.category === (formData.automatic_car_wash ? Car_Wash_Type_Value.AUTOMATIC : Car_Wash_Type_Value.SELF_SERVICE))
+                          .map((amenity) => {
+                            // Find matching local amenity for icon
+                            const localAmenity = Amenities.find(
+                              (local) => local.name.toLowerCase() === amenity.name.toLowerCase()
+                            );
+                            return (
+                              <CustomIconToggle
+                                key={amenity.id}
+                                label={amenity.name}
+                                icon={localAmenity?.icon || Amenities[0].icon}
+                                checked={formData.amenities.includes(amenity.id)}
+                                onChange={(checked) =>
+                                  setFormData({
+                                    ...formData,
+                                    amenities: checked
+                                      ? [...formData.amenities, amenity.id]
+                                      : formData.amenities.filter(
+                                        (id: any) => id !== amenity.id
+                                      ),
+                                  })
+                                }
+                              />
+                            );
+                          })
+                      )}
                     </div>
                   </div>
                   <Separator className="my-2" />

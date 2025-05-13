@@ -1,4 +1,4 @@
-import { CarServiceWashType } from "@/types";
+import { CarServiceWashType, IWashType } from "@/types";
 import { useState } from "react";
 import {
   Accordion,
@@ -8,20 +8,21 @@ import {
 } from "@/components/ui/accordion";
 import { CircleBadge } from "../ui/circleBadge";
 import { CustomIconToggle } from "../ui/customIconToggle";
+import { WashTypes } from "@/utils/constants";
 
 interface WashTypeCheckboxesProps {
   value?: string[];
   onChange?: (option: string[]) => void;
-  options?: CarServiceWashType[];
+  options?: IWashType[];
 }
 
 interface WashTypeOption {
   detailed_type: string;
-  services: CarServiceWashType[];
+  services: IWashType[];
 }
 
 const transformServicesToGroups = (
-  services: CarServiceWashType[]
+  services: IWashType[]
 ): WashTypeOption[] => {
   return services?.reduce((acc: WashTypeOption[], service) => {
     const existingGroup = acc.find(
@@ -93,7 +94,7 @@ const WashTypeCheckboxes: React.FC<WashTypeCheckboxesProps> = ({
                     label={service.name}
                     checked={value?.includes(service.name)}
                     onChange={() => handleChange(service.name)}
-                    icon={service.icon}
+                    icon={WashTypes.find((w) => w.name === service.name)?.icon}
                   />
                 ))}
               </div>
