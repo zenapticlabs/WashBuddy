@@ -20,6 +20,8 @@ import { Car_Wash_Type_Value, CarWashTypes, WashTypes } from "@/utils/constants"
 import useMediaQuery from "@/hooks/useMediaQuery";
 import CarwashPackageCard from "../molecule/CarwashPackageCard";
 import { CustomIconToggle } from "../ui/customIconToggle";
+import { IWashType } from "@/types";
+import { getWashTypes } from "@/services/WashType";
 
 interface CarwashPackageProps {
   carwashPackages: CarWashPackage[];
@@ -33,6 +35,7 @@ export function CarwashPackage({
   const [selectedPackage, setSelectedPackage] = useState<CarWashPackage | null>(
     null
   );
+  const [washTypes, setWashTypes] = useState<IWashType[]>([]);
   const [selectedWashTypes, setSelectedWashTypes] = useState<number[]>([]);
   const [selectedCarWashType, setSelectedCarWashType] = useState<string>(
     CarWashTypes[0].value
@@ -47,6 +50,13 @@ export function CarwashPackage({
   const [scrollLeft, setScrollLeft] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    const fetchWashTypes = async () => {
+      const washTypes = await getWashTypes();
+      setWashTypes(washTypes);
+    };
+    fetchWashTypes();
+  }, []);
   // Add useEffect for touch event handling
   useEffect(() => {
     const container = containerRef.current;
@@ -159,14 +169,14 @@ export function CarwashPackage({
     );
   };
 
-  const washTypesBySubclass = WashTypes.reduce((acc, washType) => {
+  const washTypesBySubclass = washTypes.filter((washType) => washType.category === CarWashTypes[0].value).reduce((acc, washType) => {
     const subclass = washType.subclass;
     if (!acc[subclass]) {
       acc[subclass] = [];
     }
     acc[subclass].push(washType);
     return acc;
-  }, {} as Record<string, typeof WashTypes>);
+  }, {} as Record<string, IWashType[]>);
 
   const handleAddPackage = () => {
     handleCancel();
@@ -250,6 +260,7 @@ export function CarwashPackage({
           )}
           {getAutomaticPackages().map((pkg) => (
             <CarwashPackageCard key={pkg.id} carwashPackage={pkg}
+              washTypes={washTypes}
               onClick={() => {
                 setSelectedPackage(pkg);
                 setIsSheetOpen(true);
@@ -338,7 +349,7 @@ export function CarwashPackage({
                             <CustomIconToggle
                               key={washType.id}
                               label={washType.name}
-                              icon={washType.icon}
+                              icon={WashTypes.find((w) => w.name === washType.name)?.icon}
                               checked={selectedWashTypes.includes(Number(washType.id))}
                               onChange={() => toggleWashType(Number(washType.id))}
                             />

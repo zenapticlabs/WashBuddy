@@ -21,6 +21,9 @@ import AutomaticIcon from "@/assets/icons/automatic.svg";
 import SelfServiceIcon from "@/assets/icons/self-service.svg";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
+import { getAmenities } from "@/services/AmenityService";
+import { IAmenity, IWashType } from "@/types";
+import { getWashTypes } from "@/services/WashType";
 
 const initialFilterState: FilterState = {
   automaticCarWash: true,
@@ -70,27 +73,27 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   const router = useRouter();
   const isMobile = useMediaQuery("(max-width: 768px)");
 
-  // const [amenities, setAmenities] = useState<CarServiceAmenity[]>([]);
-  // const [washTypes, setWashTypes] = useState<CarServiceWashType[]>([]);
+  const [amenities, setAmenities] = useState<IAmenity[]>([]);
+  const [washTypes, setWashTypes] = useState<IWashType[]>([]);
   useEffect(() => {
     setInlineFilters(filters);
   }, [filters]);
 
-  // useEffect(() => {
-  //   const fetchAmenities = async () => {
-  //     const amenities = await getAmenities();
-  //     setAmenities(amenities);
-  //   };
-  //   fetchAmenities();
-  // }, []);
+  useEffect(() => {
+    const fetchAmenities = async () => {
+      const amenities = await getAmenities();
+      setAmenities(amenities);
+    };
+    fetchAmenities();
+  }, []);
 
-  // useEffect(() => {
-  //   const fetchWashTypes = async () => {
-  //     const washTypes = await getWashTypes();
-  //     setWashTypes(washTypes);
-  //   };
-  //   fetchWashTypes();
-  // }, []);
+  useEffect(() => {
+    const fetchWashTypes = async () => {
+      const washTypes = await getWashTypes();
+      setWashTypes(washTypes);
+    };
+    fetchWashTypes();
+  }, []);
 
   const handleReset = () => {
     setFilters(initialFilterState);
@@ -177,7 +180,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
             onChange={(value) =>
               setInlineFilters((prev) => ({ ...prev, amenityName: value }))
             }
-            options={Amenities.filter((amenity) => amenity.category == (filters.automaticCarWash ? Car_Wash_Type_Value.AUTOMATIC : Car_Wash_Type_Value.SELF_SERVICE))}
+            options={amenities.filter((amenity) => amenity.category == (filters.automaticCarWash ? Car_Wash_Type_Value.AUTOMATIC : Car_Wash_Type_Value.SELF_SERVICE) || null)}
           />
           <Separator />
           <WashTypeCheckboxes
@@ -185,7 +188,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
             onChange={(value) =>
               setInlineFilters((prev) => ({ ...prev, washTypeName: value }))
             }
-            options={WashTypes.filter((washType) => washType.category == (filters.automaticCarWash ? Car_Wash_Type_Value.AUTOMATIC : Car_Wash_Type_Value.SELF_SERVICE))}
+            options={washTypes.filter((washType) => washType.category == (filters.automaticCarWash ? Car_Wash_Type_Value.AUTOMATIC : Car_Wash_Type_Value.SELF_SERVICE) || null)}
           />
           <Separator />
           <Ratings

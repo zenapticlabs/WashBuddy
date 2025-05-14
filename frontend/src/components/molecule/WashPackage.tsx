@@ -1,5 +1,5 @@
 import { CarWashPackage, CarWashResponse } from "@/types/CarServices";
-import { WashTypes } from "@/utils/constants";
+import { CarWashTypes, WashTypes } from "@/utils/constants";
 import Image from "next/image";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "../ui/button";
@@ -15,6 +15,9 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { Copy, Check } from "lucide-react";
+import { IWashType } from "@/types";
+import { getWashTypes } from "@/services/WashType";
+import { cn } from "@/lib/utils";
 
 // Initialize Stripe
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
@@ -23,15 +26,6 @@ interface WashPackageProps {
   data: CarWashPackage;
   carWash: CarWashResponse;
 }
-
-const washTypesBySubclass = WashTypes.reduce((acc, washType) => {
-  const subclass = washType.subclass;
-  if (!acc[subclass]) {
-    acc[subclass] = [];
-  }
-  acc[subclass].push(washType);
-  return acc;
-}, {} as Record<string, typeof WashTypes>);
 
 // Stripe Payment Form Component
 const StripePaymentForm = ({ carWashPackage, onSuccess }: { carWashPackage: CarWashPackage, onSuccess: (code: string) => void }) => {
@@ -147,6 +141,15 @@ const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [code, setCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [washTypes, setWashTypes] = useState<IWashType[]>([]);
+  const [washTypesLoading, setWashTypesLoading] = useState(false);
+  useEffect(() => {
+    setWashTypesLoading(true);
+    getWashTypes().then((data: IWashType[]) => {
+      setWashTypes(data);
+      setWashTypesLoading(false);
+    });
+  }, []);
 
   const validOffer = () => {
     if (data.offer && data.offer.status === "ACTIVE") {
@@ -167,7 +170,16 @@ const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
     }
     return false;
   }
-  
+
+  const washTypesBySubclass = washTypes.filter(type => type.category === CarWashTypes[0].value).reduce((acc, washType) => {
+    const subclass = washType.subclass;
+    if (!acc[subclass]) {
+      acc[subclass] = [];
+    }
+    acc[subclass].push(washType);
+    return acc;
+  }, {} as Record<string, IWashType[]>);
+
   useEffect(() => {
     if (showPurchase && !clientSecret) {
       const fetchClientSecret = async () => {
@@ -228,19 +240,31 @@ const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
                         key={washType.id}
                         className="flex flex-col items-center gap-2 w-[100px] py-2 px-2"
                       >
-                        <Image
-                          src={washType.icon}
-                          alt={washType.name}
-                          width={36}
-                          height={36}
-                          className={`${data.wash_types
+                        {WashTypes.find(type => type.name === washType.name)?.icon ?
+                          <Image
+                            src={WashTypes.find(type => type.name === washType.name)?.icon as string}
+                            alt={washType.name}
+                            width={36}
+                            height={36}
+                            className={`${data.wash_types
+                              .map((type: any) => type.id)
+                              .includes(Number(washType.id))
+                              ? "filter-blue-500"
+                              : "filter-neutral-400"
+                              }`}
+                          />
+                          :
+                          <div className={cn("w-5 h-5 border-2 rounded-full", data.wash_types
                             .map((type: any) => type.id)
                             .includes(Number(washType.id))
-                            ? "text-blue-500 opacity-100"
-                            : "text-gray-300 opacity-30"
-                            }`}
-                        />
-                        <span className="text-sm text-neutral-600 text-center line-clamp-2">
+                            ? "border-blue-500"
+                            : "border-neutral-400")}></div>
+                        }
+                        <span className={`text-sm text-center line-clamp-2 ${data.wash_types
+                          .map((type: any) => type.id)
+                          .includes(Number(washType.id))
+                          ? "text-blue-500"
+                          : "text-neutral-400"}`}>
                           {washType.name}
                         </span>
                       </div>

@@ -1,4 +1,4 @@
-import { CarServiceAmenity } from "@/types";
+import { IAmenity } from "@/types";
 import { useState } from "react";
 import {
   Accordion,
@@ -8,10 +8,11 @@ import {
 } from "@/components/ui/accordion";
 import { CircleBadge } from "../ui/circleBadge";
 import { CustomIconToggle } from "../ui/customIconToggle";
+import { Amenities } from "@/utils/constants";
 interface AmenitiesCheckboxesProps {
   value?: string[];
   onChange?: (option: string[]) => void;
-  options?: CarServiceAmenity[];
+  options?: IAmenity[];
 }
 
 const AmenitiesCheckboxes: React.FC<AmenitiesCheckboxesProps> = ({
@@ -63,7 +64,7 @@ const AmenitiesCheckboxes: React.FC<AmenitiesCheckboxesProps> = ({
                 label={amenity.name}
                 checked={value?.includes(amenity.name)}
                 onChange={() => handleChange(amenity.name)}
-                icon={amenity.icon}
+                icon={Amenities.find((a) => a.name === amenity.name)?.icon }
               />
             ))}
           </div>
