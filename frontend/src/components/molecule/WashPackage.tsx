@@ -1,5 +1,4 @@
 import { CarWashPackage, CarWashResponse } from "@/types/CarServices";
-import { CarWashTypes, WashTypes } from "@/utils/constants";
 import Image from "next/image";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "../ui/button";
@@ -18,6 +17,8 @@ import { Copy, Check } from "lucide-react";
 import { IWashType } from "@/types";
 import { getWashTypes } from "@/services/WashType";
 import { cn } from "@/lib/utils";
+import { useWashTypes } from "@/contexts/WashTypesContext";
+import { Car_Wash_Type, CarWashTypes, WashTypes } from "@/utils/constants";
 
 // Initialize Stripe
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
@@ -135,21 +136,13 @@ const StripePaymentForm = ({ carWashPackage, onSuccess }: { carWashPackage: CarW
 };
 
 const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
+  const { washTypes } = useWashTypes();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showPurchase, setShowPurchase] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [code, setCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [washTypes, setWashTypes] = useState<IWashType[]>([]);
-  const [washTypesLoading, setWashTypesLoading] = useState(false);
-  useEffect(() => {
-    setWashTypesLoading(true);
-    getWashTypes().then((data: IWashType[]) => {
-      setWashTypes(data);
-      setWashTypesLoading(false);
-    });
-  }, []);
 
   const validOffer = () => {
     if (data.offer && data.offer.status === "ACTIVE") {
@@ -171,14 +164,14 @@ const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
     return false;
   }
 
-  const washTypesBySubclass = washTypes.filter(type => type.category === CarWashTypes[0].value).reduce((acc, washType) => {
+  const washTypesBySubclass = washTypes.filter((type) => type.category === CarWashTypes[0].value).reduce((acc, washType) => {
     const subclass = washType.subclass;
     if (!acc[subclass]) {
       acc[subclass] = [];
     }
     acc[subclass].push(washType);
     return acc;
-  }, {} as Record<string, IWashType[]>);
+  }, {} as Record<string, typeof washTypes>);
 
   useEffect(() => {
     if (showPurchase && !clientSecret) {
