@@ -3,26 +3,29 @@ import AutomaticIcon from "@/assets/icons/automatic.svg";
 import SelfServiceIcon from "@/assets/icons/self-service.svg";
 import Image from "next/image";
 import { Trash2Icon } from "lucide-react";
+import { IWashType } from "@/types";
 interface CarwashPackageCardProps {
     carwashPackage: CarwashPackage;
+    washTypes: IWashType[];
     onClick: () => void;
     onDelete: () => void;
 }
 
 const CarwashPackageCard: React.FC<CarwashPackageCardProps> = ({
     carwashPackage,
+    washTypes,
     onClick,
     onDelete
 }) => {
     const washTypesData: any = carwashPackage.wash_types.map(id =>
-        WashTypes.find(type => type.id === id)
+        washTypes.find(type => type.id === id)
     ).filter(Boolean);
     const washTypesBySubclass = washTypesData.reduce((acc: any, washType: any) => {
         const subclass = washType.subclass;
         if (!acc[subclass]) {
             acc[subclass] = [];
         }
-        acc[subclass].push(WashTypes.find(type => type.id === washType.id));
+        acc[subclass].push(washTypes.find(type => type.id === washType.id));
         return acc;
     }, {});
     return (

@@ -169,7 +169,7 @@ export function CarwashPackage({
     );
   };
 
-  const washTypesBySubclass = washTypes.reduce((acc, washType) => {
+  const washTypesBySubclass = washTypes.filter((washType) => washType.category === CarWashTypes[0].value).reduce((acc, washType) => {
     const subclass = washType.subclass;
     if (!acc[subclass]) {
       acc[subclass] = [];
@@ -260,6 +260,7 @@ export function CarwashPackage({
           )}
           {getAutomaticPackages().map((pkg) => (
             <CarwashPackageCard key={pkg.id} carwashPackage={pkg}
+              washTypes={washTypes}
               onClick={() => {
                 setSelectedPackage(pkg);
                 setIsSheetOpen(true);
