@@ -23,7 +23,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { getAmenities } from "@/services/AmenityService";
 import { IAmenity, IWashType } from "@/types";
-import { getWashTypes } from "@/services/WashType";
+import { useWashTypes } from "@/contexts/WashTypesContext";
 
 const initialFilterState: FilterState = {
   automaticCarWash: true,
@@ -69,12 +69,12 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
   setFilters,
 }) => {
   const [inlineFilters, setInlineFilters] = useState<FilterState>(filters);
+  const { washTypes } = useWashTypes();
   const pathname = usePathname();
   const router = useRouter();
   const isMobile = useMediaQuery("(max-width: 768px)");
 
   const [amenities, setAmenities] = useState<IAmenity[]>([]);
-  const [washTypes, setWashTypes] = useState<IWashType[]>([]);
   useEffect(() => {
     setInlineFilters(filters);
   }, [filters]);
@@ -85,14 +85,6 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
       setAmenities(amenities);
     };
     fetchAmenities();
-  }, []);
-
-  useEffect(() => {
-    const fetchWashTypes = async () => {
-      const washTypes = await getWashTypes();
-      setWashTypes(washTypes);
-    };
-    fetchWashTypes();
   }, []);
 
   const handleReset = () => {

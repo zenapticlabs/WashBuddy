@@ -16,11 +16,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
-// import { getAmenities } from "@/services/AmenityService";
-// import { getWashTypes } from "@/services/WashType";
-import { Amenities, Car_Wash_Type_Value, INITIAL_FILTER_STATE, WashTypes } from "@/utils/constants";
+import { Amenities, Car_Wash_Type_Value, INITIAL_FILTER_STATE } from "@/utils/constants";
 import { getAmenities } from "@/services/AmenityService";
-import { getWashTypes } from "@/services/WashType";
+import { useWashTypes } from "@/contexts/WashTypesContext";
 interface FilterBarProps {
   filters: FilterState;
   setFilters: (filters: FilterState) => void;
@@ -29,7 +27,7 @@ interface FilterBarProps {
 const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
   const [inlineFilters, setInlineFilters] = useState<FilterState>(filters);
   const [amenities, setAmenities] = useState<IAmenity[]>([]);
-  const [washTypes, setWashTypes] = useState<IWashType[]>([]);
+  const { washTypes } = useWashTypes();
 
   useEffect(() => {
     const fetchAmenities = async () => {
@@ -37,14 +35,6 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
       setAmenities(amenities);
     };
     fetchAmenities();
-  }, []);
-
-  useEffect(() => {
-    const fetchWashTypes = async () => {
-      const washTypes = await getWashTypes();
-      setWashTypes(washTypes);
-    };
-    fetchWashTypes();
   }, []);
 
   useEffect(() => {

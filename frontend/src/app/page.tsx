@@ -7,7 +7,7 @@ import { SearchAndFilterBar } from "@/components/pages/main/SearchAndFilterBar";
 import Topbar from "@/components/pages/main/Topbar";
 import { useCarWashFilters } from "@/hooks/useCarWashFilters";
 import { useCarWashes } from "@/hooks/useCarWashes";
-import { CarWashResponse } from "@/types";
+import { CarWashResponse, IWashType } from "@/types";
 import { RadarMap } from "@/components/organism/RadarMap";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CarWashCard } from "@/components/organism/carWashCard";
@@ -25,8 +25,20 @@ import { useAuth } from "@/contexts/AuthContext";
 import { CarOfferCard } from "@/components/organism/carOfferCard";
 import { useHiddenOffer } from "@/hooks/useHiddenOffer";
 import OfferModal from "@/components/pages/main/OfferModal";
+import { getWashTypes } from "@/services/WashType";
+import { WashTypesProvider } from "@/contexts/WashTypesContext";
 
 export default function Home() {
+  const [washTypes, setWashTypes] = useState<IWashType[]>([]);
+
+  useEffect(() => {
+    const fetchWashTypes = async () => {
+      const washTypesData = await getWashTypes();
+      setWashTypes(washTypesData);
+    }
+    fetchWashTypes();
+  }, []);
+
   return (
     <Suspense
       fallback={
@@ -35,7 +47,9 @@ export default function Home() {
         </div>
       }
     >
-      <HomeContent />
+      <WashTypesProvider value={{ washTypes, setWashTypes }}>
+        <HomeContent />
+      </WashTypesProvider>
     </Suspense>
   );
 }

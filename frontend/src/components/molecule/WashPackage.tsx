@@ -1,5 +1,4 @@
 import { CarWashPackage, CarWashResponse } from "@/types/CarServices";
-import { CarWashTypes, WashTypes } from "@/utils/constants";
 import Image from "next/image";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "../ui/button";
@@ -18,6 +17,8 @@ import { Copy, Check } from "lucide-react";
 import { IWashType } from "@/types";
 import { getWashTypes } from "@/services/WashType";
 import { cn } from "@/lib/utils";
+import { useWashTypes } from "@/contexts/WashTypesContext";
+import { Car_Wash_Type, CarWashTypes, WashTypes } from "@/utils/constants";
 
 // Initialize Stripe
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
@@ -135,6 +136,7 @@ const StripePaymentForm = ({ carWashPackage, onSuccess }: { carWashPackage: CarW
 };
 
 const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
+  const { washTypes } = useWashTypes();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showPurchase, setShowPurchase] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
