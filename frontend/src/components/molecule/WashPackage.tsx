@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { useWashTypes } from "@/contexts/WashTypesContext";
 import { Car_Wash_Type, CarWashTypes, WashTypes } from "@/utils/constants";
 
+
 // Initialize Stripe
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
@@ -143,6 +144,7 @@ const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [code, setCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [washTypesLoading, setWashTypesLoading] = useState(false);
 
   const validOffer = () => {
     if (data.offer && data.offer.status === "ACTIVE") {
@@ -171,7 +173,7 @@ const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
     }
     acc[subclass].push(washType);
     return acc;
-  }, {} as Record<string, typeof washTypes>);
+  }, {} as Record<string, IWashType[]>);
 
   useEffect(() => {
     if (showPurchase && !clientSecret) {
