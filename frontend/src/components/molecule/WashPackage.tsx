@@ -143,6 +143,15 @@ const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
   const isMobile = useMediaQuery("(max-width: 768px)");
   const [code, setCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [washTypes, setWashTypes] = useState<IWashType[]>([]);
+  const [washTypesLoading, setWashTypesLoading] = useState(false);
+  useEffect(() => {
+    setWashTypesLoading(true);
+    getWashTypes().then((data: IWashType[]) => {
+      setWashTypes(data);
+      setWashTypesLoading(false);
+    });
+  }, []);
 
   const validOffer = () => {
     if (data.offer && data.offer.status === "ACTIVE") {
@@ -164,14 +173,14 @@ const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
     return false;
   }
 
-  const washTypesBySubclass = washTypes.filter((type) => type.category === CarWashTypes[0].value).reduce((acc, washType) => {
+  const washTypesBySubclass = washTypes.filter(type => type.category === CarWashTypes[0].value).reduce((acc, washType) => {
     const subclass = washType.subclass;
     if (!acc[subclass]) {
       acc[subclass] = [];
     }
     acc[subclass].push(washType);
     return acc;
-  }, {} as Record<string, typeof washTypes>);
+  }, {} as Record<string, IWashType[]>);
 
   useEffect(() => {
     if (showPurchase && !clientSecret) {
