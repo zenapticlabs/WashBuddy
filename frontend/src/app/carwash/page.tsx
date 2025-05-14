@@ -505,7 +505,7 @@ const CarWashContent = () => {
                         <p className="text-neutral-600">Loading...</p>
                       ) : (
                         amenities
-                          .filter((amenity) => amenity.category === (formData.automatic_car_wash ? Car_Wash_Type_Value.AUTOMATIC : Car_Wash_Type_Value.SELF_SERVICE))
+                          .filter((amenity) => amenity.category === ((formData.automatic_car_wash ? Car_Wash_Type_Value.AUTOMATIC : Car_Wash_Type_Value.SELF_SERVICE) || null))
                           .map((amenity) => {
                             // Find matching local amenity for icon
                             const localAmenity = Amenities.find(
