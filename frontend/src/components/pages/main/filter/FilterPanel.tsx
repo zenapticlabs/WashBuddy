@@ -180,7 +180,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
             onChange={(value) =>
               setInlineFilters((prev) => ({ ...prev, amenityName: value }))
             }
-            options={amenities.filter((amenity) => amenity.category == (filters.automaticCarWash ? Car_Wash_Type_Value.AUTOMATIC : Car_Wash_Type_Value.SELF_SERVICE))}
+            options={amenities.filter((amenity) => amenity.category == (filters.automaticCarWash ? Car_Wash_Type_Value.AUTOMATIC : Car_Wash_Type_Value.SELF_SERVICE) || null)}
           />
           <Separator />
           <WashTypeCheckboxes
@@ -188,7 +188,7 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
             onChange={(value) =>
               setInlineFilters((prev) => ({ ...prev, washTypeName: value }))
             }
-            options={washTypes.filter((washType) => washType.category == (filters.automaticCarWash ? Car_Wash_Type_Value.AUTOMATIC : Car_Wash_Type_Value.SELF_SERVICE))}
+            options={washTypes.filter((washType) => washType.category == (filters.automaticCarWash ? Car_Wash_Type_Value.AUTOMATIC : Car_Wash_Type_Value.SELF_SERVICE) || null)}
           />
           <Separator />
           <Ratings
