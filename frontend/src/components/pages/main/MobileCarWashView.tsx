@@ -72,7 +72,7 @@ export function MobileCarWashView({
             </div>
           ) : (
             <>
-              {hiddenOffer && <CarOfferCard onClick={onOfferClick} />}
+              {hiddenOffer && <CarOfferCard onClick={onOfferClick} distance={filters.distance} />}
               {carWashes.map((carWash) => (
                 <CarWashCard
                   key={carWash.id}
