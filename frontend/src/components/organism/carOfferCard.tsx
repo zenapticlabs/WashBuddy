@@ -4,9 +4,10 @@ import { Badge } from "../ui/badge";
 interface CarOfferCardProps {
   onClick: () => void;
   isSelected?: boolean;
+  distance: number;
 }
 
-export function CarOfferCard({ onClick, isSelected }: CarOfferCardProps) {
+export function CarOfferCard({ onClick, isSelected, distance }: CarOfferCardProps) {
   const handleClick = () => {
     onClick();
   }
@@ -35,7 +36,7 @@ export function CarOfferCard({ onClick, isSelected }: CarOfferCardProps) {
                 <MapPinIcon className="w-4 h-4 md:w-5 md:h-5 pr-1" />
                 <div>Purchase to reveal this carwash location!
                   <span className="px-1">·</span>
-                  Within 5 miles
+                  Within {distance} miles
                 </div>
               </div>
             </div>

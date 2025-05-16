@@ -151,12 +151,13 @@ const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
       const offer = data.offer;
       if (offer.offer_type === "TIME_DEPENDENT") {
         const now = new Date();
-        const currentTime = now.toLocaleTimeString('en-US', { hour12: false });
-        // Convert offer times to 24-hour format for comparison
+        const currentTimeUTC = now.toISOString().substring(11, 16); // Get current time in UTC "HH:mm" format
+
+        // Offer times are already in UTC format, just take HH:mm part
         const startTime = offer.start_time.substring(0, 5); // "HH:mm"
         const endTime = offer.end_time.substring(0, 5); // "HH:mm"
 
-        return currentTime >= startTime && currentTime <= endTime;
+        return currentTimeUTC >= startTime && currentTimeUTC <= endTime;
       } else if (offer.offer_type === "ONE_TIME") {
         return true;
       } else {
