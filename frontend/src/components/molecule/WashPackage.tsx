@@ -20,7 +20,6 @@ import { cn } from "@/lib/utils";
 import { useWashTypes } from "@/contexts/WashTypesContext";
 import { Car_Wash_Type, CarWashTypes, WashTypes } from "@/utils/constants";
 
-
 // Initialize Stripe
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
