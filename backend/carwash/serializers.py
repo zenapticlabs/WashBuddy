@@ -66,7 +66,6 @@ class OfferSerializer(DynamicFieldsSerializerMixin, serializers.ModelSerializer)
 
 class CarWashPackageSerializer(serializers.ModelSerializer):
     wash_types = serializers.SerializerMethodField()
-    offer = OfferSerializer(read_only=True)
 
     class Meta:
         model = CarWashPackage
