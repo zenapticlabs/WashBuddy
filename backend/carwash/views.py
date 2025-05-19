@@ -575,15 +575,21 @@ class ListOfferAPIView(DynamicFieldsViewMixin, ListAPIView):
 
         user_metadata = utils.handle_user_meta_data(self.request.headers.get("Authorization"))
         if not user_metadata:
-            queryset = queryset.filter(
+            queryset = queryset.annotate(
+                codes_count=Count('codes', filter=~Q(codes__user_metadata__isnull=False))
+            ).filter(
+                ~Q(codes_count=0),
                 offer_type="ONE_TIME"
             )
             return queryset
             
         # Filter out offers that has codes not used by the user
-        queryset = queryset.filter(
-            codes__user_metadata__isnull=True
+        queryset = queryset.annotate(
+            codes_count=Count('codes', filter=~Q(codes__user_metadata__isnull=False))
+        ).filter(
+            ~Q(codes_count=0)
         )
+        
 
         # Filter out one-time offers that have been used by the user
         queryset = queryset.exclude(
