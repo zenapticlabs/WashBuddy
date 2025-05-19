@@ -265,7 +265,7 @@ function HomeContent() {
               {!isLoading && !isLoadingOffers &&
                 (
                   <>
-                    {hiddenOffer && <CarOfferCard onClick={() => handleOfferClick()} distance={filters.distance}/>}
+                    {hiddenOffer && <CarOfferCard onClick={() => handleOfferClick()} data={hiddenOffer}/>}
                     {carWashes?.map((carWash) => (
                       <div
                         key={carWash.id}

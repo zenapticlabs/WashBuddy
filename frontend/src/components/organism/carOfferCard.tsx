@@ -4,10 +4,10 @@ import { Badge } from "../ui/badge";
 interface CarOfferCardProps {
   onClick: () => void;
   isSelected?: boolean;
-  distance: number;
+  data: any;
 }
 
-export function CarOfferCard({ onClick, isSelected, distance }: CarOfferCardProps) {
+export function CarOfferCard({ onClick, isSelected, data }: CarOfferCardProps) {
   const handleClick = () => {
     onClick();
   }
@@ -30,13 +30,13 @@ export function CarOfferCard({ onClick, isSelected, distance }: CarOfferCardProp
           <div className="flex flex-col justify-between flex-1">
             <div>
               <div className="text-title-2 md:text-title-1 text-neutral-900">
-                A carwash nearby
+                A carwash nearby {data?.offer_price ? `: $${data?.offer_price}` : ""}
               </div>
               <div className="text-body-3 md:text-body-2 flex items-center text-neutral-500 mt-1">
                 <MapPinIcon className="w-4 h-4 md:w-5 md:h-5 pr-1" />
                 <div>Purchase to reveal this carwash location!
                   <span className="px-1">·</span>
-                  Within {distance} miles
+                  Within 5 miles
                 </div>
               </div>
             </div>

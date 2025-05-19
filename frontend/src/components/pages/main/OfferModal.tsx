@@ -106,7 +106,7 @@ const StripePaymentForm = ({ carOffer, onSuccess }: { carOffer: ICarOffer, onSuc
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 mb-2">
             <PaymentElement />
             {error && <div className="text-red-500 text-sm">{error}</div>}
             {paymentStatus && paymentStatus !== 'completed' && (
