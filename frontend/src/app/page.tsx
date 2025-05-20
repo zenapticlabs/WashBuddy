@@ -75,11 +75,10 @@ function HomeContent() {
     fetchLocationFromCoordinates
   } = useLocationData();
 
-  const { filters, setFilters } = useCarWashFilters();
-  const { carWashes, isLoading, count } =
+  const { filters, setFilters } =
+    useCarWashFilters();
+  const { carWashes, hiddenOffer, offers, isLoading, count } =
     useCarWashes(filters);
-  const { hiddenOffer, isLoading: isLoadingOffers } =
-    useHiddenOffer(filters);
   useEffect(() => {
     fetchLocationData();
   }, []);
@@ -252,7 +251,7 @@ function HomeContent() {
           </div>
           <ScrollArea ref={scrollAreaRef} className="w-full flex-1 px-2">
             <div className="flex flex-col gap-2 pr-4">
-              {(isLoading || isLoadingOffers || !locationData) && (
+              {(isLoading || !locationData) && (
                 <div className="flex flex-col gap-2">
                   <CarWashSkeleton />
                   <CarWashSkeleton />
@@ -262,10 +261,10 @@ function HomeContent() {
                   <CarWashSkeleton />
                 </div>
               )}
-              {!isLoading && !isLoadingOffers &&
+              {!isLoading &&
                 (
                   <>
-                    {hiddenOffer && <CarOfferCard onClick={() => handleOfferClick()} data={hiddenOffer}/>}
+                    {hiddenOffer && <CarOfferCard onClick={() => handleOfferClick()} data={hiddenOffer} />}
                     {carWashes?.map((carWash) => (
                       <div
                         key={carWash.id}

@@ -44,7 +44,7 @@ export function CarOfferCard({ onClick, isSelected, data }: CarOfferCardProps) {
               variant="blue"
               className="text-title-3 text-white w-fit hidden md:block px-2 py-1 rounded-lg mt-2"
             >
-              Special Washbuddy Price. Claim the best deal we have
+              Nearby Special Washbuddy Price.
             </Badge>
           </div>
         </div>
@@ -52,7 +52,7 @@ export function CarOfferCard({ onClick, isSelected, data }: CarOfferCardProps) {
           variant="blue"
           className="text-title-3 text-white w-fit block md:hidden px-2 py-1 rounded-lg mt-2"
         >
-          Special Washbuddy Price. Claim the best deal we have
+          Nearby Special Washbuddy Price.
         </Badge>
       </div>
     </>
