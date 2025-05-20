@@ -575,57 +575,86 @@ class ListOfferAPIView(DynamicFieldsViewMixin, ListAPIView):
 
         user_metadata = utils.handle_user_meta_data(self.request.headers.get("Authorization"))
         if not user_metadata:
+            # Return offers with codes that are not used by the user
             queryset = queryset.annotate(
                 codes_count=Count('codes', filter=~Q(codes__user_metadata__isnull=False))
             ).filter(
                 ~Q(codes_count=0),
+                offer_type__in=['TIME_DEPENDENT', 'GEOGRAPHICAL']
+            )
+
+            # Handle time dependent offers
+            queryset = queryset.annotate(
+                is_time_valid=Case(
+                    When(offer_type='TIME_DEPENDENT', 
+                        start_time__lte=now, 
+                        end_time__gte=now, 
+                        then=Value(True)),
+                    When(offer_type='TIME_DEPENDENT', 
+                        then=Value(False)),
+                    default=Value(True),
+                    output_field=BooleanField()
+                )
+            ).filter(is_time_valid=True)
+            
+            # Handle geographical offers
+            user_lat = self.request.GET.get("userLat")
+            user_lng = self.request.GET.get("userLng")
+            if user_lat and user_lng:
+                user_location = Point(float(user_lng), float(user_lat), srid=4326)
+                queryset = queryset.annotate(
+                    distance=Distance('package__car_wash__location', user_location)
+                ).filter(
+                    Q(offer_type='GEOGRAPHICAL', distance__lte=F('radius_miles') * 1609.34) |  # Convert miles to meters
+                    Q(offer_type__in=['TIME_DEPENDENT'])
+                )
+            else:
+                queryset = queryset.filter(offer_type__in=['TIME_DEPENDENT'])
+
+            return queryset.distinct()            
+        else:
+            # Filter out offers that has codes not used by the user
+            queryset = queryset.annotate(
+                codes_count=Count('codes', filter=~Q(codes__user_metadata__isnull=False))
+            ).filter(
+                ~Q(codes_count=0)
+            )
+
+            # Filter out one-time offers that have been used by the user
+            queryset = queryset.exclude(
+                codes__user_metadata__email=user_metadata['email'],
                 offer_type="ONE_TIME"
             )
-            return queryset
-            
-        # Filter out offers that has codes not used by the user
-        queryset = queryset.annotate(
-            codes_count=Count('codes', filter=~Q(codes__user_metadata__isnull=False))
-        ).filter(
-            ~Q(codes_count=0)
-        )
-        
 
-        # Filter out one-time offers that have been used by the user
-        queryset = queryset.exclude(
-            codes__user_metadata__email=user_metadata['email'],
-            offer_type="ONE_TIME"
-        )
-
-        # Handle time dependent offers
-        queryset = queryset.annotate(
-            is_time_valid=Case(
-                When(offer_type='TIME_DEPENDENT', 
-                     start_time__lte=now, 
-                     end_time__gte=now, 
-                     then=Value(True)),
-                When(offer_type='TIME_DEPENDENT', 
-                     then=Value(False)),
-                default=Value(True),
-                output_field=BooleanField()
-            )
-        ).filter(is_time_valid=True)
-        
-        # Handle geographical offers
-        user_lat = self.request.GET.get("userLat")
-        user_lng = self.request.GET.get("userLng")
-        if user_lat and user_lng:
-            user_location = Point(float(user_lng), float(user_lat), srid=4326)
+            # Handle time dependent offers
             queryset = queryset.annotate(
-                distance=Distance('package__car_wash__location', user_location)
-            ).filter(
-                Q(offer_type='GEOGRAPHICAL', distance__lte=F('radius_miles') * 1609.34) |  # Convert miles to meters
-                Q(offer_type__in=['TIME_DEPENDENT', 'ONE_TIME'])
-            )
-        else:
-            queryset = queryset.filter(offer_type__in=['TIME_DEPENDENT', 'ONE_TIME'])
-        
-        return queryset.distinct()
+                is_time_valid=Case(
+                    When(offer_type='TIME_DEPENDENT', 
+                        start_time__lte=now, 
+                        end_time__gte=now, 
+                        then=Value(True)),
+                    When(offer_type='TIME_DEPENDENT', 
+                        then=Value(False)),
+                    default=Value(True),
+                    output_field=BooleanField()
+                )
+            ).filter(is_time_valid=True)
+            
+            # Handle geographical offers
+            user_lat = self.request.GET.get("userLat")
+            user_lng = self.request.GET.get("userLng")
+            if user_lat and user_lng:
+                user_location = Point(float(user_lng), float(user_lat), srid=4326)
+                queryset = queryset.annotate(
+                    distance=Distance('package__car_wash__location', user_location)
+                ).filter(
+                    Q(offer_type='GEOGRAPHICAL', distance__lte=F('radius_miles') * 1609.34) |  # Convert miles to meters
+                    Q(offer_type__in=['TIME_DEPENDENT', 'ONE_TIME'])
+                )
+            else:
+                queryset = queryset.filter(offer_type__in=['TIME_DEPENDENT', 'ONE_TIME'])
+            
+            return queryset.distinct()
 
     def get_serializer_context(self):
         context = super().get_serializer_context()
