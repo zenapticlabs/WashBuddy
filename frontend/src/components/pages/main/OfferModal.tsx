@@ -106,7 +106,7 @@ const StripePaymentForm = ({ carOffer, onSuccess }: { carOffer: ICarOffer, onSuc
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 mb-2">
             <PaymentElement />
             {error && <div className="text-red-500 text-sm">{error}</div>}
             {paymentStatus && paymentStatus !== 'completed' && (
@@ -134,11 +134,13 @@ const OfferModal: React.FC<OfferModalProps> = ({ open, onOpenChange, data }) => 
     const [copied, setCopied] = useState(false);
     const [carWash, setCarWash] = useState<CarWashResponse | null>(null);
     const [carwashLoading, setCarwashLoading] = useState(false);
+    const [carWashPackage, setCarWashPackage] = useState<any>(null);
     useEffect(() => {
         const getCarWash = async () => {
             setCarwashLoading(true);
             const response = await axiosInstance.get(`/api/v1/carwash/${data.car_wash_id}/`);
             setCarWash(response.data);
+            setCarWashPackage(response.data.packages.find((p: any) => p.id === data.package_id));
             setCarwashLoading(false);
         }
 
@@ -215,22 +217,28 @@ const OfferModal: React.FC<OfferModalProps> = ({ open, onOpenChange, data }) => 
                     <div className="pb-4 rounded-lg">
                         <div className="flex justify-between mb-6">
                             <div className="flex gap-2 flex-1">
-                                <Image 
-                                    src={carWash?.image_url || ""} 
-                                    alt={carWash?.car_wash_name || ""} 
-                                    width={64} 
-                                    height={64} 
-                                    className="rounded-lg w-16 h-16 object-cover" 
+                                <Image
+                                    src={carWash?.image_url || ""}
+                                    alt={carWash?.car_wash_name || ""}
+                                    width={64}
+                                    height={64}
+                                    className="rounded-lg w-16 h-16 object-cover"
                                 />
-                                <div className="flex flex-col gap-1">
-                                    <div className="text-title-1 text-neutral-900">{carWash?.car_wash_name}</div>
-                                    <div className="text-body-2 text-neutral-500">{carWash?.formatted_address}</div>
+                                <div>
+                                    <div className="flex flex-col gap-1">
+                                        <div className="text-title-1 text-neutral-900">{carWash?.car_wash_name}</div>
+                                        <div className="text-body-2 text-neutral-500">{carWash?.formatted_address}</div>
+                                    </div>
+                                    <div className="flex flex-col mt-4">
+                                        <div className="text-title-1 text-neutral-900">{data.name}</div>
+                                        <div className="text-headline-5 text-neutral-900">
+                                            <span className="line-through">${carWashPackage?.price}</span>
+                                            <span className="text-green-600 ml-2">${data.offer_price}</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="flex flex-col items-end border-l border-neutral-100 pl-4">
-                                <div className="text-title-1 text-neutral-900">{data.name}</div>
-                                <div className="text-headline-5 text-neutral-900">${data.offer_price}</div>
-                            </div>
+
                         </div>
                         <div className="text-green-600 font-semibold mb-2">Payment Successful!</div>
                         <div className="text-sm text-neutral-600 mb-4">Here is your carwash code:</div>
@@ -275,11 +283,13 @@ const OfferModal: React.FC<OfferModalProps> = ({ open, onOpenChange, data }) => 
                 <Sheet open={open} onOpenChange={handleClose}>
                     <SheetContent
                         side="bottom"
-                        className="p-0 rounded-t-xl overflow-hidden">
-                        <SheetTitle className="text-headline-4 p-4">
-                            Do you want to purchase this offer?
+                        className="p-0 rounded-t-xl max-h-[80vh] flex flex-col">
+                        <SheetTitle className="text-headline-4 p-4 border-b border-neutral-100 flex-shrink-0">
+                            {code ? "Purchase Successful!" : "Do you want to purchase this offer?"}
                         </SheetTitle>
-                        {mainContent()}
+                        <div className="flex-1 overflow-y-auto touch-auto overscroll-contain">
+                            {mainContent()}
+                        </div>
                     </SheetContent>
                 </Sheet>
             )}

@@ -128,7 +128,7 @@ export function CarWashCard({ data, onClick, isSelected }: CarWashCardProps) {
           <Badge
             variant={data.lowestPack?.offerType === "TIME_DEPENDENT" ? "green" : "yellow"}
             className="text-title-3 text-white w-fit md:hidden px-2 py-1 rounded-lg mt-2"
-          > hELLO
+          > 
             Special WashBuddy Price. {data.lowestPack?.offerType === "TIME_DEPENDENT" ? "Time Dependent offer" : "One Time offer"}
           </Badge>
         )}

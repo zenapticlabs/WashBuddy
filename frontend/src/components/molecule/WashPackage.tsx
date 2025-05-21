@@ -19,6 +19,10 @@ import { getWashTypes } from "@/services/WashType";
 import { cn } from "@/lib/utils";
 import { useWashTypes } from "@/contexts/WashTypesContext";
 import { Car_Wash_Type, CarWashTypes, WashTypes } from "@/utils/constants";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
+
 
 // Initialize Stripe
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
@@ -136,6 +140,9 @@ const StripePaymentForm = ({ carWashPackage, onSuccess }: { carWashPackage: CarW
 };
 
 const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const router = useRouter();
   const { washTypes } = useWashTypes();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showPurchase, setShowPurchase] = useState(false);
@@ -207,6 +214,15 @@ const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
   };
 
   const handleBuyNowClick = () => {
+    if (!user) {
+      toast({
+        title: "Please login to buy this package",
+        description: "You need to be logged in to buy this package",
+        variant: "destructive",
+        action: <Button variant="destructive" className="border border-white" onClick={() => router.push("/login")}>Login</Button>,
+      });
+      return;
+    }
     setShowPurchase(true);
   };
 

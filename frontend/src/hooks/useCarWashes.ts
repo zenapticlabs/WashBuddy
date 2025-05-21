@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { getCarwashes } from "@/services/CarwashService";
+import { getOffers } from '@/services/OfferService';
 import { FilterState } from "@/types/filters";
 import { CarWashResponse, CarWashPackage, ICarOffer } from "@/types/CarServices";
-
 
 interface ExtendedCarWashPackage extends CarWashPackage {
   offer?: ICarOffer;
@@ -18,6 +18,8 @@ interface ExtendedCarWash extends Omit<CarWashResponse, 'packages'> {
 
 export function useCarWashes(filters: FilterState) {
   const [carWashes, setCarWashes] = useState<CarWashResponse[]>([]);
+  const [hiddenOffer, setHiddenOffer] = useState<ICarOffer | null>(null);
+  const [offers, setOffers] = useState<ICarOffer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [count, setCount] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
@@ -68,8 +70,29 @@ export function useCarWashes(filters: FilterState) {
   const fetchData = async () => {
     setIsLoading(true);
     if (filters.userLat != 0 && filters.userLng != 0) {
-      const result = await getCarwashes(filters);
-      let modifiedCarWashes = result.data[0].results as ExtendedCarWash[];
+      // Fetch car washes
+      const carWashResult = await getCarwashes(filters);
+      let modifiedCarWashes = carWashResult.data[0].results as ExtendedCarWash[];
+
+      // Fetch offers
+      const offerResult = await getOffers(filters.userLat, filters.userLng);
+      setOffers(offerResult.data);
+      
+      // Match offers with packages
+      modifiedCarWashes = modifiedCarWashes.map(carWash => ({
+        ...carWash,
+        packages: carWash.packages.map(pkg => {
+          const matchingOffer = offerResult.data.find(
+            (offer: ICarOffer) => 
+              offer.package_id === pkg.id && 
+              offer.car_wash_id === carWash.id
+          );
+          return {
+            ...pkg,
+            offer: matchingOffer || undefined
+          };
+        })
+      }));
 
       // Add lowestPack to each car wash
       modifiedCarWashes = modifiedCarWashes.map((carWash) => ({
@@ -78,12 +101,27 @@ export function useCarWashes(filters: FilterState) {
       }));
 
       setCarWashes(modifiedCarWashes);
-      setCount(result.data[0].count);
-      setTotalPages(result.data[0].links.totalPages);
-      setCurrentPage(result.data[0].links.currentPage);
+      setCount(carWashResult.data[0].count);
+      setTotalPages(carWashResult.data[0].links.totalPages);
+      setCurrentPage(carWashResult.data[0].links.currentPage);
+
+      // Filter and sort hidden offers
+      const hOffers = offerResult.data.filter((offer: ICarOffer) => {
+        return offer.offer_type === "GEOGRAPHICAL" && parseFloat(offer.radius_miles) <= 5;
+      });
+
+      const sortedOffers = hOffers.sort((a: ICarOffer, b: ICarOffer) => {
+        const priceComparison = parseFloat(a.offer_price) - parseFloat(b.offer_price);
+        if (priceComparison === 0) {
+          return parseFloat(a.radius_miles) - parseFloat(b.radius_miles);
+        }
+        return priceComparison;
+      });
+
+      setHiddenOffer(sortedOffers[0] || null);
     }
     setIsLoading(false);
   };
 
-  return { carWashes, isLoading, count, totalPages, currentPage };
+  return { carWashes, hiddenOffer, offers, isLoading, count, totalPages, currentPage };
 } 

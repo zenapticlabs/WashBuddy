@@ -5,21 +5,14 @@ import { getOffers } from '@/services/OfferService';
 
 export function useHiddenOffer(filters: FilterState) {
   const [hiddenOffer, setHiddenOffer] = useState<ICarOffer | null>(null);
+  const [offers, setOffers] = useState<ICarOffer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
     fetchData();
   }, [filters.userLat, filters.userLng, filters.distance]);
 
   const fetchData = async () => {
-    setIsLoading(true);
-    
-    if (filters.userLat != 0 && filters.userLng != 0) {
-      const result = await getOffers(filters.userLat, filters.userLng);
-
-      const hOffers = result.data.filter((offer: ICarOffer) => {
-        return offer.offer_type == "GEOGRAPHICAL" && parseFloat(offer.radius_miles) <= filters.distance
-      });
-      
+    setIsLoading(
       // Sort by price first, then by radius
       const sortedOffers = hOffers.sort((a: ICarOffer, b: ICarOffer) => {
         // First compare by price
@@ -36,5 +29,5 @@ export function useHiddenOffer(filters: FilterState) {
     setIsLoading(false);
   };
 
-  return { hiddenOffer, isLoading };
+  return { hiddenOffer, isLoading, offers };
 } 
