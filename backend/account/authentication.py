@@ -6,6 +6,7 @@ from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 from django.contrib.auth import get_user_model
 import os
+from .models import UserProfile
 
 User = get_user_model()
 
@@ -30,8 +31,19 @@ class SupabaseJWTAuthentication(BaseAuthentication):
             
             if not email:
                 raise AuthenticationFailed('User email not found in token')
-                
-            user = User.objects.get(email=email)
+            
+            try:
+                user = User.objects.get(email=email)
+            except User.DoesNotExist:
+                user = User.objects.create(
+                    email=email,
+                    username=email,
+                    is_active=True 
+                )
+                UserProfile.objects.create(
+                    user=user,
+                    metadata=payload.get("user_metadata", {})
+                )
 
             return (user, None)
         except jwt.ExpiredSignatureError:

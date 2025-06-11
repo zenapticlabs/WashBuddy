@@ -5,22 +5,14 @@ from carwash import utils
 
 class UserReviewList(generics.ListAPIView):
     serializer_class = UserReviewListSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
     
     def get_queryset(self):
-        user_metadata = utils.handle_user_meta_data(self.request.headers.get("Authorization"))
-        if not user_metadata:
-            raise permissions.PermissionDenied("Invalid user metadata")
-            
-        return CarWashReview.objects.filter(user_id=user_metadata.get('user_id'))
+        return CarWashReview.objects.filter(user=self.request.user)
 
 class UserReviewDetail(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = UserReviewListSerializer
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
     
-    def get_queryset(self):
-        user_metadata = utils.handle_user_meta_data(self.request.headers.get("Authorization"))
-        if not user_metadata:
-            raise permissions.PermissionDenied("Invalid user metadata")
-            
-        return CarWashReview.objects.filter(user_id=user_metadata.get('user_id'))
+    def get_queryset(self):        
+        return CarWashReview.objects.filter(user=self.request.user)
