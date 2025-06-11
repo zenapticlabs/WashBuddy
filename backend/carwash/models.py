@@ -38,6 +38,8 @@ class CarWash(CustomModelMixin):
     open_24_hours = models.BooleanField()
     verified = models.BooleanField(default=False)
 
+    active_bounty = models.BooleanField(default=False, verbose_name="Active Bounty")
+
     amenities = models.ManyToManyField(
         'Amenity', 
         through='AmenityCarWashMapping',
@@ -285,7 +287,7 @@ class Offer(CustomModelMixin):
 class CarWashCode(CustomModelMixin):
     offer = models.ForeignKey(Offer, on_delete=models.CASCADE, related_name="codes")
     code = models.CharField(max_length=50)
-    user_metadata = models.JSONField(null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="carwash_codes")
     used_at = models.DateTimeField(null=True, blank=True)
     
     objects = models.Manager()
@@ -303,14 +305,6 @@ class CarWashCode(CustomModelMixin):
     def __str__(self):
         return f"{self.code} - {self.offer.name}"
 
-class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    location = gis_models.PointField(geography=True, null=True, blank=True)
-    
-    def __str__(self):
-        return f"{self.user.username}'s profile"
-    
-
 class CarWashReview(CustomModelMixin):
     """
         CarWash Review Model
@@ -319,8 +313,7 @@ class CarWashReview(CustomModelMixin):
         Maximum rating = 5
     """
     car_wash = models.ForeignKey(CarWash, on_delete=models.CASCADE, related_name="reviews")
-    user_id = models.CharField(max_length=255, db_index=True, null=True, blank=True)
-    user_metadata = models.JSONField()
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="carwash_reviews")
     comment = models.TextField()
     overall_rating = models.SmallIntegerField(validators=[
             MinValueValidator(0, "Rating must be at least 0"),
@@ -370,8 +363,7 @@ class Payment(CustomModelMixin):
     payment_intent_id = models.CharField(max_length=255, unique=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='pending')
-    user_email = models.EmailField()
-    metadata = models.JSONField(null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="carwash_payments")
     error_message = models.TextField(null=True, blank=True)
 
     def clean(self):
@@ -387,3 +379,35 @@ class Payment(CustomModelMixin):
 
     def __str__(self):
         return f"Payment {self.payment_intent_id} - {self.offer.name}"
+    
+
+class CarWashUpdateRequest(CustomModelMixin):
+    car_wash = models.ForeignKey(CarWash, on_delete=models.CASCADE, related_name="pending_updates")
+    proposed_changes = models.JSONField()
+    submitted_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="car_wash_update_requests")
+    approved = models.BooleanField(default=False)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+
+    # once approved, it should be saved to car wash model
+    def save(self, *args, **kwargs):
+        try:
+            # Check if approved status changed to True
+            existing_object = CarWashUpdateRequest.objects.filter(pk=self.pk).first()
+            if existing_object and self.approved and (not existing_object.approved):
+                self.reviewed_at = timezone.now()
+                
+                # Update car wash with proposed changes
+                from .serializers import CarWashPostPatchSerializer
+                car_wash_serializer = CarWashPostPatchSerializer(self.car_wash, self.proposed_changes)
+                car_wash_serializer.save()
+            
+            super().save(*args, **kwargs)
+        except Exception as e:
+            raise ValidationError("Could not approve the changes. Error: ", e)
+
+    def __str__(self):
+        return f"Update Request for {self.car_wash.car_wash_name}"
+
+    class Meta:
+        verbose_name = "Car Wash Update Request"
+        verbose_name_plural = "Car Wash Update Requests"

@@ -270,39 +270,22 @@ class PreSignedUrlSerializer(serializers.Serializer):
 
 class CarWashReviewPostPatchSerializer(serializers.ModelSerializer):
     images = CarWashReviewImagesPostPatchSerializer(many=True, required=False)
-    user_id = serializers.CharField(read_only=True)
 
     class Meta:
         model = CarWashReview
-        exclude = ["created_by", "updated_by", "status", "user_metadata"]
+        exclude = ["created_by", "updated_by", "status"]
 
     def create(self, validated_data):
         images = validated_data.pop("images", [])  
-        authorization_header = self.context.get("authorization_header")
-        user_data = self.handle_user_meta_data(authorization_header)
         
         # Create the review with user data
         car_wash_review = CarWashReview.objects.create(
             **validated_data,
-            user_id=user_data["user_id"],
-            user_metadata=user_data
         )
 
         self.handle_images(car_wash_review, images)
 
         return car_wash_review
-    
-    def handle_user_meta_data(self, authorization_header): 
-        if not authorization_header or not authorization_header.startswith("Bearer "):
-            raise PermissionDenied({"message": "Invalid or missing token"})
-            
-        try:
-            user_data = utils.handle_user_meta_data(authorization_header)
-            if not user_data:
-                raise AuthenticationFailed("Invalid user data")
-            return user_data
-        except Exception as e:
-            raise AuthenticationFailed(str(e))
 
     def handle_images(self, instance, images): 
         for image_object in images:
@@ -349,12 +332,11 @@ class CarWashCodeCreatePatchSerializer(serializers.ModelSerializer):
 class CarWashCodeUsageCreateSerializer(serializers.ModelSerializer):
     code = serializers.CharField(write_only=True)
     offer_id = serializers.IntegerField(write_only=True)
-    user_metadata = serializers.JSONField(required=False, write_only=True)
     used_at = serializers.DateTimeField(required=False, write_only=True)
 
     class Meta:
         model = CarWashCode
-        fields = ["code", "offer_id", "user_metadata", "used_at"]
+        fields = ["code", "offer_id", "used_at"]
     
 class CreatePaymentIntentSerializer(serializers.Serializer):
     offer_id = serializers.IntegerField()
