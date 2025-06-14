@@ -8,7 +8,7 @@ import { useEffect } from "react";
 import { Button } from "./ui/button";
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, session, loading } = useAuth();
   const router = useRouter();
   const { toast } = useToast()
 
