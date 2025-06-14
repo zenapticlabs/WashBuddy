@@ -9,18 +9,10 @@ export function useHiddenOffer(filters: FilterState) {
   const [isLoading, setIsLoading] = useState(true);
   useEffect(() => {
     fetchData();
-  }, [filters.userLat, filters.userLng]);
+  }, [filters.userLat, filters.userLng, filters.distance]);
 
   const fetchData = async () => {
-    setIsLoading(true);
-
-    if (filters.userLat != 0 && filters.userLng != 0) {
-      const result = await getOffers(filters.userLat, filters.userLng);
-      setOffers(result.data);
-      const hOffers = result.data.filter((offer: ICarOffer) => {
-        return offer.offer_type == "GEOGRAPHICAL" && parseFloat(offer.radius_miles) <= 5
-      });
-
+    setIsLoading(
       // Sort by price first, then by radius
       const sortedOffers = hOffers.sort((a: ICarOffer, b: ICarOffer) => {
         // First compare by price
