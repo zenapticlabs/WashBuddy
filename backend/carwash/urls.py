@@ -3,7 +3,7 @@ from django.urls import path, include
 from .webhook import StripeWebhookView
 from .views import (
     CheckPaymentStatusView, CreatePaymentIntentView, WashTypeListAPIView, AmenityListAPIView,
-    CarWashCreateView, CarWashRetrieveUpdateDestroyView,
+    CarWashCreateView, CarWashRetrieveView, CarWashUpdateView,
     ListCarWashAPIView, S3APIView,
     CarWashReviewCreateView, CarWashReviewRetrieveUpdateDestroyView,
     ListCarWashReviewAPIView, OfferCreateView, OfferRetrieveUpdateDestroyView, ListOfferAPIView,
@@ -11,7 +11,8 @@ from .views import (
 )
 
 urlpatterns = [
-    path("<int:id>/", CarWashRetrieveUpdateDestroyView.as_view(), name="get-patch-delete-car-wash"),
+    path("get/<int:id>/", CarWashRetrieveView.as_view(), name="get-car-wash"),
+    path("update/<int:id>/", CarWashUpdateView.as_view(), name="update-car-wash"),
     path("create/", CarWashCreateView.as_view(), name="create-car-wash"),
     path("search/", ListCarWashAPIView.as_view(), name="list-car-wash"),
     path("amenities/", AmenityListAPIView.as_view(), name="amenity-list"),

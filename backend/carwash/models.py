@@ -382,31 +382,65 @@ class Payment(CustomModelMixin):
     
 
 class CarWashUpdateRequest(CustomModelMixin):
-    car_wash = models.ForeignKey(CarWash, on_delete=models.CASCADE, related_name="pending_updates")
+    car_wash = models.ForeignKey(CarWash, on_delete=models.CASCADE, related_name="pending_updates", null=True, blank=True)
     proposed_changes = models.JSONField()
     submitted_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="car_wash_update_requests")
     approved = models.BooleanField(default=False)
     reviewed_at = models.DateTimeField(null=True, blank=True)
+    payment_method = models.CharField(max_length=250)
+    payment_handle = models.CharField(max_length=250)
+    payouts_status = models.CharField(max_length=50, default="PENDING", choices=[
+        ("PENDING", "Pending"),
+        ("COMPLETED", "Completed"),
+        ("FAILED", "Failed")
+    ])
+    rejected = models.BooleanField(default=False)
+    rejection_reason = models.TextField(null=True, blank=True)
 
     # once approved, it should be saved to car wash model
     def save(self, *args, **kwargs):
         try:
+            # Make Bounty InActive on create
+            if self.car_wash and not self.pk:
+                self.car_wash.active_bounty = False
+                self.car_wash.save()
+
             # Check if approved status changed to True
             existing_object = CarWashUpdateRequest.objects.filter(pk=self.pk).first()
             if existing_object and self.approved and (not existing_object.approved):
+                if self.rejected or existing_object.rejected:
+                    raise ValidationError("Cannot approve an update request that has been rejected.")
                 self.reviewed_at = timezone.now()
                 
                 # Update car wash with proposed changes
                 from .serializers import CarWashPostPatchSerializer
-                car_wash_serializer = CarWashPostPatchSerializer(self.car_wash, self.proposed_changes)
-                car_wash_serializer.save()
+                is_new = self.car_wash is None
+                if self.car_wash:
+                    car_wash_serializer = CarWashPostPatchSerializer(self.car_wash, self.proposed_changes, partial=True)
+                else:
+                    car_wash_serializer = CarWashPostPatchSerializer(data=self.proposed_changes)
+
+                if car_wash_serializer.is_valid(raise_exception=True):
+                    car_wash = car_wash_serializer.save()
+                    if is_new:
+                        self.car_wash = car_wash
+            
+            # Check if rejected status changed to True
+            if existing_object and self.rejected and (not existing_object.rejected):
+                self.reviewed_at = timezone.now()
+                if not self.rejection_reason:
+                    raise ValidationError("Rejection reason is required when rejecting the update request.")
+                # TO:DO send email to the user about rejection
+
+                self.car_wash.active_bounty = True
+                self.car_wash.save()
             
             super().save(*args, **kwargs)
         except Exception as e:
-            raise ValidationError("Could not approve the changes. Error: ", e)
+            raise ValidationError(f"Could not approve the changes. Error: {e}")
 
     def __str__(self):
-        return f"Update Request for {self.car_wash.car_wash_name}"
+        return f"Update Request by {self.submitted_by}"
 
     class Meta:
         verbose_name = "Car Wash Update Request"
