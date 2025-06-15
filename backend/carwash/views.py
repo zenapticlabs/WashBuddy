@@ -4,8 +4,8 @@ from drf_spectacular.types import OpenApiTypes
 from rest_framework import viewsets, status, generics
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from .models import CarWash, CarWashReview, WashType, Amenity, Offer, CarWashCode, Payment
-from .serializers import CarWashListSerializer, CarWashPostPatchSerializer, CarWashReviewListSerializer, CarWashReviewPostPatchSerializer, PaymentStatusSerializer, PreSignedUrlSerializer, WashTypeSerializer, AmenitySerializer, OfferSerializer, CarWashCodeSerializer, OfferCreatePatchSerializer, CarWashCodeCreatePatchSerializer, CarWashCodeUsageCreateSerializer, CreatePaymentIntentSerializer, UserPaymentHistorySerializer
+from .models import CarWash, CarWashReview, CarWashUpdateRequest, WashType, Amenity, Offer, CarWashCode, Payment
+from .serializers import CarWashListSerializer, CarWashPostPatchSerializer, CarWashReviewListSerializer, CarWashReviewPostPatchSerializer, CarWashUpdateRequestSerializer, PaymentStatusSerializer, PreSignedUrlSerializer, WashTypeSerializer, AmenitySerializer, OfferSerializer, CarWashCodeSerializer, OfferCreatePatchSerializer, CarWashCodeCreatePatchSerializer, CarWashCodeUsageCreateSerializer, CreatePaymentIntentSerializer, UserPaymentHistorySerializer
 from django.db.models import Q, Count
 from datetime import datetime
 from django.contrib.gis.geos import Point
@@ -23,11 +23,11 @@ from django.db.models import FloatField, Value
 from django.db import transaction
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError as DRFValidationError
 from django.db.models import Case, When, BooleanField, F
 from django.utils import timezone
 from . import utils
 import stripe
-from rest_framework.exceptions import AuthenticationFailed
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -42,17 +42,21 @@ class AmenityListAPIView(generics.ListAPIView):
 
 class CarWashCreateView(generics.CreateAPIView):
     serializer_class = CarWashPostPatchSerializer
-    permission_classes = [AllowAny] 
+    permission_classes = [IsAuthenticated] 
 
-class CarWashRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = CarWash.objects.all()
+    def perform_create(self, serializer):
+        data = {
+            "proposed_changes": serializer.data,
+            "submitted_by": self.request.user.id
+        }
+        serializer = CarWashUpdateRequestSerializer(data=data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+
+class CarWashRetrieveView(generics.RetrieveAPIView):
     permission_classes = [AllowAny]
     lookup_field = "id"
-
-    def get_serializer_class(self):
-        if self.request.method == "GET":
-            return CarWashListSerializer
-        return CarWashPostPatchSerializer
+    serializer_class = CarWashListSerializer
 
     @extend_schema(
         summary="Retrieve Car Wash",
@@ -62,16 +66,55 @@ class CarWashRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
 
+class CarWashUpdateView(generics.UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    lookup_field = "id"
+    serializer_class = CarWashPostPatchSerializer
+    queryset = CarWash.objects.all()
+
     @extend_schema(
         summary="Update Car Wash",
-        description="Update Car Wash details using PATCH",
+        description="Update Car Wash details",
         request=CarWashPostPatchSerializer,
-        responses={200: CarWashListSerializer}
+        responses={200}
     )
     @transaction.atomic
-    def patch(self, request, *args, **kwargs):
-        return super().patch(request, *args, **kwargs)
+    def perform_update(self, serializer):
+        try:
+            payment_method = self.request.data.pop("payment_method")
+            payment_handle = self.request.data.pop("payment_handle")
+        except KeyError:
+            raise DRFValidationError({
+                "error": "Payment method and handle are required."
+            })
+        except Exception as e:
+            raise DRFValidationError({
+                "error": f"An unexpected error occurred: {str(e)}"
+            })
 
+        data = {
+            "proposed_changes": self.request.data,
+            "submitted_by": self.request.user.id,
+            "car_wash": serializer.instance.id,
+            "payment_method": payment_method,
+            "payment_handle": payment_handle
+        }
+        serializer_data = CarWashUpdateRequestSerializer(data=data)
+        if serializer_data.is_valid(raise_exception=True):
+            if not serializer.instance.active_bounty:
+                raise DRFValidationError({
+                    "error": "Cannot update car wash without an active bounty."
+                })
+            # user can sumbit one request per day
+            existing_requests = CarWashUpdateRequest.objects.filter(
+                submitted_by=self.request.user,
+                created_at__gte=timezone.now() - timezone.timedelta(days=1),
+            )
+            if existing_requests.exists():
+                raise DRFValidationError({
+                    "error": "You have already submitted a request today."
+                })
+            serializer_data.save()
 
 class ListCarWashAPIView(DynamicFieldsViewMixin, ListAPIView):
     queryset = CarWash.active_objects.all().distinct()
