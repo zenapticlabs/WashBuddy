@@ -47,7 +47,9 @@ class CarWashCreateView(generics.CreateAPIView):
     def perform_create(self, serializer):
         data = {
             "proposed_changes": serializer.data,
-            "submitted_by": self.request.user.id
+            "submitted_by": self.request.user.id,
+            "payment_method": self.request.data.get("payment_method"),
+            "payment_handle": self.request.data.get("payment_handle")
         }
         serializer = CarWashUpdateRequestSerializer(data=data)
         if serializer.is_valid(raise_exception=True):
