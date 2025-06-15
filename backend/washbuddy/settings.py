@@ -194,7 +194,7 @@ STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET')
 FRONTEND_BASE_URL = os.getenv('FRONTEND_BASE_URL')
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'Your API',
+    'TITLE': 'WashBuddy API',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
     'SECURITY': [{'BearerAuth': []}],
