@@ -4,7 +4,7 @@ from django.contrib.gis.geos import Point
 from rest_framework_gis.serializers import GeoFeatureModelSerializer
 from .models import (
     CarWash, CarWashOperatingHours, CarWashImage, CarWashReview, CarWashReviewImage, Payment, 
-    WashType, Amenity, CarWashPackage, Offer, CarWashCode
+    WashType, Amenity, CarWashPackage, Offer, CarWashCode, CarWashUpdateRequest
 )
 from utilities.mixins import DynamicFieldsSerializerMixin
 from rest_framework_gis.fields import GeometryField
@@ -366,3 +366,9 @@ class UserPaymentHistorySerializer(DynamicFieldsSerializerMixin, serializers.Mod
             'offer_id', 'package_id', 'car_wash_id'
         ]
         read_only_fields = fields
+
+class CarWashUpdateRequestSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = CarWashUpdateRequest
+        fields = ['id', 'car_wash', 'proposed_changes', 'submitted_by', 'payment_method', 'payment_handle']

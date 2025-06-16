@@ -11,6 +11,7 @@ from import_export import resources
 from django import forms
 from unfold.widgets import UnfoldAdminSingleTimeWidget, UnfoldBooleanSwitchWidget
 from django.contrib.admin.widgets import AutocompleteSelect
+from django.contrib.admin import DateFieldListFilter
 
 from .models import (
     CarWash, 
@@ -22,7 +23,8 @@ from .models import (
     AmenityCarWashMapping,
     Offer,
     CarWashCode,
-    Payment
+    Payment,
+    CarWashUpdateRequest
 )
 
 @admin.register(WashType)
@@ -391,3 +393,21 @@ class PaymentAdmin(ModelAdmin):
             'created_by',
             'updated_by'
         )
+
+@admin.register(CarWashUpdateRequest)
+class CarWashUpdateRequestAdmin(ModelAdmin):
+    list_display = ('car_wash', 'submitted_by', 'approved', 'rejected', 'reviewed_at', 'created_at', 'updated_at', 'created_by', 'updated_by')
+    list_filter = (
+        'approved',
+        'rejected',
+        'payouts_status',
+        ('created_at', DateFieldListFilter)
+    )
+    search_fields = ('car_wash__car_wash_name', 'submitted_by__email', 'submitted_by__username')
+    readonly_fields = ('created_by', 'updated_by')
+
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.created_by = request.user
+        obj.updated_by = request.user
+        super().save_model(request, obj, form, change)
