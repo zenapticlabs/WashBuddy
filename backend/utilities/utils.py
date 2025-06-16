@@ -4,7 +4,9 @@ from rest_framework import (
 )
 from rest_framework.response import Response
 import threading
-from supabase import create_client, Client
+from supabase import create_client
+from django.core.mail import EmailMultiAlternatives
+from django.template import loader
 
 class ResponseInfo(object):
     """
@@ -52,3 +54,19 @@ class SupabaseSingleton:
                 if not cls._instance:
                     cls._instance = create_client(url, key)
         return cls._instance
+    
+
+def send_mail(subject_text, email_template_name,
+              context, from_email, to_emails_list, html_email_template_name=None):
+    """
+    Send a django.core.mail.EmailMultiAlternatives to `to_email`.
+    """
+    body = loader.render_to_string(email_template_name, context)
+
+    email_message = EmailMultiAlternatives(
+        subject_text, body, from_email, to_emails_list)
+    if html_email_template_name is not None:
+        html_email = loader.render_to_string(html_email_template_name, context)
+        email_message.attach_alternative(html_email, 'text/html')
+
+    email_message.send()

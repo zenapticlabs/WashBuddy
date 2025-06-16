@@ -5,12 +5,14 @@ from django.contrib.gis.geos import Point
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.auth.models import User
 
+from utilities.utils import send_mail
 from utilities.constants import IMAGE_TYPE_CHOICES
 from .managers import ActiveManager
 from utilities.mixins import CustomModelMixin
 from phonenumber_field.modelfields import PhoneNumberField
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from django.conf import settings
 
 class CarWash(CustomModelMixin):
     car_wash_name = models.CharField(max_length=255, db_index=True)
@@ -424,13 +426,39 @@ class CarWashUpdateRequest(CustomModelMixin):
                     car_wash = car_wash_serializer.save()
                     if is_new:
                         self.car_wash = car_wash
+                        
+                    # send email to the user about acceptance
+                    send_mail(
+                        subject_text='🎉 Your WashBuddy Bounty Submission is Approved!',
+                        email_template_name='bounty_acceptance.html',
+                        context={
+                            'user_name': self.submitted_by.first_name,
+                            'car_wash_name': self.car_wash.car_wash_name,
+                            'payment_info': self.payment_handle
+                        },
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        to_emails_list=[self.submitted_by.email],
+                        html_email_template_name='bounty_acceptance.html'
+                    )
             
             # Check if rejected status changed to True
             if existing_object and self.rejected and (not existing_object.rejected):
                 self.reviewed_at = timezone.now()
                 if not self.rejection_reason:
                     raise ValidationError("Rejection reason is required when rejecting the update request.")
-                # TO:DO send email to the user about rejection
+                # send email to the user about rejection
+                send_mail(
+                    subject_text='⚠️ Update on Your WashBuddy Bounty Submission',
+                    email_template_name='bounty_rejection.html',
+                    context={
+                        'user_name': self.submitted_by.first_name,
+                        'car_wash_name': self.car_wash.car_wash_name,
+                        'rejection_reason': self.rejection_reason
+                    },
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to_emails_list=[self.submitted_by.email],
+                    html_email_template_name='bounty_rejection.html'
+                )
 
                 self.car_wash.active_bounty = True
                 self.car_wash.save()
