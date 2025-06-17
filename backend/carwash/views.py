@@ -59,6 +59,7 @@ class CarWashRetrieveView(generics.RetrieveAPIView):
     permission_classes = [AllowAny]
     lookup_field = "id"
     serializer_class = CarWashListSerializer
+    queryset = CarWash.objects.all()
 
     @extend_schema(
         summary="Retrieve Car Wash",
