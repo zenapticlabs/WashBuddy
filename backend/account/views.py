@@ -8,7 +8,9 @@ from .serializers import SignInSerializer, SignUpSerializer, VerifyOtpSerializer
 from django.db import transaction
 from django.contrib.auth.models import User
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse, OpenApiExample
-
+import smtplib
+from email.mime.text import MIMEText
+from django.conf import settings
 
 class SignUpView(APIView):
 
@@ -402,3 +404,50 @@ class VerifyOtpView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
         
+
+class SendTestEmailView(APIView):
+
+    def post(self, request):
+        TO_EMAIL = request.data.get('to_email')
+
+        if not TO_EMAIL:
+            return Response(
+                {"error": "to_email is required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        output_response = ''
+        
+        msg = MIMEText("This is a test email sent from Python SMTP script.")
+        msg["Subject"] = "SMTP Test Email"
+        msg["From"] = settings.DEFAULT_FROM_EMAIL
+        msg["To"] = TO_EMAIL
+        
+        print("Trying SSL (port 465)...")
+        output_response += "Trying SSL (port 465)...   "
+        try:
+            with smtplib.SMTP_SSL(settings.EMAIL_HOST, 465) as server:
+                server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
+                server.sendmail(settings.DEFAULT_FROM_EMAIL, [TO_EMAIL], msg.as_string())
+                output_response += "Email sent successfully via SSL (465)!   "
+        except Exception as e:
+            print(f"SSL (465) failed: {e}")
+            output_response += f"SSL (465) failed: {e}  "
+
+        print("Trying TLS (port 587)...")
+        output_response += "Trying TLS (port 587)...   "
+        try:
+            with smtplib.SMTP(settings.EMAIL_HOST, 587) as server:
+                server.ehlo()
+                server.starttls()
+                server.login(settings.EMAIL_HOST_USER, settings.EMAIL_HOST_PASSWORD)
+                server.sendmail(settings.DEFAULT_FROM_EMAIL, [TO_EMAIL], msg.as_string())
+                output_response += "Email sent successfully via TLS (587)!   "
+        except Exception as e:
+            output_response += f"TLS (587) failed: {e}  "
+
+
+        return Response(
+            {"message": output_response},
+            status=status.HTTP_200_OK
+        )
