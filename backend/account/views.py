@@ -8,8 +8,6 @@ from .serializers import SignInSerializer, SignUpSerializer, VerifyOtpSerializer
 from django.db import transaction
 from django.contrib.auth.models import User
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse, OpenApiExample
-from django.core.mail import send_mail
-from django.conf import settings
 
 class SignUpView(APIView):
 
@@ -402,35 +400,3 @@ class VerifyOtpView(APIView):
                 {"error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-        
-
-class SendTestEmailView(APIView):
-
-    def post(self, request):
-        TO_EMAIL = request.data.get('to_email')
-
-        if not TO_EMAIL:
-            return Response(
-                {"error": "to_email is required"},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
-        # create a simple send_mail
-        try:
-            send_mail(
-                subject='Test Email from WashBuddy',
-                message='This is a test email sent from the WashBuddy application.',
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[TO_EMAIL],
-                fail_silently=False,
-            )
-        except Exception as e:
-            return Response(
-                {"error": f"Failed to send email: {str(e)}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-        return Response(
-            {"message": "Test email sent successfully"},
-            status=status.HTTP_200_OK
-        )
