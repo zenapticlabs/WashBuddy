@@ -396,7 +396,7 @@ class PaymentAdmin(ModelAdmin):
 
 @admin.register(CarWashUpdateRequest)
 class CarWashUpdateRequestAdmin(ModelAdmin):
-    list_display = ('car_wash', 'submitted_by', 'approved', 'rejected', 'reviewed_at', 'created_at', 'updated_at', 'created_by', 'updated_by')
+    list_display = ('car_wash', 'submitted_by', 'approved', 'rejected', 'reviewed_at', 'created_at', 'updated_at', 'updated_by')
     list_filter = (
         'approved',
         'rejected',
