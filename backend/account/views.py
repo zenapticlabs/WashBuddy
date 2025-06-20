@@ -8,6 +8,8 @@ from .serializers import SignInSerializer, SignUpSerializer, VerifyOtpSerializer
 from django.db import transaction
 from django.contrib.auth.models import User
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse, OpenApiExample
+from rest_framework.permissions import IsAuthenticated
+from django.utils import timezone
 
 class SignUpView(APIView):
 
@@ -400,3 +402,24 @@ class VerifyOtpView(APIView):
                 {"error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+class UserStatsView(APIView):
+    permission_classes = [IsAuthenticated] 
+
+    def get(self, request):
+        """
+        Retrieve user statistics including total car washes, reviews, and offers.
+        """
+        user = request.user
+        user_profile = UserProfile.objects.filter(user=user).first()
+        
+        if not user_profile:
+            return Response({"error": "User profile not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        stats = {
+            "total_car_wash_change_requests": user.car_wash_update_requests.count(),
+            "can_claim_bounty": not (user.car_wash_update_requests.filter(created_at__gte=timezone.now() - timezone.timedelta(days=1)).exists()),
+            "last_submitted_bounty_time": user.car_wash_update_requests.last().created_at if user.car_wash_update_requests.exists() else None
+        }
+        
+        return Response(stats, status=status.HTTP_200_OK)
