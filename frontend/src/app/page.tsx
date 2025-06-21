@@ -27,6 +27,7 @@ import { useHiddenOffer } from "@/hooks/useHiddenOffer";
 import OfferModal from "@/components/pages/main/OfferModal";
 import { getWashTypes } from "@/services/WashType";
 import { WashTypesProvider } from "@/contexts/WashTypesContext";
+import { getUserStats } from "@/services/AuthService";
 
 export default function Home() {
   const [washTypes, setWashTypes] = useState<IWashType[]>([]);

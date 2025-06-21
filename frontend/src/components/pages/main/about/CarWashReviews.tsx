@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Rate } from "@/components/ui/rate";
 import { RateCountBar } from "@/components/ui/RateCountBar";
 import { Separator } from "@/components/ui/separator";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import { ReviewsSummary } from "@/types";
 import { IReviewShow } from "@/types/Review";
 import { SlidersVertical, Star, TextSearch } from "lucide-react";

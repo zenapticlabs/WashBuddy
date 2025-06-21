@@ -36,7 +36,7 @@ export function CarOfferCard({ onClick, isSelected, data }: CarOfferCardProps) {
                 <MapPinIcon className="w-4 h-4 md:w-5 md:h-5 pr-1" />
                 <div>Purchase to reveal this carwash location!
                   <span className="px-1">·</span>
-                  Within {distance} miles
+                  Within 5 miles
                 </div>
               </div>
             </div>

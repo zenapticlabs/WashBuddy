@@ -17,7 +17,7 @@ import { useEffect, useState } from "react";
 import UploadedImageCard from "@/components/ui/uploadedImageCard";
 import { createReview } from "@/services/ReviewService";
 import { IReviewCreate, IReviewShow } from "@/types/Review";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import Image from "next/image";
 import ImageUploadZone from "@/components/ui/imageUploadZone";
 import { getPresignedUrl, uploadFile } from "@/services/UploadService";

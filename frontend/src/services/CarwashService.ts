@@ -1,10 +1,11 @@
+import axiosInstance from "@/lib/axios";
 import axios from "axios";
 
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export const createCarwash = async (formData: any) => {
   try {
-    const response = await axios.post(`${API_URL}/api/v1/carwash/create/`, formData);
+    const response = await axiosInstance.post(`${API_URL}/api/v1/carwash/create/`, formData);
     return response.data;
   } catch (error) {
     console.error("Error creating car wash:", error);
@@ -14,8 +15,8 @@ export const createCarwash = async (formData: any) => {
 
 export const updateCarwash = async (id: string, formData: any) => {
   try {
-    const response = await axios.patch(
-      `${API_URL}/api/v1/carwash/${id}/`,
+    const response = await axiosInstance.patch(
+      `${API_URL}/api/v1/carwash/update/${id}/`,
       formData
     );
     return response.data;
@@ -47,7 +48,7 @@ export const getCarwashes = async (filters: Record<string, any> = {}) => {
 
 export const getCarwashById = async (id: string) => {
   try {
-    const response = await axios.get(`${API_URL}/api/v1/carwash/${id}/`);
+    const response = await axiosInstance.get(`${API_URL}/api/v1/carwash/get/${id}/`);
     return response.data;
   } catch (error) {
     throw error;
