@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'django.contrib.gis',
     'carwash',
+    'account',
     'import_export',
     'drf_spectacular',
 ]
@@ -102,6 +103,16 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'washbuddy.wsgi.application'
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'account.authentication.SupabaseJWTAuthentication',
+    ],
+}
 
 
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -179,3 +190,30 @@ SUPABASE_SERVICE_ROLE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY')
 SUPABASE_URL = os.getenv('SUPABASE_URL')
 STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY')
 STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET')
+
+FRONTEND_BASE_URL = os.getenv('FRONTEND_BASE_URL')
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'WashBuddy API',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'SECURITY': [{'BearerAuth': []}],
+    'COMPONENTS': {
+        'securitySchemes': {
+            'BearerAuth': {
+                'type': 'http',
+                'scheme': 'bearer',
+                'bearerFormat': 'JWT',
+            }
+        }
+    }
+}
+
+# Email Configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.zoho.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
