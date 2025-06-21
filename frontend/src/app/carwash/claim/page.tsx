@@ -35,9 +35,10 @@ import SelfServiceIcon from "@/assets/icons/self-service.svg";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { IAmenity } from "@/types";
 import { getAmenities } from "@/services/AmenityService";
-// import VenmoIcon from "@/assets/payment-icons/venmo.svg";
-// import PayPalIcon from "@/assets/payment-icons/paypal.svg";
-// import CashAppIcon from "@/assets/payment-icons/cashapp.svg";
+import VenmoIcon from "@/assets/payment-icons/venmo.svg";
+import PayPalIcon from "@/assets/payment-icons/paypal.svg";
+import CashAppIcon from "@/assets/payment-icons/cashapp.svg";
+import { formatTimeAgo, generatePatchData } from "@/utils/functions";
 
 const UploadFormConfig = [
     {
@@ -68,11 +69,11 @@ const CarWashContent = () => {
     const [isLoading, setIsLoading] = useState(false);
     const { locationData, fetchLocationData } = useLocationData();
     const [locationLoading, setLocationLoading] = useState(false);
-    const [isEdit, setIsEdit] = useState(false);
     const [address, setAddress] = useState<any>(null);
     const [errorMessage, setErrorMessage] = useState<any>(null);
     const [formData, setFormData] = useState<any>(DEFAULT_PAYLOAD);
     const [fetchLoading, setFetchLoading] = useState(true);
+    const [originalData, setOriginalData] = useState<any>(null);
     const [originalImages, setOriginalImages] = useState<any>([]);
     const [knowHours, setKnowHours] = useState(true);
     const [knowPhone, setKnowPhone] = useState(false);
@@ -96,7 +97,6 @@ const CarWashContent = () => {
             setAmenitiesLoading(false);
         });
     }, []);
-    useEffect(() => { }, [locationData]);
 
     useEffect(() => {
         if (locationData) {
@@ -105,38 +105,40 @@ const CarWashContent = () => {
     }, [locationData]);
 
     useEffect(() => {
-        if (carwashId) {
-            setFetchLoading(true);
-            getCarwashById(carwashId)
-                .then((data) => {
-                    const modifiedData = {
-                        ...data,
-                        packages: data.packages.map(
-                            (pkg: { id: number; wash_types: any[] }) => ({
-                                ...pkg,
-                                wash_types: pkg.wash_types.map(
-                                    (wash_type: any) => wash_type.id
-                                ),
-                            })
-                        ),
-                        amenities: data.amenities.map((amenity: any) => amenity.id),
-                    };
-                    if (modifiedData.phone) {
-                        setKnowPhone(true);
-                    }
-                    setFormData(modifiedData);
-                    setOriginalImages(modifiedData.images);
-                    setIsEdit(true);
-                    setFetchLoading(false);
-                })
-                .catch((error: any) => {
-                    toast.error(error?.message || "Error fetching car wash by id");
-                    router.push("/carwash");
-                    setFetchLoading(false);
-                });
-        } else {
-            setFetchLoading(false);
+        if (!carwashId) {
+            toast.error("No car wash ID provided");
+            router.push("/carwash");
+            return;
         }
+
+        setFetchLoading(true);
+        getCarwashById(carwashId)
+            .then((data) => {
+                const modifiedData = {
+                    ...data,
+                    packages: data.packages.map(
+                        (pkg: { id: number; wash_types: any[] }) => ({
+                            ...pkg,
+                            wash_types: pkg.wash_types.map(
+                                (wash_type: any) => wash_type.id
+                            ),
+                        })
+                    ),
+                    amenities: data.amenities.map((amenity: any) => amenity.id),
+                };
+                if (modifiedData.phone) {
+                    setKnowPhone(true);
+                }
+                setOriginalData(modifiedData);
+                setFormData(modifiedData);
+                setOriginalImages(modifiedData.images);
+                setFetchLoading(false);
+            })
+            .catch((error: any) => {
+                toast.error(error?.message || "Error fetching car wash by id");
+                router.push("/carwash");
+                setFetchLoading(false);
+            });
     }, [carwashId]);
 
     const handleChangeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -251,12 +253,6 @@ const CarWashContent = () => {
             isValid = false;
         }
 
-        // Validate location for new carwash
-        if (!isEdit && !address) {
-            errors.location = "Please enter a valid address";
-            isValid = false;
-        }
-
         setErrorMessage(errors);
         return isValid;
     };
@@ -275,39 +271,32 @@ const CarWashContent = () => {
             }
 
             setIsLoading(true);
-            let payload = { ...DEFAULT_PAYLOAD, ...formData };
-            if (!isEdit) {
-                payload = { ...payload, ...address };
-            }
+            let currentData = { ...DEFAULT_PAYLOAD, ...formData };
+            currentData = handleFilterOperatingHours(currentData);
+            currentData = handleFilterPhone(currentData);
 
-            payload = handleFilterOperatingHours(payload);
-            payload = handleFilterPhone(payload);
-            payload = { ...payload, payment_method: paymentMethod, payment_handle: paymentHandle };
-
-            if (isEdit) {
-                await updateCarwash(carwashId || "", payload);
-            } else {
-                await createCarwash(payload);
-            }
-            toast.success(
-                isEdit
-                    ? "Car wash updated successfully!"
-                    : "Car wash created successfully!"
-            );
-            handleNavigateDashboard();
-        } catch (error) {
-            toast.error(
-                isEdit
-                    ? "Failed to update car wash. Please try again."
-                    : "Failed to create car wash. Please try again.",
+            // Generate patch data with only modified fields
+            const patchData = generatePatchData(
+                currentData,
+                originalData,
                 {
-                    style: {
-                        backgroundColor: "#dc2626",
-                        color: "white",
-                        border: "none",
-                    },
+                    payment_method: paymentMethod,
+                    payment_handle: paymentHandle
                 }
             );
+
+            await updateCarwash(carwashId || "", patchData);
+            console.log(patchData);
+            toast.success("Car wash updated successfully!");
+            handleNavigateDashboard();
+        } catch (error: any) {
+            toast.error(error.response.data.error || "Failed to update car wash. Please try again.", {
+                style: {
+                    backgroundColor: "#dc2626",
+                    color: "white",
+                    border: "none",
+                },
+            });
         } finally {
             setIsLoading(false);
         }
@@ -446,21 +435,21 @@ const CarWashContent = () => {
                         className={`p-4 border rounded-lg cursor-pointer flex flex-col items-center ${paymentMethod === 'venmo' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}`}
                         onClick={() => setPaymentMethod('venmo')}
                     >
-                        {/* <Image src={VenmoIcon} alt="Venmo" width={40} height={40} /> */}
+                        <Image src={VenmoIcon} alt="Venmo" width={40} height={40} />
                         <span className="mt-2 text-sm">Venmo</span>
                     </div>
                     <div 
                         className={`p-4 border rounded-lg cursor-pointer flex flex-col items-center ${paymentMethod === 'cashapp' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}`}
                         onClick={() => setPaymentMethod('cashapp')}
                     >
-                        {/* <Image src={CashAppIcon} alt="CashApp" width={40} height={40} /> */}
+                        <Image src={CashAppIcon} alt="CashApp" width={40} height={40} />
                         <span className="mt-2 text-sm">CashApp</span>
                     </div>
                     <div 
                         className={`p-4 border rounded-lg cursor-pointer flex flex-col items-center ${paymentMethod === 'paypal' ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}`}
                         onClick={() => setPaymentMethod('paypal')}
                     >
-                        {/* <Image src={PayPalIcon} alt="PayPal" width={40} height={40} /> */}
+                        <Image src={PayPalIcon} alt="PayPal" width={40} height={40} />
                         <span className="mt-2 text-sm">PayPal</span>
                     </div>
                 </div>
@@ -470,7 +459,7 @@ const CarWashContent = () => {
                     <div className="relative">
                         <Wallet2 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
                         <Input
-                            className="pl-10"
+                            className="pl-10 py-2.5"
                             placeholder={`Enter your ${paymentMethod} handle`}
                             value={paymentHandle}
                             onChange={(e) => setPaymentHandle(e.target.value)}
@@ -514,7 +503,7 @@ const CarWashContent = () => {
                             {currentStep === 2 && (
                                 <>
                                     <div className="w-full md:w-[750px] mx-auto text-headline-2 text-neutral-900 py-4 px-6">
-                                        {isEdit ? "Edit Carwash" : "Create Carwash"}
+                                        Edit Carwash
                                     </div>
                                     <ScrollArea className="w-full h-[calc(100vh-70px)] overflow-auto">
                                         <div className="w-full md:w-[750px] mx-auto">

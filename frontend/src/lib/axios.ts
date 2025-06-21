@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -13,12 +14,13 @@ const axiosInstance = axios.create({
 // Add a request interceptor
 axiosInstance.interceptors.request.use(
   async (config) => {
-    const session = JSON.parse(localStorage.getItem('session') || '{}');
-
-    if (session.access_token) {
+    const supabase = createClientComponentClient();
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (session?.access_token) {
       config.headers.Authorization = `Bearer ${session.access_token}`;
     }
-
+    
     return config;
   },
   (error) => {

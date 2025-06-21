@@ -1,12 +1,13 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { Session, User } from "@supabase/supabase-js";
-import { signIn, signUpWithOTP, verifyOTP } from "@/services/AuthService";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { User } from "@supabase/supabase-js";
+import { getUserStats } from "@/services/AuthService";
+
 
 type AuthContextType = {
   user: User | null;
-  session: Session | null;
   loading: boolean;
   signUpWithOtp: (
     email: string,
@@ -28,24 +29,26 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const supabase = createClientComponentClient();
 
   useEffect(() => {
+    // Check active sessions and sets the user
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
 
-    const user = localStorage.getItem('user');
-    const session = localStorage.getItem('session');
-    if (user) {
-      setUser(JSON.parse(user));
-    }
-    if (session) {
-      const savedSession = JSON.parse(session);
-      setSession(savedSession);
-    }
+    // Listen for changes on auth state (logged in, signed out, etc.)
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      setLoading(false);
+    });
 
-    setLoading(false);
+    return () => subscription.unsubscribe();
   }, []);
-
 
   const signUpWithOtp = async (
     email: string,
@@ -54,7 +57,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     lastName: string
   ) => {
     try {
-      const { error } = await signUpWithOTP(email, password, firstName, lastName);
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            firstName,
+            lastName,
+          },
+        },
+      });
       return { error };
     } catch (error) {
       return { error: error as Error };
@@ -63,7 +75,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithOtp = async (email: string) => {
     try {
-      const { error } = await signIn(email, 'otp');
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
       return { error };
     } catch (error) {
       return { error: error as Error };
@@ -72,60 +89,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signinWithPassword = async (email: string, password: string) => {
     try {
-      const { user, session, error } = await signIn(email, 'password', password);
-
-      if (user && session) {
-        localStorage.setItem('user', JSON.stringify(user));
-        localStorage.setItem('session', JSON.stringify(session));
-        setUser(user);
-        setSession(session);
-      }
-
-      return { user, session, error };
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      return { error };
     } catch (error) {
       return { error: error as Error };
     }
   };
 
   const verifyOtp = async (email: string, token: string) => {
-    const { user, session, error } = await verifyOTP(email, token);
-    if (user && session) {
-      localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('session', JSON.stringify(session));
-      setUser(user);
-      setSession(session);
+    try {
+      const { error } = await supabase.auth.verifyOtp({
+        email,
+        token,
+        type: "email",
+      });
+      return { error };
+    } catch (error) {
+      return { error: error as Error };
     }
-    return { user, session, error };
   };
 
   const signInWithGoogle = async () => {
     try {
-      const { error, response } = await signIn('', 'google');
-      if (error) {
-        return { error };
-      }
-      
-      if (response?.url) {
-        // Redirect to the Google OAuth URL
-        window.location.href = response.url;
-      }
-      
-      return { error: null };
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      return { error };
     } catch (error) {
       return { error: error as Error };
     }
   };
 
   const signOut = async () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('session');
-    setUser(null);
-    setSession(null);
+    await supabase.auth.signOut();
   };
 
   const value = {
     user,
-    session,
     loading,
     signUpWithOtp,
     signInWithOtp,
@@ -145,3 +151,4 @@ export const useAuth = () => {
   }
   return context;
 };
+

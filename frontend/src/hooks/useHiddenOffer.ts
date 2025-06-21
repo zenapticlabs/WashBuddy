@@ -12,22 +12,23 @@ export function useHiddenOffer(filters: FilterState) {
   }, [filters.userLat, filters.userLng, filters.distance]);
 
   const fetchData = async () => {
-    setIsLoading(
-      // Sort by price first, then by radius
-      const sortedOffers = hOffers.sort((a: ICarOffer, b: ICarOffer) => {
-        // First compare by price
-        const priceComparison = parseFloat(a.offer_price) - parseFloat(b.offer_price);
-        // If prices are equal, compare by radius
-        if (priceComparison === 0) {
-          return parseFloat(a.radius_miles) - parseFloat(b.radius_miles);
-        }
-        return priceComparison;
-      });
+    setIsLoading(true);
+    const hOffers = await getOffers(filters.userLat, filters.userLng);
+    setOffers(hOffers);
+    // Sort by price first, then by radius
+    const sortedOffers = hOffers.sort((a: ICarOffer, b: ICarOffer) => {
+      // First compare by price
+      const priceComparison = parseFloat(a.offer_price) - parseFloat(b.offer_price);
+      // If prices are equal, compare by radius
+      if (priceComparison === 0) {
+        return parseFloat(a.radius_miles) - parseFloat(b.radius_miles);
+      }
+      return priceComparison;
+    });
 
-      setHiddenOffer(sortedOffers[0]);
-    }
+    setHiddenOffer(sortedOffers[0]);
     setIsLoading(false);
-  };
+  }
 
   return { hiddenOffer, isLoading, offers };
 } 

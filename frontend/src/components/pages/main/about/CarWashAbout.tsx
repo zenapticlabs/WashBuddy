@@ -9,6 +9,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import MoneyIcon from "@/assets/money-with-wings.svg";
+import { getUserStats } from "@/services/AuthService";
 
 
 const emptyImageURL =
@@ -82,6 +84,28 @@ export default function CarWashAbout({ data }: { data: CarWashResponse }) {
     router.push(`/carwash?id=${data.id}`);
   }
 
+  const handleClaimBounty = async () => {
+    if (!user) {
+      toast({
+        title: "Please login to claim the bounty",
+        description: "Login to claim the bounty and earn 25 points",
+        variant: "destructive",
+        action: <Button variant="destructive" className="border border-white" onClick={() => router.push("/login")}>Login</Button>
+      })
+      return;
+    }
+    const userStats = await getUserStats();
+    if (userStats.can_claim_bounty) {
+      router.push(`/carwash/claim?id=${data.id}`);
+    } else {
+      toast({
+        title: "You have already claimed the bounty today",
+        description: "You can claim the bounty once per day",
+        variant: "destructive",
+      })
+    }
+  }
+
   return (
     <>
       <div className="flex flex-col gap-3">
@@ -99,31 +123,57 @@ export default function CarWashAbout({ data }: { data: CarWashResponse }) {
           <div className="absolute right-0 top-0 h-full w-12 bg-gradient-to-r from-transparent to-white" />
         </div>
         <Separator />
-        <div className="p-3 border border-neutral-100 rounded-xl">
-          <div className="flex items-center justify-between w-full flex-wrap gap-2">
-            <div className="flex items-center gap-2">
-              <div className="bg-accent-yellow w-6 h-6 rounded-full flex items-center justify-center">
-                <Star className="w-4 h-4 text-white" />
+        {
+          data.packages.length > 0 ? (
+            <div className="p-3 border border-neutral-100 rounded-xl">
+              <div className="flex items-center justify-between w-full flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="bg-accent-yellow w-6 h-6 rounded-full flex items-center justify-center">
+                    <Star className="w-4 h-4 text-white" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-body-2 text-neutral-900">+ 25 Points</span>
+                    <span className="w-4 h-4 border text-xs border-neutral-200 text-neutral-200 rounded-full flex items-center justify-center">
+                      i
+                    </span>
+                  </div>
+                </div>
+                <Button
+                  onClick={handleNavigateEditPage}
+                  className="bg-blue-500 text-title-2 text-white rounded-md px-4 py-2"
+                >
+                  Update Info
+                </Button>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-body-2 text-neutral-900">+ 25 Points</span>
-                <span className="w-4 h-4 border text-xs border-neutral-200 text-neutral-200 rounded-full flex items-center justify-center">
-                  i
-                </span>
+              <div className="text-body-3 text-neutral-500 pt-2">
+                Wrong price? New photos? Upload a photo – earn points towards a free
+                car wash! 🚗✨
               </div>
             </div>
-            <Button
-              onClick={handleNavigateEditPage}
-              className="bg-blue-500 text-title-2 text-white rounded-md px-4 py-2"
-            >
-              Update Info
-            </Button>
-          </div>
-          <div className="text-body-3 text-neutral-500 pt-2">
-            Wrong price? New photos? Upload a photo – earn points towards a free
-            car wash! 🚗✨
-          </div>
-        </div>
+          ) : (
+            <div className="p-3 border border-neutral-100 rounded-xl">
+              <div className="flex items-center justify-between w-full flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <Image src={MoneyIcon} alt="Money Icon" className="w-6 h-6" />
+                  <div className="flex flex-col gap-1">
+                    <span className="text-body-2 text-neutral-900">WashBuddy Bounty</span>
+                    <span className="text-body-3 text-neutral-500">Get a Car Wash for Just $3!</span>
+                  </div>
+                </div>
+                <Button
+                  onClick={handleClaimBounty}
+                  className="bg-blue-500 text-title-2 text-white rounded-md px-4 py-2"
+                >
+                  Claim
+                </Button>
+              </div>
+              <div className="text-body-3 text-neutral-500 pt-2">
+                Help us build the ultimate car wash map — and get your next wash nearly free.
+              </div>
+            </div>
+          )
+        }
+
         <Separator />
         <div className="text-title-2 text-neutral-500 py-1">Photos</div>
         <div className="grid grid-cols-4 gap-2">

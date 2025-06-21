@@ -1,4 +1,5 @@
 import axios from "axios";
+import axiosInstance from "@/lib/axios";
 
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
@@ -30,6 +31,16 @@ export const signUpWithOTP = async (email: string, password: string, firstName: 
         return response.data;
     } catch (error) {
         console.error("Error during sign up:", error);
+        throw error;
+    }
+};
+
+export const getUserStats = async () => {
+    try {
+        const response = await axiosInstance.get('/api/v1/accounts/userStats/');
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching user stats:", error);
         throw error;
     }
 };

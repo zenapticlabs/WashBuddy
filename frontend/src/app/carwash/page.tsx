@@ -35,6 +35,7 @@ import SelfServiceIcon from "@/assets/icons/self-service.svg";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { IAmenity } from "@/types";
 import { getAmenities } from "@/services/AmenityService";
+import { formatTimeAgo, generatePatchData } from "@/utils/functions";
 
 const UploadFormConfig = [
   {
@@ -69,6 +70,7 @@ const CarWashContent = () => {
   const [address, setAddress] = useState<any>(null);
   const [errorMessage, setErrorMessage] = useState<any>(null);
   const [formData, setFormData] = useState<any>(DEFAULT_PAYLOAD);
+  const [originalData, setOriginalData] = useState<any>(null);
   const [fetchLoading, setFetchLoading] = useState(true);
   const [originalImages, setOriginalImages] = useState<any>([]);
   const [knowHours, setKnowHours] = useState(true);
@@ -119,6 +121,7 @@ const CarWashContent = () => {
             setKnowPhone(true);
           }
           setFormData(modifiedData);
+          setOriginalData(modifiedData);
           setOriginalImages(modifiedData.images);
           setIsEdit(true);
           setFetchLoading(false);
@@ -264,33 +267,42 @@ const CarWashContent = () => {
       }
 
       setIsLoading(true);
-      let payload = { ...DEFAULT_PAYLOAD, ...formData };
+      let currentData = { ...DEFAULT_PAYLOAD, ...formData };
+      
       if (!isEdit) {
-        payload = { ...payload, ...address };
-      }
-
-      payload = handleFilterOperatingHours(payload);
-      payload = handleFilterPhone(payload);
-
-      if (isEdit) {
-        await updateCarwash(carwashId || "", payload);
+        // For new carwash, include all data including address
+        currentData = { ...currentData, ...address };
+        currentData = handleFilterOperatingHours(currentData);
+        currentData = handleFilterPhone(currentData);
+        await createCarwash(currentData);
       } else {
-        await createCarwash(payload);
+        // For updates, only send modified data
+        currentData = handleFilterOperatingHours(currentData);
+        currentData = handleFilterPhone(currentData);
+        
+        // Generate patch data with only modified fields
+        const patchData = generatePatchData(currentData, originalData);
+        
+        // Only make the API call if there are changes
+        if (Object.keys(patchData).length > 0) {
+          await updateCarwash(carwashId || "", patchData);
+        }
       }
+
       toast.success(
         isEdit
           ? "Car wash updated successfully!"
           : "Car wash created successfully!"
       );
       handleNavigateDashboard();
-    } catch (error) {
+    } catch (error: any) {
       toast.error(
         isEdit
           ? "Failed to update car wash. Please try again."
           : "Failed to create car wash. Please try again.",
         {
           style: {
-            backgroundColor: "#dc2626", // red-600
+            backgroundColor: "#dc2626",
             color: "white",
             border: "none",
           },
