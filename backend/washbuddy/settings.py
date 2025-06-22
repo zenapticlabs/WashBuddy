@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'account',
     'import_export',
     'drf_spectacular',
+    'django_json_widget',
 ]
 
 REST_FRAMEWORK = {

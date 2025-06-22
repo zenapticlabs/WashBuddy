@@ -12,6 +12,8 @@ from django import forms
 from unfold.widgets import UnfoldAdminSingleTimeWidget, UnfoldBooleanSwitchWidget
 from django.contrib.admin.widgets import AutocompleteSelect
 from django.contrib.admin import DateFieldListFilter
+from django.db.models import JSONField
+from django_json_widget.widgets import JSONEditorWidget
 
 from .models import (
     CarWash, 
@@ -405,6 +407,9 @@ class CarWashUpdateRequestAdmin(ModelAdmin):
     )
     search_fields = ('car_wash__car_wash_name', 'submitted_by__email', 'submitted_by__username')
     readonly_fields = ('created_by', 'updated_by')
+    formfield_overrides = {
+        JSONField: {'widget': JSONEditorWidget},
+    }
 
     def save_model(self, request, obj, form, change):
         if not change:
