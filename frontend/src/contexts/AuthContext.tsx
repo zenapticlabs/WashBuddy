@@ -3,6 +3,8 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { User } from "@supabase/supabase-js";
+import { getUserStats } from "@/services/AuthService";
+
 
 type AuthContextType = {
   user: User | null;
@@ -149,3 +151,4 @@ export const useAuth = () => {
   }
   return context;
 };
+
