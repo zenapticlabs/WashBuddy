@@ -37,3 +37,20 @@ def handle_user_meta_data(authorization_header):
         raise AuthenticationFailed('Invalid token')
     except Exception as e:
         raise AuthenticationFailed(str(e))
+
+class FakeQuerySet:
+    def __init__(self, instances):
+        self._instances = instances
+        self.ordered = False
+
+    def __iter__(self):
+        return iter(self._instances)
+
+    def __len__(self):
+        return len(self._instances)
+
+    def order_by(self, *args, **kwargs):
+        return self  
+
+    def __getitem__(self, item):
+        return self._instances[item]

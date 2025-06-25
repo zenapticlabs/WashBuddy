@@ -49,6 +49,7 @@ CSRF_TRUSTED_ORIGINS = [
 INSTALLED_APPS = [
     'unfold',
     'unfold.contrib.import_export',
+    'unfold.contrib.inlines',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
