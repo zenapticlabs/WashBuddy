@@ -49,6 +49,7 @@ CSRF_TRUSTED_ORIGINS = [
 INSTALLED_APPS = [
     'unfold',
     'unfold.contrib.import_export',
+    'unfold.contrib.inlines',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -64,7 +65,6 @@ INSTALLED_APPS = [
     'account',
     'import_export',
     'drf_spectacular',
-    'django_json_widget',
 ]
 
 REST_FRAMEWORK = {

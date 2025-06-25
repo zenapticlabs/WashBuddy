@@ -1,4 +1,6 @@
+from copy import deepcopy
 from django.contrib import admin
+from .utils import FakeQuerySet
 from unfold.admin import ModelAdmin
 from import_export.admin import ImportExportModelAdmin
 from unfold.contrib.import_export.forms import ExportForm, ImportForm
@@ -12,8 +14,9 @@ from django import forms
 from unfold.widgets import UnfoldAdminSingleTimeWidget, UnfoldBooleanSwitchWidget
 from django.contrib.admin.widgets import AutocompleteSelect
 from django.contrib.admin import DateFieldListFilter
-from django.db.models import JSONField
-from django_json_widget.widgets import JSONEditorWidget
+from django.contrib.gis.geos import Point
+from .forms import CarWashForm, CarWashImageForm, CarWashOperatingHoursForm, CarWashPackageForm
+from unfold.contrib.inlines.admin import NonrelatedStackedInline
 
 from .models import (
     CarWash, 
@@ -396,6 +399,146 @@ class PaymentAdmin(ModelAdmin):
             'updated_by'
         )
 
+class ProposedCarWashInline(NonrelatedStackedInline):
+    model = CarWash
+    collapsible = True
+    extra = 0
+    can_delete = False
+    show_change_link = False
+    form = CarWashForm
+    hide_title = True
+
+    def get_form_queryset(self, obj):
+        """
+        Gets all nonrelated objects needed for inlines. Method must be implemented.
+        """
+        proposed_changes = deepcopy(obj.proposed_changes)
+        location = proposed_changes.pop('location', None)
+        new_location = None
+        if location:
+            new_location = Point(location['coordinates'][0], location['coordinates'][1], srid=4326)
+        
+        proposed_changes.pop('images', None)
+        proposed_changes.pop('packages', None)
+        proposed_changes.pop('amenities', None)
+        proposed_changes.pop('operating_hours', None)
+
+        queryset = []
+        if len(list(proposed_changes.keys())) > 0 or location:
+            car_wash_object = self.model(
+                **proposed_changes,
+                location=new_location,
+            )
+            queryset.append(car_wash_object)
+        qs = FakeQuerySet(queryset)
+        return qs
+
+    def save_new_instance(self, parent, instance):
+        """
+        Extra save method which can for example update inline instances based on current
+        main model object. Method must be implemented.
+        """
+        print("Saving new instance for ProposedCarWashInline", flush=True)
+        pass
+
+
+class ProposedOperatingHoursInline(NonrelatedStackedInline):
+    model = CarWashOperatingHours
+    collapsible = True
+    extra = 0
+    can_delete = False
+    show_change_link = False
+    form = CarWashOperatingHoursForm
+    hide_title = True
+
+    def get_form_queryset(self, obj):
+        """
+        Gets all nonrelated objects needed for inlines. Method must be implemented.
+        """
+        proposed_changes = deepcopy(obj.proposed_changes)
+        operating_hours = proposed_changes.pop('operating_hours', [])
+
+        query_objects = []
+        for operating_hour in operating_hours:
+            car_wash_operating_hours_object = self.model(
+                **operating_hour,
+            )
+            query_objects.append(car_wash_operating_hours_object)
+        qs = FakeQuerySet(query_objects)
+        return qs
+
+    def save_new_instance(self, parent, instance):
+        """
+        Extra save method which can for example update inline instances based on current
+        main model object. Method must be implemented.
+        """
+        pass
+
+class ProposedImagesInline(NonrelatedStackedInline):
+    model = CarWashImage
+    collapsible = True
+    extra = 0
+    can_delete = False
+    show_change_link = False
+    form = CarWashImageForm
+    hide_title = True
+
+    def get_form_queryset(self, obj):
+        """
+        Gets all nonrelated objects needed for inlines. Method must be implemented.
+        """
+        proposed_changes = deepcopy(obj.proposed_changes)
+        images = proposed_changes.pop('images', [])
+
+        query_objects = []
+        for image_obj in images:
+            car_wash_images_object = self.model(
+                **image_obj,
+            )
+            query_objects.append(car_wash_images_object)
+        qs = FakeQuerySet(query_objects)
+        return qs
+
+    def save_new_instance(self, parent, instance):
+        """
+        Extra save method which can for example update inline instances based on current
+        main model object. Method must be implemented.
+        """
+        pass
+
+class ProposedPackagesInline(NonrelatedStackedInline):
+    model = CarWashPackage
+    collapsible = True
+    extra = 0
+    can_delete = False
+    show_change_link = False
+    form = CarWashPackageForm
+    hide_title = True
+
+    def get_form_queryset(self, obj):
+        """
+        Gets all nonrelated objects needed for inlines. Method must be implemented.
+        """
+        proposed_changes = deepcopy(obj.proposed_changes)
+        packages = proposed_changes.pop('packages', [])
+
+        query_objects = []
+        for package_obj in packages:
+            package_obj.pop('wash_types', [])
+            car_wash_packages_object = self.model(
+                **package_obj
+            )
+            query_objects.append(car_wash_packages_object)
+        qs = FakeQuerySet(query_objects)
+        return qs
+
+    def save_new_instance(self, parent, instance):
+        """
+        Extra save method which can for example update inline instances based on current
+        main model object. Method must be implemented.
+        """
+        pass
+
 @admin.register(CarWashUpdateRequest)
 class CarWashUpdateRequestAdmin(ModelAdmin):
     list_display = ('car_wash', 'submitted_by', 'approved', 'rejected', 'reviewed_at', 'created_at', 'updated_at', 'updated_by')
@@ -407,9 +550,7 @@ class CarWashUpdateRequestAdmin(ModelAdmin):
     )
     search_fields = ('car_wash__car_wash_name', 'submitted_by__email', 'submitted_by__username')
     readonly_fields = ('created_by', 'updated_by')
-    formfield_overrides = {
-        JSONField: {'widget': JSONEditorWidget},
-    }
+    inlines = [ProposedCarWashInline, ProposedOperatingHoursInline, ProposedImagesInline, ProposedPackagesInline]
 
     def save_model(self, request, obj, form, change):
         if not change:
