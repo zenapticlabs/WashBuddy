@@ -1,8 +1,14 @@
 from django import forms
-from .models import Amenity, CarWashImage, CarWashOperatingHours, CarWashPackage, CarWashUpdateRequest, CarWash
-from unfold.widgets import UnfoldAdminTextInputWidget, UnfoldAdminDecimalFieldWidget
+from .models import CarWashImage, CarWashOperatingHours, CarWashPackage, CarWash, CarWashUpdateRequest
+from unfold.widgets import UnfoldAdminDecimalFieldWidget
 from django.contrib.gis.geos import Point
 
+
+class CarWashUpdateRequestForm(forms.ModelForm):
+
+    class Meta:
+        model = CarWashUpdateRequest
+        exclude = ('proposed_changes', )
 
 class CarWashForm(forms.ModelForm):
     latitude = forms.FloatField(required=False, widget=UnfoldAdminDecimalFieldWidget())

@@ -15,7 +15,7 @@ from unfold.widgets import UnfoldAdminSingleTimeWidget, UnfoldBooleanSwitchWidge
 from django.contrib.admin.widgets import AutocompleteSelect
 from django.contrib.admin import DateFieldListFilter
 from django.contrib.gis.geos import Point
-from .forms import CarWashForm, CarWashImageForm, CarWashOperatingHoursForm, CarWashPackageForm
+from .forms import CarWashForm, CarWashImageForm, CarWashOperatingHoursForm, CarWashPackageForm, CarWashUpdateRequestForm
 from unfold.contrib.inlines.admin import NonrelatedStackedInline
 
 from .models import (
@@ -550,6 +550,7 @@ class CarWashUpdateRequestAdmin(ModelAdmin):
     )
     search_fields = ('car_wash__car_wash_name', 'submitted_by__email', 'submitted_by__username')
     readonly_fields = ('created_by', 'updated_by')
+    form = CarWashUpdateRequestForm
     inlines = [ProposedCarWashInline, ProposedOperatingHoursInline, ProposedImagesInline, ProposedPackagesInline]
 
     def save_model(self, request, obj, form, change):
