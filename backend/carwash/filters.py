@@ -70,12 +70,15 @@ class ListCarWashFilter(django_filters.FilterSet):
     userLat = django_filters.NumberFilter(method="filter_user_location", label="User's search Latitude")
     userLng = django_filters.NumberFilter(method="filter_user_location", label="User's search Longitude")
     distance = django_filters.NumberFilter(method="get_nearest_shops", label="Distance in miles of radius")
+    offers = django_filters.BaseInFilter(field_name="packages__offer__offer_type", lookup_expr='in')
+    active_bounty = django_filters.BooleanFilter(field_name="active_bounty", label="Active Bounty")
     
     class Meta:
         model = CarWash
         fields = ("carWashName", "country", "countryCode", "state", "city", "stateCode", "reviewsCount", 
                   "automaticCarWash", "selfServiceCarWash", "open24Hours", "verified", "washTypeName", 
-                  "washTypeSubClass", "washTypeCategory", "amenityName", "amenityCategory", "distance", "sortBy")
+                  "washTypeSubClass", "washTypeCategory", "amenityName", "amenityCategory", "distance",
+                  "sortBy", "offers", "active_bounty")
         
     def filter_user_location(self, queryset, name, value):
         return queryset
