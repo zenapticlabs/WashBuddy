@@ -4,8 +4,8 @@ from drf_spectacular.types import OpenApiTypes
 from rest_framework import viewsets, status, generics
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from .models import CarWash, CarWashReview, WashType, Amenity, Offer, CarWashCode, Payment
-from .serializers import CarWashListSerializer, CarWashPostPatchSerializer, CarWashReviewListSerializer, CarWashReviewPostPatchSerializer, PaymentStatusSerializer, PreSignedUrlSerializer, WashTypeSerializer, AmenitySerializer, OfferSerializer, CarWashCodeSerializer, OfferCreatePatchSerializer, CarWashCodeCreatePatchSerializer, CarWashCodeUsageCreateSerializer, CreatePaymentIntentSerializer, UserPaymentHistorySerializer
+from .models import CarWash, CarWashReview, CarWashUpdateRequest, WashType, Amenity, Offer, CarWashCode, Payment
+from .serializers import CarWashListSerializer, CarWashPostPatchSerializer, CarWashReviewListSerializer, CarWashReviewPostPatchSerializer, CarWashUpdateRequestSerializer, PaymentStatusSerializer, PreSignedUrlSerializer, WashTypeSerializer, AmenitySerializer, OfferSerializer, CarWashCodeSerializer, OfferCreatePatchSerializer, CarWashCodeCreatePatchSerializer, CarWashCodeUsageCreateSerializer, CreatePaymentIntentSerializer, UserPaymentHistorySerializer
 from django.db.models import Q, Count
 from datetime import datetime
 from django.contrib.gis.geos import Point
@@ -23,11 +23,11 @@ from django.db.models import FloatField, Value
 from django.db import transaction
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError as DRFValidationError
 from django.db.models import Case, When, BooleanField, F
 from django.utils import timezone
 from . import utils
 import stripe
-from rest_framework.exceptions import AuthenticationFailed
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -42,17 +42,24 @@ class AmenityListAPIView(generics.ListAPIView):
 
 class CarWashCreateView(generics.CreateAPIView):
     serializer_class = CarWashPostPatchSerializer
-    permission_classes = [AllowAny] 
+    permission_classes = [IsAuthenticated] 
 
-class CarWashRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = CarWash.objects.all()
+    def perform_create(self, serializer):
+        data = {
+            "proposed_changes": serializer.data,
+            "submitted_by": self.request.user.id,
+            "payment_method": self.request.data.get("payment_method", "-"),
+            "payment_handle": self.request.data.get("payment_handle", "-")
+        }
+        serializer = CarWashUpdateRequestSerializer(data=data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+
+class CarWashRetrieveView(generics.RetrieveAPIView):
     permission_classes = [AllowAny]
     lookup_field = "id"
-
-    def get_serializer_class(self):
-        if self.request.method == "GET":
-            return CarWashListSerializer
-        return CarWashPostPatchSerializer
+    serializer_class = CarWashListSerializer
+    queryset = CarWash.objects.all()
 
     @extend_schema(
         summary="Retrieve Car Wash",
@@ -62,16 +69,55 @@ class CarWashRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
 
+class CarWashUpdateView(generics.UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    lookup_field = "id"
+    serializer_class = CarWashPostPatchSerializer
+    queryset = CarWash.objects.all()
+
     @extend_schema(
         summary="Update Car Wash",
-        description="Update Car Wash details using PATCH",
+        description="Update Car Wash details",
         request=CarWashPostPatchSerializer,
-        responses={200: CarWashListSerializer}
+        responses={200}
     )
     @transaction.atomic
-    def patch(self, request, *args, **kwargs):
-        return super().patch(request, *args, **kwargs)
+    def perform_update(self, serializer):
+        try:
+            payment_method = self.request.data.pop("payment_method")
+            payment_handle = self.request.data.pop("payment_handle")
+        except KeyError:
+            raise DRFValidationError({
+                "error": "Payment method and handle are required."
+            })
+        except Exception as e:
+            raise DRFValidationError({
+                "error": f"An unexpected error occurred: {str(e)}"
+            })
 
+        data = {
+            "proposed_changes": self.request.data,
+            "submitted_by": self.request.user.id,
+            "car_wash": serializer.instance.id,
+            "payment_method": payment_method,
+            "payment_handle": payment_handle
+        }
+        serializer_data = CarWashUpdateRequestSerializer(data=data)
+        if serializer_data.is_valid(raise_exception=True):
+            if not serializer.instance.active_bounty:
+                raise DRFValidationError({
+                    "error": "Cannot update car wash without an active bounty."
+                })
+            # user can sumbit one request per day
+            existing_requests = CarWashUpdateRequest.objects.filter(
+                submitted_by=self.request.user,
+                created_at__gte=timezone.now() - timezone.timedelta(days=1),
+            )
+            if existing_requests.exists():
+                raise DRFValidationError({
+                    "error": "You have already submitted a request today."
+                })
+            serializer_data.save()
 
 class ListCarWashAPIView(DynamicFieldsViewMixin, ListAPIView):
     queryset = CarWash.active_objects.all().distinct()
@@ -173,12 +219,10 @@ class S3APIView(APIView):
 
 class CarWashReviewCreateView(generics.CreateAPIView):
     serializer_class = CarWashReviewPostPatchSerializer
-    permission_classes = [AllowAny] 
+    permission_classes = [IsAuthenticated]
 
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context.update({"authorization_header": self.request.headers.get("Authorization")})
-        return context 
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 class CarWashReviewRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = CarWashReview.objects.all()
@@ -322,22 +366,15 @@ class OfferRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     ]
 )
 class CarWashCodeMarkAsUsedView(generics.CreateAPIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     serializer_class = CarWashCodeUsageCreateSerializer
     
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
-        authorization_header = self.request.headers.get("Authorization")
-        if not authorization_header or not authorization_header.startswith("Bearer "):
-            return Response(
-                {"error": "Invalid or missing token"},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
         
         offer_id = serializer.validated_data.get("offer_id")
-        code = CarWashCode.objects.filter(code=serializer.validated_data['code'], offer=offer_id, user_metadata__isnull=True).first()
+        code = CarWashCode.objects.filter(code=serializer.validated_data['code'], offer=offer_id, user__isnull=True).first()
         if not code:
             return Response({"error": "Invalid code"}, status=status.HTTP_404_NOT_FOUND)
             
@@ -351,22 +388,20 @@ class CarWashCodeMarkAsUsedView(generics.CreateAPIView):
             )
                 
         elif offer.offer_type == 'ONE_TIME':
-            user_metadata = utils.handle_user_meta_data(request.headers.get("Authorization"))
-            if user_metadata:
-                existing_usage = CarWashCode.objects.filter(offer=offer_id, user_metadata__email=user_metadata['email'])
-                if existing_usage.exists():
-                    return Response(
-                        {"error": "You have already used this one-time offer"},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
-        
-                serializer.validated_data['user_metadata'] = user_metadata
-                serializer.validated_data['used_at'] = datetime.now()
+            existing_usage = CarWashCode.objects.filter(offer=offer_id, user=request.user)
+            if existing_usage.exists():
+                return Response(
+                    {"error": "You have already used this one-time offer"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+    
+            serializer.validated_data['user'] = request.user
+            serializer.validated_data['used_at'] = datetime.now()
 
-                serializer.validated_data['code'] = code
-                
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            serializer.validated_data['code'] = code
+            
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
         
         return Response({"error": "Something went wrong"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -459,7 +494,7 @@ class ListCarWashCodeAPIView(DynamicFieldsViewMixin, ListAPIView):
         return Response(self.response_format)
 
 class ListFreeCarWashCodeAPIView(DynamicFieldsViewMixin, ListAPIView):
-    permission_classes = (AllowAny, )
+    permission_classes = (IsAuthenticated, )
     serializer_class = CarWashCodeSerializer
     pagination_class = CustomResponsePagination
     filter_backends = [DynamicSearchFilter, DjangoFilterBackend]
@@ -468,7 +503,6 @@ class ListFreeCarWashCodeAPIView(DynamicFieldsViewMixin, ListAPIView):
     def __init__(self, **kwargs):
         self.pagination = False
         self.response_format = ResponseInfo().response
-        self.user_metadata = None
         super(ListFreeCarWashCodeAPIView, self).__init__(**kwargs)
 
     def paginate_queryset(self, queryset):
@@ -484,7 +518,7 @@ class ListFreeCarWashCodeAPIView(DynamicFieldsViewMixin, ListAPIView):
         return CarWashCode.objects.filter(
             offer__package_id=package_id,
             offer__offer_type='ONE_TIME',
-            user_metadata__isnull=True
+            user__isnull=True
         ).distinct()
 
     @extend_schema(
@@ -529,14 +563,6 @@ class ListFreeCarWashCodeAPIView(DynamicFieldsViewMixin, ListAPIView):
             self.response_format["message"] = ["Error"]
             return Response(self.response_format, status=status.HTTP_400_BAD_REQUEST)
 
-        self.user_metadata = utils.handle_user_meta_data(request.headers.get("Authorization"))
-        if not self.user_metadata or not self.user_metadata.get('email'):
-            self.response_format["data"] = None
-            self.response_format["error"] = "Valid authentication required"
-            self.response_format["status_code"] = status.HTTP_403_FORBIDDEN
-            self.response_format["message"] = ["Error"]
-            return Response(self.response_format, status=status.HTTP_403_FORBIDDEN)
-
         serializer = super().list(request, *args, **kwargs)
         self.response_format["data"] = serializer.data
         self.response_format["error"] = None
@@ -573,11 +599,10 @@ class ListOfferAPIView(DynamicFieldsViewMixin, ListAPIView):
         queryset = Offer.objects.all()
         now = timezone.now().time()
 
-        user_metadata = utils.handle_user_meta_data(self.request.headers.get("Authorization"))
-        if not user_metadata:
+        if not self.request.headers.get("Authorization"):
             # Return offers with codes that are not used by the user
             queryset = queryset.annotate(
-                codes_count=Count('codes', filter=~Q(codes__user_metadata__isnull=False))
+                codes_count=Count('codes', filter=~Q(codes__user__isnull=False))
             ).filter(
                 ~Q(codes_count=0),
                 offer_type__in=['TIME_DEPENDENT', 'GEOGRAPHICAL']
@@ -615,14 +640,14 @@ class ListOfferAPIView(DynamicFieldsViewMixin, ListAPIView):
         else:
             # Filter out offers that has codes not used by the user
             queryset = queryset.annotate(
-                codes_count=Count('codes', filter=~Q(codes__user_metadata__isnull=False))
+                codes_count=Count('codes', filter=~Q(codes__user__isnull=False))
             ).filter(
                 ~Q(codes_count=0)
             )
 
             # Filter out one-time offers that have been used by the user
             queryset = queryset.exclude(
-                codes__user_metadata__email=user_metadata['email'],
+                codes__user=self.request.user,
                 offer_type="ONE_TIME"
             )
 
@@ -709,7 +734,7 @@ class ListOfferAPIView(DynamicFieldsViewMixin, ListAPIView):
     
 
 class CreatePaymentIntentView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
 
     @extend_schema(
         summary="Create Payment Intent",
@@ -727,13 +752,6 @@ class CreatePaymentIntentView(APIView):
 
         try:
             offer = Offer.objects.get(id=serializer.validated_data['offer_id'])
-            user_metadata = utils.handle_user_meta_data(request.headers.get("Authorization"))
-            
-            if not user_metadata or not user_metadata.get('email'):
-                return Response(
-                    {'error': 'User email is required'}, 
-                    status=status.HTTP_400_BAD_REQUEST
-                )
 
             # Create payment intent
             intent = stripe.PaymentIntent.create(
@@ -741,7 +759,7 @@ class CreatePaymentIntentView(APIView):
                 currency='usd',
                 metadata={
                     'offer_id': offer.id,
-                    'user_email': user_metadata['email'],
+                    'user_email': request.user.email,
                     'package_id': offer.package.id,
                     'car_wash_id': offer.package.car_wash.id
                 }
@@ -752,12 +770,7 @@ class CreatePaymentIntentView(APIView):
                 offer=offer,
                 payment_intent_id=intent.id,
                 amount=offer.offer_price,
-                user_email=user_metadata['email'],
-                metadata={
-                    'package_id': offer.package.id,
-                    'car_wash_id': offer.package.car_wash.id,
-                    'user_metadata': user_metadata
-                }
+                user=request.user
             )
 
             return Response({
@@ -777,7 +790,7 @@ class CreatePaymentIntentView(APIView):
             )
         
 class CheckPaymentStatusView(generics.RetrieveAPIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     serializer_class = PaymentStatusSerializer
     lookup_field = 'payment_intent_id'
     queryset = Payment.objects.all()
@@ -807,18 +820,14 @@ class CheckPaymentStatusView(generics.RetrieveAPIView):
         }
     )
     def get(self, request, *args, **kwargs):
-        user_metadata = utils.handle_user_meta_data(self.request.headers.get("Authorization"))
-        if not user_metadata or not user_metadata.get('email'):
-            raise AuthenticationFailed("Valid authentication required")
-
-        payment = self.get_queryset().filter(payment_intent_id=kwargs['payment_intent_id'], user_email=user_metadata['email']).first()
+        payment = self.get_queryset().filter(payment_intent_id=kwargs['payment_intent_id'], user=request.user).first()
         if not payment:
             return Response({"error": "Payment not found"}, status=status.HTTP_404_NOT_FOUND)
         
         return super().get(request, *args, **kwargs)
 
 class UserPaymentHistoryView(DynamicFieldsViewMixin, ListAPIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     serializer_class = UserPaymentHistorySerializer
     pagination_class = CustomResponsePagination
 
@@ -840,12 +849,8 @@ class UserPaymentHistoryView(DynamicFieldsViewMixin, ListAPIView):
         return None
 
     def get_queryset(self):
-        user_metadata = utils.handle_user_meta_data(self.request.headers.get("Authorization"))
-        if not user_metadata or not user_metadata.get('email'):
-            raise AuthenticationFailed("Valid authentication required")
-            
         return Payment.objects.filter(
-            user_email=user_metadata['email']
+            user=self.request.user
         ).order_by('-created_at').select_related(
             'offer',
             'offer__package',

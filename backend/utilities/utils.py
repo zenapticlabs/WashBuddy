@@ -4,7 +4,7 @@ from rest_framework import (
 )
 from rest_framework.response import Response
 import threading
-from supabase import create_client, Client
+from supabase import create_client
 
 class ResponseInfo(object):
     """

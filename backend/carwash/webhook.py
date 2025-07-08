@@ -56,7 +56,7 @@ def handle_successful_payment(payment_intent):
 
         codes = CarWashCode.objects.filter(
             offer=payment_object.offer,
-            user_metadata__isnull=True
+            user__isnull=True
         )
         
         if not codes.exists():
@@ -70,7 +70,7 @@ def handle_successful_payment(payment_intent):
         payment_object.save()
 
         # Mark the code as used
-        code.user_metadata = payment_object.metadata['user_metadata']
+        code.user = payment_object.user
         code.used_at = payment_object.created_at
         code.save()
 

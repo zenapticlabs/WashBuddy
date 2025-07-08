@@ -29,6 +29,5 @@ export function useHiddenOffer(filters: FilterState) {
     setHiddenOffer(sortedOffers[0]);
     setIsLoading(false);
   }
-
   return { hiddenOffer, isLoading, offers };
 } 

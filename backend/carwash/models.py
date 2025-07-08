@@ -11,6 +11,9 @@ from utilities.mixins import CustomModelMixin
 from phonenumber_field.modelfields import PhoneNumberField
 from django.core.exceptions import ValidationError
 from django.utils import timezone
+from django.conf import settings
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
 
 class CarWash(CustomModelMixin):
     car_wash_name = models.CharField(max_length=255, db_index=True)
@@ -37,6 +40,8 @@ class CarWash(CustomModelMixin):
     self_service_car_wash = models.BooleanField()
     open_24_hours = models.BooleanField()
     verified = models.BooleanField(default=False)
+
+    active_bounty = models.BooleanField(default=False, verbose_name="Active Bounty")
 
     amenities = models.ManyToManyField(
         'Amenity', 
@@ -285,7 +290,7 @@ class Offer(CustomModelMixin):
 class CarWashCode(CustomModelMixin):
     offer = models.ForeignKey(Offer, on_delete=models.CASCADE, related_name="codes")
     code = models.CharField(max_length=50)
-    user_metadata = models.JSONField(null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="carwash_codes")
     used_at = models.DateTimeField(null=True, blank=True)
     
     objects = models.Manager()
@@ -303,14 +308,6 @@ class CarWashCode(CustomModelMixin):
     def __str__(self):
         return f"{self.code} - {self.offer.name}"
 
-class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    location = gis_models.PointField(geography=True, null=True, blank=True)
-    
-    def __str__(self):
-        return f"{self.user.username}'s profile"
-    
-
 class CarWashReview(CustomModelMixin):
     """
         CarWash Review Model
@@ -319,8 +316,7 @@ class CarWashReview(CustomModelMixin):
         Maximum rating = 5
     """
     car_wash = models.ForeignKey(CarWash, on_delete=models.CASCADE, related_name="reviews")
-    user_id = models.CharField(max_length=255, db_index=True, null=True, blank=True)
-    user_metadata = models.JSONField()
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="carwash_reviews")
     comment = models.TextField()
     overall_rating = models.SmallIntegerField(validators=[
             MinValueValidator(0, "Rating must be at least 0"),
@@ -370,8 +366,7 @@ class Payment(CustomModelMixin):
     payment_intent_id = models.CharField(max_length=255, unique=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='pending')
-    user_email = models.EmailField()
-    metadata = models.JSONField(null=True, blank=True)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="carwash_payments")
     error_message = models.TextField(null=True, blank=True)
 
     def clean(self):
@@ -387,3 +382,106 @@ class Payment(CustomModelMixin):
 
     def __str__(self):
         return f"Payment {self.payment_intent_id} - {self.offer.name}"
+    
+
+class CarWashUpdateRequest(CustomModelMixin):
+    car_wash = models.ForeignKey(CarWash, on_delete=models.CASCADE, related_name="pending_updates", null=True, blank=True)
+    proposed_changes = models.JSONField()
+    submitted_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="car_wash_update_requests")
+    approved = models.BooleanField(default=False)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    payment_method = models.CharField(max_length=250)
+    payment_handle = models.CharField(max_length=250)
+    payouts_status = models.CharField(max_length=50, default="PENDING", choices=[
+        ("PENDING", "Pending"),
+        ("COMPLETED", "Completed"),
+        ("FAILED", "Failed")
+    ])
+    rejected = models.BooleanField(default=False)
+    rejection_reason = models.TextField(null=True, blank=True)
+
+    # once approved, it should be saved to car wash model
+    def save(self, *args, **kwargs):
+        try:
+            # Make Bounty InActive on create
+            if self.car_wash and not self.pk:
+                self.car_wash.active_bounty = False
+                self.car_wash.save()
+
+            # Check if approved status changed to True
+            existing_object = CarWashUpdateRequest.objects.filter(pk=self.pk).first()
+            if existing_object and self.approved and (not existing_object.approved):
+                if self.rejected or existing_object.rejected:
+                    raise ValidationError("Cannot approve an update request that has been rejected.")
+                self.reviewed_at = timezone.now()
+                
+                # Update car wash with proposed changes
+                from .serializers import CarWashPostPatchSerializer
+                is_new = self.car_wash is None
+                if self.car_wash:
+                    car_wash_serializer = CarWashPostPatchSerializer(self.car_wash, self.proposed_changes, partial=True)
+                else:
+                    car_wash_serializer = CarWashPostPatchSerializer(data=self.proposed_changes)
+
+                if car_wash_serializer.is_valid(raise_exception=True):
+                    car_wash = car_wash_serializer.save()
+                    if is_new:
+                        self.car_wash = car_wash
+
+                    html_message = render_to_string(
+                        'bounty_acceptance.html',
+                        {
+                            'user_name': self.submitted_by.first_name,
+                            'car_wash_name': car_wash.car_wash_name,
+                            'payment_info': self.payment_handle
+                        }
+                    )
+                        
+                    # send email to the user about acceptance
+                    send_mail(
+                        subject="🎉 Your WashBuddy Bounty Submission is Approved!",
+                        message="Your bounty submission has been approved. Thank you for your contribution!",
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=[self.submitted_by.email],
+                        html_message=html_message,
+                        fail_silently=False,
+                    )
+            
+            # Check if rejected status changed to True
+            if existing_object and self.rejected and (not existing_object.rejected):
+                self.reviewed_at = timezone.now()
+                if not self.rejection_reason:
+                    raise ValidationError("Rejection reason is required when rejecting the update request.")
+                
+                # send email to the user about rejection
+                html_message = render_to_string(
+                    'bounty_rejection.html',
+                    {
+                        'user_name': self.submitted_by.first_name,
+                        'car_wash_name': self.car_wash.car_wash_name if self.car_wash else 'N/A',
+                        'rejection_reason': self.rejection_reason
+                    }
+                )
+                # send email to the user about rejection
+                send_mail(
+                    subject="⚠️ Update on Your WashBuddy Bounty Submission",
+                    message="Your bounty submission has been rejected. Please check your email for details.",
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[self.submitted_by.email],
+                    html_message=html_message,
+                    fail_silently=False,
+                )
+
+                self.car_wash.active_bounty = True
+                self.car_wash.save()
+            
+            super().save(*args, **kwargs)
+        except Exception as e:
+            raise ValidationError(f"Could not approve the changes. Error: {e}")
+
+    def __str__(self):
+        return f"Update Request by {self.submitted_by}"
+
+    class Meta:
+        verbose_name = "Car Wash Update Request"
+        verbose_name_plural = "Car Wash Update Requests"
