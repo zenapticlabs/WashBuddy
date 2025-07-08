@@ -7,7 +7,7 @@ import { Button } from "../ui/button";
 import { Search } from "lucide-react";
 import { Skeleton } from "../ui/skeleton";
 interface RadarMapProps {
-  showMap: boolean;
+  showMap?: boolean;
   publishableKey: string;
   userId?: string;
   carWashes?: CarWashResponse[];
@@ -22,6 +22,7 @@ interface RadarMapProps {
     latitude: number;
   };
   loading: boolean;
+  onlyPin?: boolean;
 }
 
 export function RadarMap({
@@ -33,6 +34,7 @@ export function RadarMap({
   onMarkerClick,
   presentCenter,
   loading,
+  onlyPin,
 }: RadarMapProps) {
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
@@ -166,10 +168,23 @@ export function RadarMap({
       ];
 
       // Create marker HTML
-      customMarker.innerHTML = `
+      if (onlyPin) {
+        customMarker.innerHTML = `
         <div class="relative flex items-center justify-center cursor-pointer">
           <div class="absolute z-10 bottom-1 flex flex-col items-center">
-            ${price === "bounty" ? `
+            <div class="">
+              <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="red" viewBox="0 0 24 24">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5S10.62 6.5 12 6.5s2.5 1.12 2.5 2.5S13.38 11.5 12 11.5z"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+        `;
+      } else {
+        customMarker.innerHTML = `
+          < div class="relative flex items-center justify-center cursor-pointer" >
+            <div class="absolute z-10 bottom-1 flex flex-col items-center">
+              ${price === "bounty" ? `
             <div class="">
             <span class="text-white text-4xl inline-block">💰</span>
           </div>
@@ -183,10 +198,12 @@ export function RadarMap({
             </div>
             <div class="w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-white -mt-[1px]"></div>
           </div>`
-        }
-          <div class="w-[20px] h-[6px] bg-neutral-700 rounded-full blur-sm transform"></div>
-        </div>
-      `;
+          }
+              <div class="w-[20px] h-[6px] bg-neutral-700 rounded-full blur-sm transform"></div>
+            </div>
+        `;
+      }
+
 
       // Add click handler to the marker element
       customMarker.addEventListener("click", () => {
@@ -197,7 +214,7 @@ export function RadarMap({
         element: customMarker,
         anchor: "bottom",
       })
-        .setLngLat(offsetCoords)
+        .setLngLat(onlyPin ? originalCoords : offsetCoords)
         .addTo(mapRef.current!);
 
       markersRef.current.push(marker);
@@ -322,17 +339,19 @@ export function RadarMap({
       {loading ? (
         <Skeleton className="w-full h-full min-h-[400px] rounded-lg" />
       ) : (
-        <Button
-          variant="default"
-          className={`absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-blue-500 text-white rounded-full shadow-lg transition-all duration-300 ${showSearchButton
-            ? "opacity-100 transform translate-y-0"
-            : "opacity-0 transform -translate-y-4 pointer-events-none"
-            }`}
-          onClick={handleSearchArea}
-        >
-          <Search size={20} />
-          Search this area
-        </Button>
+        !onlyPin && (
+          <Button
+            variant="default"
+            className={`absolute top - 4 left - 1 / 2 - translate - x - 1 / 2 z - 10 bg - blue - 500 text - white rounded - full shadow - lg transition - all duration - 300 ${showSearchButton
+              ? "opacity-100 transform translate-y-0"
+              : "opacity-0 transform -translate-y-4 pointer-events-none"
+              } `}
+            onClick={handleSearchArea}
+          >
+            <Search size={20} />
+            Search this area
+          </Button>
+        )
       )}
     </div>
   );

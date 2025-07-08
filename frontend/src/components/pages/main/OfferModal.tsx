@@ -10,6 +10,7 @@ import { Sheet, SheetTitle } from "@/components/ui/sheet";
 import { SheetContent } from "@/components/ui/sheet";
 import { Copy, Check } from "lucide-react";
 import { getCarwashById } from "@/services/CarwashService";
+import { useRouter } from "next/navigation";
 
 // Initialize Stripe
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
@@ -127,6 +128,7 @@ const StripePaymentForm = ({ carOffer, onSuccess }: { carOffer: ICarOffer, onSuc
 };
 
 const OfferModal: React.FC<OfferModalProps> = ({ open, onOpenChange, data }) => {
+    const router = useRouter();
     const [showConfirmation, setShowConfirmation] = useState(true);
     const [showStripeForm, setShowStripeForm] = useState(false);
     const [clientSecret, setClientSecret] = useState<string | null>(null);
@@ -175,6 +177,7 @@ const OfferModal: React.FC<OfferModalProps> = ({ open, onOpenChange, data }) => 
 
     const handlePaymentSuccess = (code: string) => {
         setCode(code);
+        router.push(`/payment/redemption?code=${code}&carWashId=${carWash?.id}`);
     };
 
     const handleCopyCode = () => {

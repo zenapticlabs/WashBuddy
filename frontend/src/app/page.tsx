@@ -310,7 +310,6 @@ function HomeContent() {
               latitude: filters.userLat,
             }}
             userId={user?.id}
-            showMap={showMap}
             publishableKey={RADAR_KEY || ""}
             carWashes={carWashes}
             onMapReady={handleMapReady}
