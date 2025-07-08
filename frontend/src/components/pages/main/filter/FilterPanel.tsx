@@ -24,6 +24,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { getAmenities } from "@/services/AmenityService";
 import { IAmenity, IWashType } from "@/types";
 import { useWashTypes } from "@/contexts/WashTypesContext";
+import OfferCheckboxes from "@/components/molecule/OfferCheckboxes";
 
 const initialFilterState: FilterState = {
   automaticCarWash: true,
@@ -40,6 +41,7 @@ const initialFilterState: FilterState = {
   userLat: 0,
   userLng: 0,
   page: 1,
+  offers: [],
 };
 
 const FilterButtonConfigs = [
@@ -201,6 +203,13 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
             value={inlineFilters.operatingHours}
             onChange={(value) =>
               setInlineFilters((prev) => ({ ...prev, operatingHours: value }))
+            }
+          />
+          <Separator />
+          <OfferCheckboxes
+            value={inlineFilters.offers}
+            onChange={(value) =>
+              setInlineFilters((prev) => ({ ...prev, offers: value }))
             }
           />
         </div>

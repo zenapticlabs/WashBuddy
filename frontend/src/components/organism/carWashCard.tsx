@@ -1,5 +1,5 @@
 import { CarWashResponse } from "@/types/CarServices";
-import { MapPinIcon, StarIcon } from "lucide-react";
+import { MapPinIcon, StarIcon, SparklesIcon } from "lucide-react";
 import Image from "next/image";
 import { ImageModal } from "../molecule/ImageModal";
 import { useState } from "react";
@@ -12,7 +12,7 @@ interface CarWashCardProps {
 }
 
 const emptyImageURL =
-  "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx4dHRsdHR4dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR3/2wBDAR0XFyAeIRshIRshHRsdIR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR3/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=";
+  "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx4dHRsdHR4dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR3/2wBDAR0XFyAeIRshIRshHRsdIR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR3/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=";
 
 export function CarWashCard({ data, onClick, isSelected }: CarWashCardProps) {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
@@ -22,12 +22,16 @@ export function CarWashCard({ data, onClick, isSelected }: CarWashCardProps) {
     setIsImageModalOpen(true);
   };
 
+  const isBountyLocation = data.packages?.length === 0;
+
   return (
     <>
       <div
         className={`p-3 border rounded-lg cursor-pointer transition-all duration-300 ${isSelected
           ? "border-blue-500 bg-blue-50"
-          : "border-neutral-50 hover:border-blue-500"
+          : isBountyLocation
+            ? "border-yellow-400 border-2 hover:border-yellow-400"
+            : "border-neutral-50 hover:bg-yellow-50"
           }`}
         onClick={onClick}
       >
@@ -57,8 +61,13 @@ export function CarWashCard({ data, onClick, isSelected }: CarWashCardProps) {
           </div>
           <div className="flex flex-col justify-between flex-1">
             <div>
-              <div className="text-title-2 md:text-title-1 text-neutral-900">
-                {data.car_wash_name}
+              <div className="flex items-center gap-2">
+                <div className="text-title-2 md:text-title-1 text-neutral-900">
+                  {data.car_wash_name}
+                </div>
+                {isBountyLocation && (
+                  <SparklesIcon className="w-5 h-5 text-yellow-500" />
+                )}
               </div>
               <div className="text-body-3 md:text-body-2 flex items-center text-neutral-500 mt-1">
                 <MapPinIcon className="w-4 h-4 md:w-5 md:h-5 pr-1" />
@@ -68,7 +77,16 @@ export function CarWashCard({ data, onClick, isSelected }: CarWashCardProps) {
                   {Number(data.distance).toFixed(2)} miles
                 </div>
               </div>
-              {data.lowestPack?.isOffer && (
+              {isBountyLocation && (
+
+                <Badge
+                  variant={data.lowestPack?.offerType === "TIME_DEPENDENT" ? "green" : "yellow"}
+                  className="text-title-3 text-white w-fit hidden md:block px-2 py-1 rounded-lg mt-2"
+                >
+                  $3 car wash special offer!
+                </Badge>
+              )}
+              {data.lowestPack?.isOffer && !isBountyLocation && (
                 <Badge
                   variant={data.lowestPack?.offerType === "TIME_DEPENDENT" ? "green" : "yellow"}
                   className="text-title-3 text-white w-fit hidden md:block px-2 py-1 rounded-lg mt-2"
@@ -82,7 +100,6 @@ export function CarWashCard({ data, onClick, isSelected }: CarWashCardProps) {
                 <StarIcon className="w-3.5 h-3.5 text-accent-yellow fill-accent-yellow" />
                 <span className="text-title-2 text-accent-yellow">
                   {data.reviews_average}
-
                   <span className="text-body-3 text-neutral-300 pl-1">
                     ({data.reviews_count})
                   </span>
@@ -96,9 +113,7 @@ export function CarWashCard({ data, onClick, isSelected }: CarWashCardProps) {
               </div>
               <div className="flex-1 text-body-3 text-neutral-900 text-right">
                 {data.packages?.length > 0 &&
-                  data.packages.reduce((lowest, pkg) =>
-                    Number(pkg.price) < Number(lowest.price) ? pkg : lowest
-                  ).name}
+                  data.lowestPack?.name}
               </div>
             </div>
           </div>
@@ -124,16 +139,24 @@ export function CarWashCard({ data, onClick, isSelected }: CarWashCardProps) {
             </div>
           </div>
         </div>
-        {data.lowestPack?.isOffer && (
+        {data.lowestPack?.isOffer && !isBountyLocation && (
           <Badge
             variant={data.lowestPack?.offerType === "TIME_DEPENDENT" ? "green" : "yellow"}
             className="text-title-3 text-white w-fit md:hidden px-2 py-1 rounded-lg mt-2"
-          > 
+          >
             Special WashBuddy Price. {data.lowestPack?.offerType === "TIME_DEPENDENT" ? "Time Dependent offer" : "One Time offer"}
           </Badge>
         )}
-      </div>
 
+        {isBountyLocation && (
+          <Badge
+            variant={data.lowestPack?.offerType === "TIME_DEPENDENT" ? "green" : "yellow"}
+            className="text-title-3 text-white w-fit md:hidden px-2 py-1 rounded-lg mt-2"
+          >
+            $3 car wash special offer!
+          </Badge>
+        )}
+      </div>
 
       <ImageModal
         isOpen={isImageModalOpen}

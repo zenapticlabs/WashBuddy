@@ -9,6 +9,7 @@ import axiosInstance from "@/lib/axios";
 import { Sheet, SheetTitle } from "@/components/ui/sheet";
 import { SheetContent } from "@/components/ui/sheet";
 import { Copy, Check } from "lucide-react";
+import { getCarwashById } from "@/services/CarwashService";
 
 // Initialize Stripe
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
@@ -138,9 +139,9 @@ const OfferModal: React.FC<OfferModalProps> = ({ open, onOpenChange, data }) => 
     useEffect(() => {
         const getCarWash = async () => {
             setCarwashLoading(true);
-            const response = await axiosInstance.get(`/api/v1/carwash/${data.car_wash_id}/`);
-            setCarWash(response.data);
-            setCarWashPackage(response.data.packages.find((p: any) => p.id === data.package_id));
+            const response = await getCarwashById(data.car_wash_id.toString());
+            setCarWash(response);
+            setCarWashPackage(response.packages.find((p: any) => p.id === data.package_id));
             setCarwashLoading(false);
         }
 

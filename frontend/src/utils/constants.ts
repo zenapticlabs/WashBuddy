@@ -289,6 +289,7 @@ export const INITIAL_FILTER_STATE = {
   userLat: 0,
   userLng: 0,
   page: 1,
+  offers: [],
 };
 
 export const Amenities: CarServiceAmenity[] = [

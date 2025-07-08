@@ -406,6 +406,8 @@ const CarWashContent = () => {
                         <li>Photos must be clear and taken by you</li>
                         <li>No duplicates, AI images, or random internet photos</li>
                         <li>Only valid for new or unverified locations</li>
+                        <li>Take 7–10 clear photos of the car wash during daylight hours, </li>
+                        <li>Photos to be taken during daylight hours</li>
                     </ul>
 
                     <p className="mb-6">Questions? Reach out anytime at bounty@washbuddy.com</p>
