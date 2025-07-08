@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,8 @@ import { useToast } from "@/hooks/use-toast";
 import { getCarwashById } from "@/services/CarwashService";
 import { RadarMap } from "@/components/organism/RadarMap";
 
-export default function RedemptionPage() {
+// Separate client component that uses useSearchParams
+function RedemptionContent() {
     const searchParams = useSearchParams();
     const { toast } = useToast();
     const [copied, setCopied] = useState(false);
@@ -131,9 +132,16 @@ export default function RedemptionPage() {
                                 )}
                             </Button>
                         </div>
-                        <p className="text-sm text-neutral-500 mt-2">
-                            ⏰ Code expires in 24 hours
-                        </p>
+                        <div className="mt-3 space-y-2">
+                            <p className="text-sm text-neutral-500">
+                                ⏰ Code expires in 24 hours
+                            </p>
+                            <div className="bg-blue-50 p-3 rounded-md">
+                                <p className="text-sm text-blue-700">
+                                    <span className="font-semibold">💡 Quick Tip:</span> You can access this code anytime in your <Button variant="link" className="h-auto p-0 text-blue-700 font-semibold hover:text-blue-800" onClick={() => window.location.href = "/purchase-history"}>Purchase History</Button>
+                                </p>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Instructions */}
@@ -144,13 +152,6 @@ export default function RedemptionPage() {
                                 <li>Enter the code above at the pay station kiosk when you arrive</li>
                                 <li>If there's an attendant, simply show them the code</li>
                             </ul>
-                        </div>
-
-                        <div>
-                            <h3 className="text-lg font-semibold mb-2">💡 Access Your Code Later:</h3>
-                            <p className="text-neutral-600">
-                                You can re-access this code anytime by clicking the ☰ menu in the upper-left and selecting "Purchase History."
-                            </p>
                         </div>
 
                         <div>
@@ -167,5 +168,21 @@ export default function RedemptionPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+// Main page component with Suspense boundary
+export default function RedemptionPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <h1 className="text-2xl font-bold mb-4">Loading...</h1>
+                    <p className="text-neutral-500">Please wait while we load your redemption details.</p>
+                </div>
+            </div>
+        }>
+            <RedemptionContent />
+        </Suspense>
     );
 } 
