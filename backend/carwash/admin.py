@@ -15,7 +15,7 @@ from unfold.widgets import UnfoldAdminSingleTimeWidget, UnfoldBooleanSwitchWidge
 from django.contrib.admin.widgets import AutocompleteSelect
 from django.contrib.admin import DateFieldListFilter
 from django.contrib.gis.geos import Point
-from .forms import CarWashForm, CarWashImageForm, CarWashOperatingHoursForm, CarWashPackageForm, CarWashUpdateRequestForm
+from .forms import CarWashForm, CarWashImageForm, CarWashOperatingHoursForm, CarWashPackageForm, CarWashUpdateRequestForm, OfferForm
 from unfold.contrib.inlines.admin import NonrelatedStackedInline
 
 from .models import (
@@ -240,11 +240,10 @@ class CarWashPackageAdmin(ModelAdmin):
 
 @admin.register(Offer)
 class OfferAdmin(ModelAdmin):
+    form = OfferForm
+    search_fields = ('name', 'package__name', 'package__car_wash__car_wash_name')
     list_display = ('name', 'package', 'package_car_wash', 'offer_type', 'codes_count', 'offer_price', 'created_by', 'updated_by')
     list_filter = ('offer_type', 'package__name', 'package__car_wash')
-    search_fields = ('name', 'package__name', 'package__car_wash__car_wash_name')
-    readonly_fields = ('created_by', 'updated_by')
-    autocomplete_fields = ('package',)
 
     def codes_count(self, obj):
         return obj.codes.count()
@@ -254,19 +253,15 @@ class OfferAdmin(ModelAdmin):
         return obj.package.car_wash.car_wash_name if obj.package and obj.package.car_wash else ''
     package_car_wash.short_description = 'Car Wash'
     package_car_wash.admin_order_field = 'package__car_wash__car_wash_name'
-    
+
+    class Media:
+        js = ('admin/js/offer_dynamic.js',)  
+
     def save_model(self, request, obj, form, change):
         if not change:
             obj.created_by = request.user
         obj.updated_by = request.user
         super().save_model(request, obj, form, change)
-    
-    def get_queryset(self, request):
-        return super().get_queryset(request).select_related(
-            'package__car_wash',
-            'created_by',
-            'updated_by'
-        )
 
 class CarWashCodeResource(resources.ModelResource):
     offer = resources.Field(attribute='offer')

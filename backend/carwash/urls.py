@@ -7,7 +7,7 @@ from .views import (
     ListCarWashAPIView, S3APIView,
     CarWashReviewCreateView, CarWashReviewRetrieveUpdateDestroyView,
     ListCarWashReviewAPIView, OfferCreateView, OfferRetrieveUpdateDestroyView, ListOfferAPIView,
-    ListFreeCarWashCodeAPIView, CarWashCodeMarkAsUsedView, UserPaymentHistoryView
+    ListFreeCarWashCodeAPIView, CarWashCodeMarkAsUsedView, UserPaymentHistoryView, get_packages
 )
 
 urlpatterns = [
@@ -35,4 +35,6 @@ urlpatterns = [
     path('webhook/stripe/', StripeWebhookView.as_view(), name='stripe-webhook'),
     path('payment-status/<str:payment_intent_id>/', CheckPaymentStatusView.as_view(), name='payment-status'),
     path('payments/history/', UserPaymentHistoryView.as_view(), name='user-payment-history'),
+
+    path('admin/get_packages/', get_packages, name='get_packages'),
 ]
