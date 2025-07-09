@@ -186,9 +186,9 @@ export function RadarMap({
         <div class="relative flex items-center justify-center cursor-pointer">
           <div class="absolute z-10 bottom-1 flex flex-col items-center">
             ${price === "bounty" ? `
-            <div class="">
-              <span class="text-white text-4xl inline-block">💰</span>
-            </div>
+                <div class="flex items-center justify-center scale-[2]">
+                 <img src="/bountyimg.png" alt="Bounty" class="w-12 h-12 object-contain" />
+                </div>
             <div class="w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-white -mt-[1px]"></div>
           ` : `
             <div class="bg-accent-green rounded-full px-3 py-2 border-4 border-white flex items-center justify-center gap-1 whitespace-nowrap">
@@ -344,13 +344,13 @@ export function RadarMap({
         !onlyPin && (
           <Button
             variant="default"
-            className={`absolute top - 4 left - 1 / 2 - translate - x - 1 / 2 z - 10 bg - blue - 500 text - white rounded - full shadow - lg transition - all duration - 300 ${showSearchButton
+            className={`absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-blue-500 text-white rounded-full shadow-lg transition-all duration-300 ${showSearchButton
               ? "opacity-100 transform translate-y-0"
               : "opacity-0 transform -translate-y-4 pointer-events-none"
-              } `}
+              }`}
             onClick={handleSearchArea}
           >
-            <Search size={20} />
+            <Search size={20} className="mr-2" />
             Search this area
           </Button>
         )

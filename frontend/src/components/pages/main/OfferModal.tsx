@@ -138,6 +138,7 @@ const OfferModal: React.FC<OfferModalProps> = ({ open, onOpenChange, data }) => 
     const [carWash, setCarWash] = useState<CarWashResponse | null>(null);
     const [carwashLoading, setCarwashLoading] = useState(false);
     const [carWashPackage, setCarWashPackage] = useState<any>(null);
+    const [stripeFormLoading, setStripeFormLoading] = useState(false);
     useEffect(() => {
         const getCarWash = async () => {
             setCarwashLoading(true);
@@ -164,7 +165,7 @@ const OfferModal: React.FC<OfferModalProps> = ({ open, onOpenChange, data }) => 
     const handleConfirmPurchase = async () => {
         setShowConfirmation(false);
         setShowStripeForm(true);
-
+        setStripeFormLoading(true);
         try {
             const response = await axiosInstance.post(`/api/v1/carwash/create-payment-intent/`, {
                 offer_id: data.id
@@ -172,7 +173,9 @@ const OfferModal: React.FC<OfferModalProps> = ({ open, onOpenChange, data }) => 
             setClientSecret(response.data.clientSecret);
         } catch (error) {
             console.error('Error creating payment intent:', error);
-        }
+        } finally {
+            setStripeFormLoading(false);
+        } 
     };
 
     const handlePaymentSuccess = (code: string) => {
@@ -202,6 +205,13 @@ const OfferModal: React.FC<OfferModalProps> = ({ open, onOpenChange, data }) => 
                                     Yes, Continue to Payment
                                 </Button>
                             </div>
+                        </div>
+                    </div>
+                )}
+                {stripeFormLoading && (
+                    <div className="my-2">
+                        <div className="text-center">
+                            <div className="text-title-1 text-neutral-900">Processing Payment...</div>
                         </div>
                     </div>
                 )}

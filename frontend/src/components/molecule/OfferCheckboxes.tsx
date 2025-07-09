@@ -26,6 +26,7 @@ const OfferCheckboxes: React.FC<OfferCheckboxesProps> = ({
 }) => {
   const options: OperatingOption[] = [
     { id: "1", value: "offer", label: "Offer" },
+    { id: "2", value: "deals", label: "WashBuddy Deals" },
   ];
 
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
