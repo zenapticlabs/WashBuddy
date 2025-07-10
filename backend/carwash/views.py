@@ -4,7 +4,7 @@ from drf_spectacular.types import OpenApiTypes
 from rest_framework import viewsets, status, generics
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from .models import CarWash, CarWashReview, CarWashUpdateRequest, WashType, Amenity, Offer, CarWashCode, Payment
+from .models import CarWash, CarWashPackage, CarWashReview, CarWashUpdateRequest, WashType, Amenity, Offer, CarWashCode, Payment
 from .serializers import CarWashListSerializer, CarWashPostPatchSerializer, CarWashReviewListSerializer, CarWashReviewPostPatchSerializer, CarWashUpdateRequestSerializer, PaymentStatusSerializer, PreSignedUrlSerializer, WashTypeSerializer, AmenitySerializer, OfferSerializer, CarWashCodeSerializer, OfferCreatePatchSerializer, CarWashCodeCreatePatchSerializer, CarWashCodeUsageCreateSerializer, CreatePaymentIntentSerializer, UserPaymentHistorySerializer
 from django.db.models import Q, Count
 from datetime import datetime
@@ -28,6 +28,7 @@ from django.db.models import Case, When, BooleanField, F
 from django.utils import timezone
 from . import utils
 import stripe
+from django.http import JsonResponse
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -892,3 +893,8 @@ class UserPaymentHistoryView(DynamicFieldsViewMixin, ListAPIView):
         self.response_format["message"] = ["Success"]
 
         return Response(self.response_format)
+
+def get_packages(request):
+    car_wash_id = request.GET.get('car_wash')
+    packages = CarWashPackage.objects.filter(car_wash_id=car_wash_id).values('id', 'name')
+    return JsonResponse(list(packages), safe=False)

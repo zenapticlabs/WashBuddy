@@ -19,6 +19,8 @@ from django.contrib import admin
 from django.urls import path, include
 from django.http import JsonResponse
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+from django.conf import settings
+from django.conf.urls.static import static
 
 admin.site.site_header = 'Washbuddy Admin'
 admin.site.index_title = 'Washbuddy'
@@ -37,4 +39,5 @@ urlpatterns = [
     ])),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/swagger/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
-]
+    path('select2/', include('django_select2.urls')),
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

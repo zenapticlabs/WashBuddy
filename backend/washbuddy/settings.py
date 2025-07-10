@@ -49,6 +49,7 @@ CSRF_TRUSTED_ORIGINS = [
 INSTALLED_APPS = [
     'unfold',
     'unfold.contrib.import_export',
+    'unfold.contrib.inlines',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -64,6 +65,7 @@ INSTALLED_APPS = [
     'account',
     'import_export',
     'drf_spectacular',
+    'django_select2',
 ]
 
 REST_FRAMEWORK = {
@@ -165,8 +167,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "static")
-STATICFILES_DIRS = []
+STATICFILES_DIRS = [
+    BASE_DIR / 'static/'
+]
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "/media/"

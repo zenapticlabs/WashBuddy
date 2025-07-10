@@ -227,7 +227,11 @@ class CarWashPackage(CustomModelMixin):
     active_objects = ActiveManager()
 
     def __str__(self):
-        return f"{self.car_wash.car_wash_name} - {self.name}"
+        car_wash = getattr(self, 'car_wash', None)
+        if car_wash:
+            return f"{self.car_wash.car_wash_name} - {self.name}"
+        else:
+            return f"{self.name}"
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None
