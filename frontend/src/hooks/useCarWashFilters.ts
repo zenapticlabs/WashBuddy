@@ -21,6 +21,7 @@ function getFiltersFromParams(params: URLSearchParams): FilterState {
     userLat: Number(params.get("userLat")) || 0,
     userLng: Number(params.get("userLng")) || 0,
     page: Number(params.get("page")) || 1,
+    offerFilter: params.getAll("offerFilter").map(String),
   };
 }
 
@@ -41,6 +42,7 @@ export function useCarWashFilters() {
     userLat: 0,
     userLng: 0,
     page: 1,
+    offerFilter: [],
   });
 
   // Update filters whenever URL params change

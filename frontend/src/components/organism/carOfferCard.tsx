@@ -30,13 +30,13 @@ export function CarOfferCard({ onClick, isSelected, data }: CarOfferCardProps) {
           <div className="flex flex-col justify-between flex-1">
             <div>
               <div className="text-title-2 md:text-title-1 text-neutral-900">
-                A carwash nearby {data?.offer_price ? `: $${data?.offer_price}` : ""}
+                Secret Wash Deal Near You: {data?.offer_price ? `: $${data?.offer_price}` : ""}
               </div>
               <div className="text-body-3 md:text-body-2 flex items-center text-neutral-500 mt-1">
                 <MapPinIcon className="w-4 h-4 md:w-5 md:h-5 pr-1" />
-                <div>Purchase to reveal this carwash location!
+                <div>Unlock the deal
                   <span className="px-1">·</span>
-                  Within 5 miles
+                  Just minutes away
                 </div>
               </div>
             </div>
@@ -44,7 +44,9 @@ export function CarOfferCard({ onClick, isSelected, data }: CarOfferCardProps) {
               variant="blue"
               className="text-title-3 text-white w-fit hidden md:block px-2 py-1 rounded-lg mt-2"
             >
-              Nearby Special Washbuddy Price.
+              Mystery Wash
+              <span className="px-1">·</span>
+              WashBuddy Exclusive
             </Badge>
           </div>
         </div>

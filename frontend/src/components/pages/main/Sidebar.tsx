@@ -14,6 +14,14 @@ interface SidebarProps {
   sideBarAlwaysOpen?: boolean;
 }
 
+interface SidebarItem {
+  label: string;
+  value: string;
+  href: string;
+  icon: React.ComponentType<{ size?: number }>;
+  isExternal?: boolean;
+}
+
 const Sidebar: React.FC<SidebarProps> = ({
   open,
   onOpenChange,
@@ -48,7 +56,13 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
   `.trim();
 
-  const handleSidebarClick = (href: string) => {
+  const handleSidebarClick = (item: SidebarItem) => {
+    if (item.isExternal) {
+      window.location.href = item.href;
+      onOpenChange(false);
+      return;
+    }
+
     if (!user) {
       toast({
         title: "Please login to continue",
@@ -58,7 +72,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       });
       return;
     }
-    router.push(href);
+    router.push(item.href);
     onOpenChange(false);
   };
 
@@ -72,7 +86,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           {SidebarItems.map((item) => (
             <Button
               key={item.value}
-              onClick={() => handleSidebarClick(item.href)}
+              onClick={() => handleSidebarClick(item)}
               variant="ghost"
               className={`flex items-center justify-start gap-2 h-10 text-title-2 ${pathname === item.href ? "bg-blue-100" : "bg-white"
                 } rounded-full px-4 hover:bg-blue-100 transition-all duration-300`}
