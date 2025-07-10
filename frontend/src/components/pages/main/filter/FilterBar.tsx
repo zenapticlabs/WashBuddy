@@ -141,12 +141,12 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
       key: "offers",
       label: "Offer",
       icon: <Gift size={16} />,
-      isActive: inlineFilters.offers.length > 0,
+      isActive: inlineFilters.offerFilter?.length > 0,
       content: (
         <OfferCheckboxes
-          value={inlineFilters.offers}
+          value={inlineFilters.offerFilter}
           onChange={(value) =>
-            setInlineFilters({ ...inlineFilters, offers: value })
+            setInlineFilters({ ...inlineFilters, offerFilter: value })
           }
         />
       ),

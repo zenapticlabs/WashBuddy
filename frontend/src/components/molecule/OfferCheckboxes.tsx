@@ -25,24 +25,25 @@ const OfferCheckboxes: React.FC<OfferCheckboxesProps> = ({
   onChange,
 }) => {
   const options: OperatingOption[] = [
-    { id: "1", value: "offer", label: "Offer" },
-    { id: "2", value: "deals", label: "WashBuddy Deals" },
+    { id: "1", value: "offers", label: "WashBuddy Deals" },
+    { id: "2", value: "active_bounty", label: "Bounty" },
   ];
 
   const [selectedOptions, setSelectedOptions] = useState<string[]>([]);
 
   const handleChange = (optionId: string) => {
     if (onChange) {
-      onChange(
-        value?.includes(optionId)
-          ? value?.filter((id) => id !== optionId)
-          : [...(value || []), optionId]
-      );
+      // If the option is already selected, deselect it
+      if (value?.includes(optionId)) {
+        onChange(value.filter((id) => id !== optionId));
+      } else {
+        // If selecting a new option, make it the only selected option
+        onChange([optionId]);
+      }
     } else {
+      // Internal state management follows the same logic
       setSelectedOptions((prev) =>
-        prev.includes(optionId)
-          ? prev.filter((id) => id !== optionId)
-          : [...prev, optionId]
+        prev.includes(optionId) ? [] : [optionId]
       );
     }
   };

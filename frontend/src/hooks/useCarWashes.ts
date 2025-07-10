@@ -69,9 +69,18 @@ export function useCarWashes(filters: FilterState) {
 
   const fetchData = async () => {
     setIsLoading(true);
+    const modifiedFilters = { ...filters } as any;
     if (filters.userLat != 0 && filters.userLng != 0) {
       // Fetch car washes
-      const carWashResult = await getCarwashes(filters);
+      console.log(filters.offerFilter);
+      if (filters.offerFilter?.length > 0) {
+        if (filters.offerFilter.includes("1")) {
+          modifiedFilters.offers = ["TIME_DEPENDENT", "ONE_TIME", "GEOGRAPHICAL"];
+        } else if (filters.offerFilter.includes("2")) {
+          modifiedFilters.active_bounty = true;
+        } 
+      }
+      const carWashResult = await getCarwashes(modifiedFilters);
       let modifiedCarWashes = carWashResult.data[0].results as ExtendedCarWash[];
 
       // Fetch offers
