@@ -41,7 +41,7 @@ const initialFilterState: FilterState = {
   userLat: 0,
   userLng: 0,
   page: 1,
-  offers: [],
+  offerFilter: [],
 };
 
 const FilterButtonConfigs = [
@@ -207,9 +207,9 @@ const FilterPanel: React.FC<FilterPanelProps> = ({
           />
           <Separator />
           <OfferCheckboxes
-            value={inlineFilters.offers}
+            value={inlineFilters.offerFilter}
             onChange={(value) =>
-              setInlineFilters((prev) => ({ ...prev, offers: value }))
+              setInlineFilters((prev) => ({ ...prev, offerFilter: value }))
             }
           />
         </div>
