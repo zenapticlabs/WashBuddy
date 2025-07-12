@@ -19,7 +19,11 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
     steps:
+      - name: Show selected environment
+        run: echo "GitHub Actions environment ${{ inputs.environment }}"
+  
       - name: Checkout repository
         uses: actions/checkout@v3
 
