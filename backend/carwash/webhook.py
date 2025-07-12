@@ -5,6 +5,8 @@ from django.http import HttpResponse
 from rest_framework.permissions import AllowAny
 from drf_spectacular.utils import extend_schema, OpenApiResponse 
 from .models import CarWashCode, Payment
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
 
@@ -73,6 +75,29 @@ def handle_successful_payment(payment_intent):
         code.user = payment_object.user
         code.used_at = payment_object.created_at
         code.save()
+
+        car_wash = payment_object.offer.package.car_wash
+        # Send email to user with the code
+        html_message = render_to_string(
+            'wash_code_purchase.html',
+            {
+                "car_wash_name": car_wash.car_wash_name,
+                "car_wash_address": f"{car_wash.formatted_address}, {car_wash.city}, {car_wash.state} {car_wash.state_code}",
+                "car_wash_lat": car_wash.location.y if car_wash.location else None,
+                "car_wash_lng": car_wash.location.x if car_wash.location else None,
+                "radar_publishable_key": settings.RADAR_PUBLISHABLE_KEY,
+                "car_wash_image_url": car_wash.image_url,
+                "wash_code": code.code,
+            }
+        )
+        send_mail(
+            subject="🎉 Your WashBuddy Deal is Ready!",
+            message="Your WashBuddy Deal is Ready! Redeem your code now!",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[payment_object.user.email],
+            html_message=html_message,
+            fail_silently=False,
+        )
 
     except Exception as e:
         print(f"Error processing payment: {e}", flush=True)

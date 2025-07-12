@@ -212,6 +212,8 @@ SPECTACULAR_SETTINGS = {
     }
 }
 
+RADAR_PUBLISHABLE_KEY=os.environ.get('PUBLIC_RADAR_API_KEY')
+
 # Email Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.zoho.com'
