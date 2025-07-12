@@ -7,7 +7,6 @@ on:
 jobs:
   landing:
     uses: ./.github/workflows/landing-build.yml
-    environment: production
     with:
       environment: 'production'
     secrets:
