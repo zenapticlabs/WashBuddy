@@ -1,4 +1,4 @@
-name: Landing Build and Deploy Workflow
+name: Production Release Workflow
 
 on:
   release:
