@@ -2,11 +2,11 @@ name: Landing Build and Deploy Workflow
 
 on:
   workflow_call:
-  inputs:
-    environment:
-      required: true
-      type: string
-      default: 'staging'
+    inputs:
+      environment:
+        required: true
+        type: string
+        default: 'staging'
     secrets:
       VERCEL_TOKEN:
         required: true
