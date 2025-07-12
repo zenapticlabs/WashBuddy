@@ -15,6 +15,11 @@ on:
       VERCEL_LANDING_PROJECT_ID:
         required: true
   workflow_dispatch:
+    inputs:
+      environment:
+        required: false
+        type: string
+        default: 'staging'
 
 jobs:
   build-and-deploy:
