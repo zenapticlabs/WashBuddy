@@ -19,7 +19,6 @@ on:
     inputs:
       environment:
         required: false
-        type: string
         default: 'staging'
         type: choice
         options:
