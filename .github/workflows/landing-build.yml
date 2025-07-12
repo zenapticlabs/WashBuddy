@@ -1,4 +1,3 @@
-version: 3
 name: Landing Build and Deploy Workflow
 
 on:
