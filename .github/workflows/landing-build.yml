@@ -2,6 +2,11 @@ name: Landing Build and Deploy Workflow
 
 on:
   workflow_call:
+  inputs:
+    environment:
+      required: true
+      type: string
+      default: 'staging'
     secrets:
       VERCEL_TOKEN:
         required: true
@@ -14,7 +19,6 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    environment: staging
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
