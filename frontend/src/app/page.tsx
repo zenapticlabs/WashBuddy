@@ -304,13 +304,13 @@ function HomeContent() {
         </div>
         <div className="flex-1 flex items-center justify-center">
           <RadarMap
+            onlyPin={false}
             loading={locationData === null}
             presentCenter={{
               longitude: filters.userLng,
               latitude: filters.userLat,
             }}
             userId={user?.id}
-            showMap={showMap}
             publishableKey={RADAR_KEY || ""}
             carWashes={carWashes}
             onMapReady={handleMapReady}

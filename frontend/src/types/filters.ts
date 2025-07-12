@@ -15,5 +15,6 @@ export interface FilterState {
   userLat: number;
   userLng: number;
   page: number;
+  offerFilter: string[];
 }
 

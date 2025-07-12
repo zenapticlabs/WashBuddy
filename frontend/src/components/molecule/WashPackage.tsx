@@ -205,6 +205,7 @@ const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
 
   const handlePaymentSuccess = (code: string) => {
     setCode(code);
+    router.push(`/payment/redemption?code=${code}&carWashId=${carWash.id}`);
   };
 
   const handleModalClose = () => {

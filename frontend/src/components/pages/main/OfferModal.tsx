@@ -9,6 +9,8 @@ import axiosInstance from "@/lib/axios";
 import { Sheet, SheetTitle } from "@/components/ui/sheet";
 import { SheetContent } from "@/components/ui/sheet";
 import { Copy, Check } from "lucide-react";
+import { getCarwashById } from "@/services/CarwashService";
+import { useRouter } from "next/navigation";
 
 // Initialize Stripe
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
@@ -126,6 +128,7 @@ const StripePaymentForm = ({ carOffer, onSuccess }: { carOffer: ICarOffer, onSuc
 };
 
 const OfferModal: React.FC<OfferModalProps> = ({ open, onOpenChange, data }) => {
+    const router = useRouter();
     const [showConfirmation, setShowConfirmation] = useState(true);
     const [showStripeForm, setShowStripeForm] = useState(false);
     const [clientSecret, setClientSecret] = useState<string | null>(null);
@@ -135,12 +138,13 @@ const OfferModal: React.FC<OfferModalProps> = ({ open, onOpenChange, data }) => 
     const [carWash, setCarWash] = useState<CarWashResponse | null>(null);
     const [carwashLoading, setCarwashLoading] = useState(false);
     const [carWashPackage, setCarWashPackage] = useState<any>(null);
+    const [stripeFormLoading, setStripeFormLoading] = useState(false);
     useEffect(() => {
         const getCarWash = async () => {
             setCarwashLoading(true);
-            const response = await axiosInstance.get(`/api/v1/carwash/${data.car_wash_id}/`);
-            setCarWash(response.data);
-            setCarWashPackage(response.data.packages.find((p: any) => p.id === data.package_id));
+            const response = await getCarwashById(data.car_wash_id.toString());
+            setCarWash(response);
+            setCarWashPackage(response.packages.find((p: any) => p.id === data.package_id));
             setCarwashLoading(false);
         }
 
@@ -161,7 +165,7 @@ const OfferModal: React.FC<OfferModalProps> = ({ open, onOpenChange, data }) => 
     const handleConfirmPurchase = async () => {
         setShowConfirmation(false);
         setShowStripeForm(true);
-
+        setStripeFormLoading(true);
         try {
             const response = await axiosInstance.post(`/api/v1/carwash/create-payment-intent/`, {
                 offer_id: data.id
@@ -169,11 +173,14 @@ const OfferModal: React.FC<OfferModalProps> = ({ open, onOpenChange, data }) => 
             setClientSecret(response.data.clientSecret);
         } catch (error) {
             console.error('Error creating payment intent:', error);
-        }
+        } finally {
+            setStripeFormLoading(false);
+        } 
     };
 
     const handlePaymentSuccess = (code: string) => {
         setCode(code);
+        router.push(`/payment/redemption?code=${code}&carWashId=${carWash?.id}`);
     };
 
     const handleCopyCode = () => {
@@ -198,6 +205,13 @@ const OfferModal: React.FC<OfferModalProps> = ({ open, onOpenChange, data }) => 
                                     Yes, Continue to Payment
                                 </Button>
                             </div>
+                        </div>
+                    </div>
+                )}
+                {stripeFormLoading && (
+                    <div className="my-2">
+                        <div className="text-center">
+                            <div className="text-title-1 text-neutral-900">Processing Payment...</div>
                         </div>
                     </div>
                 )}

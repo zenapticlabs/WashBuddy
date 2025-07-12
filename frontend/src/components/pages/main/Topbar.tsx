@@ -107,7 +107,7 @@ const Topbar: React.FC<TopbarProps> = ({
   const handleLogout = async () => {
     try {
       await signOut();
-      router.push("/login"); // Redirect to login page after logout
+      // router.push("/login"); // Redirect to login page after logout
     } catch (error) {
       console.error("Error logging out:", error);
     }
@@ -226,10 +226,10 @@ const Topbar: React.FC<TopbarProps> = ({
           {
             !user && (
               <div className="flex items-center gap-2">
-                <Button onClick={() => router.push("/login")} variant="outline" className="rounded-full shadow-none text-title-2 text-blue-500 border-blue-500 hover:text-blue-500 hidden md:block">
+                <Button onClick={() => router.push("/login")} variant="outline" className="rounded-full shadow-none text-title-2 text-blue-500 border-blue-500 hover:text-blue-500 ">
                   Log in
                 </Button>
-                <Button onClick={() => router.push("/signup")} variant="default" className="rounded-full shadow-none text-title-2 text-white hover:text-white hidden md:block mr-4">
+                <Button onClick={() => router.push("/signup")} variant="default" className="rounded-full shadow-none text-title-2 text-white hover:text-white mr-4">
                   Sign up
                 </Button>
               </div>

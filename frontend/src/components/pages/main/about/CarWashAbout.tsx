@@ -99,8 +99,8 @@ export default function CarWashAbout({ data }: { data: CarWashResponse }) {
       router.push(`/carwash/claim?id=${data.id}`);
     } else {
       toast({
-        title: "You have already claimed the bounty today",
-        description: "You can claim the bounty once per day",
+        title: "You have already claimed the bounty today.",
+        description: "You can claim the bounty only once per 24 hours",
         variant: "destructive",
       })
     }

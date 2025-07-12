@@ -6,7 +6,7 @@ import OperatingHours from "@/components/molecule/OperatingHoursCheckboxes";
 import AmenitiesCheckboxes from "@/components/molecule/AmenitiesCheckboxes";
 import { Button } from "@/components/ui/button";
 import { FilterState, IAmenity, IWashType } from "@/types";
-import { ChevronDown, Clock } from "lucide-react";
+import { ChevronDown, Clock, Gift } from "lucide-react";
 import { ArrowUpDown, Droplet, House, Star, WalletCards } from "lucide-react";
 
 import {
@@ -19,6 +19,7 @@ import { useEffect, useState } from "react";
 import { Amenities, Car_Wash_Type_Value, INITIAL_FILTER_STATE } from "@/utils/constants";
 import { getAmenities } from "@/services/AmenityService";
 import { useWashTypes } from "@/contexts/WashTypesContext";
+import OfferCheckboxes from "@/components/molecule/OfferCheckboxes";
 interface FilterBarProps {
   filters: FilterState;
   setFilters: (filters: FilterState) => void;
@@ -132,6 +133,20 @@ const FilterBar: React.FC<FilterBarProps> = ({ filters, setFilters }) => {
           value={inlineFilters.operatingHours}
           onChange={(value) =>
             setInlineFilters({ ...inlineFilters, operatingHours: value })
+          }
+        />
+      ),
+    },
+    {
+      key: "offers",
+      label: "Offer",
+      icon: <Gift size={16} />,
+      isActive: inlineFilters.offerFilter?.length > 0,
+      content: (
+        <OfferCheckboxes
+          value={inlineFilters.offerFilter}
+          onChange={(value) =>
+            setInlineFilters({ ...inlineFilters, offerFilter: value })
           }
         />
       ),
