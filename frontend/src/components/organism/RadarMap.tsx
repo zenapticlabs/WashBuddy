@@ -186,8 +186,8 @@ export function RadarMap({
         <div class="relative flex items-center justify-center cursor-pointer">
           <div class="absolute z-10 bottom-1 flex flex-col items-center">
             ${price === "bounty" ? `
-                <div class="flex items-center justify-center scale-[2]">
-                 <img src="/bountyimg.png" alt="Bounty" class="w-12 h-12 object-contain" />
+                <div class="flex items-center justify-center text-4xl">
+                 💰
                 </div>
             <div class="w-0 h-0 border-l-[8px] border-l-transparent border-r-[8px] border-r-transparent border-t-[8px] border-t-white -mt-[1px]"></div>
           ` : `
