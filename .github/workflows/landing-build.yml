@@ -2,6 +2,11 @@ name: Landing Build and Deploy Workflow
 
 on:
   workflow_call:
+    inputs:
+      environment:
+        required: false
+        type: string
+        default: 'staging'
     secrets:
       VERCEL_TOKEN:
         required: true
@@ -10,12 +15,23 @@ on:
       VERCEL_LANDING_PROJECT_ID:
         required: true
   workflow_dispatch:
+    inputs:
+      environment:
+        required: false
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    environment: staging
+    environment: ${{ inputs.environment }}
     steps:
+      - name: Show selected environment
+        run: echo "GitHub Actions environment ${{ inputs.environment }}"
+  
       - name: Checkout repository
         uses: actions/checkout@v3
 

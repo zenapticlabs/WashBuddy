@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 
+const radarApiKey = import.meta.env.PUBLIC_RADAR_API_KEY;
+
 function AutoCompleteSearch() {
   const [query, setQuery] = useState("");
   const [isShow, setShow] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
   const [selectedLocation, setSelectedLocation] = useState({});
   const [recentSearches, setRecentSearches] = useState([]);
-  const radarApiKey = "prj_test_pk_ed120b27792e078a953e6e7ecb7c51e8800fd503";
   const [debounceTimeout, setDebounceTimeout] = useState(null);
 
   useEffect(() => {
