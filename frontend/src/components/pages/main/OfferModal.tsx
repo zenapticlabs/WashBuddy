@@ -11,6 +11,8 @@ import { SheetContent } from "@/components/ui/sheet";
 import { Copy, Check } from "lucide-react";
 import { getCarwashById } from "@/services/CarwashService";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "@/hooks/use-toast";
 
 // Initialize Stripe
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
@@ -139,6 +141,8 @@ const OfferModal: React.FC<OfferModalProps> = ({ open, onOpenChange, data }) => 
     const [carwashLoading, setCarwashLoading] = useState(false);
     const [carWashPackage, setCarWashPackage] = useState<any>(null);
     const [stripeFormLoading, setStripeFormLoading] = useState(false);
+    const { user } = useAuth();
+    
     useEffect(() => {
         const getCarWash = async () => {
             setCarwashLoading(true);
@@ -163,9 +167,20 @@ const OfferModal: React.FC<OfferModalProps> = ({ open, onOpenChange, data }) => 
     }
 
     const handleConfirmPurchase = async () => {
+        if (!user) {
+            toast({
+                title: "Please login to purchase this offer",
+                description: "Login to purchase this offer and earn 25 points",
+                variant: "destructive",
+                action: <Button variant="destructive" className="border border-white" onClick={() => router.push("/login")}>Login</Button>
+            })
+            return;
+        }
+
         setShowConfirmation(false);
         setShowStripeForm(true);
         setStripeFormLoading(true);
+
         try {
             const response = await axiosInstance.post(`/api/v1/carwash/create-payment-intent/`, {
                 offer_id: data.id
