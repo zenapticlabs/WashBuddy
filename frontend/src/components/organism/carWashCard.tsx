@@ -1,5 +1,5 @@
 import { CarWashResponse } from "@/types/CarServices";
-import { MapPinIcon, StarIcon, SparklesIcon } from "lucide-react";
+import { MapPinIcon, StarIcon, SparklesIcon, ImageIcon } from "lucide-react";
 import Image from "next/image";
 import { ImageModal } from "../molecule/ImageModal";
 import { useState } from "react";
@@ -11,11 +11,10 @@ interface CarWashCardProps {
   isSelected?: boolean;
 }
 
-const emptyImageURL =
-  "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx4dHRsdHR4dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR3/2wBDAR0XFyAeIRshIRshHRsdIR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR3/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=";
-
 export function CarWashCard({ data, onClick, isSelected }: CarWashCardProps) {
   const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  const [isImageLoading, setIsImageLoading] = useState(true);
 
   const handleImageClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -23,6 +22,15 @@ export function CarWashCard({ data, onClick, isSelected }: CarWashCardProps) {
   };
 
   const isBountyLocation = data.packages?.length === 0;
+
+  const imageURL = !imageError ? (
+    data.image_url ||
+    data.images.find((image) => image.image_type === "Site")?.image_url ||
+    data.images.find((image) => image.image_type === "Exterior")?.image_url ||
+    data.images.find((image) => image.image_type === "Interior")?.image_url ||
+    data.images.find((image) => image.image_type === "Amenities")?.image_url ||
+    data.images.find((image) => image.image_type === "Menu")?.image_url
+  ) : null;
 
   return (
     <>
@@ -40,23 +48,32 @@ export function CarWashCard({ data, onClick, isSelected }: CarWashCardProps) {
             className="relative cursor-pointer group"
             onClick={handleImageClick}
           >
-            <Image
-              src={
-                data.image_url ||
-                data.images.find((image) => image.image_type === "Site")
-                  ?.image_url ||
-                emptyImageURL
-              }
-              alt={data.car_wash_name}
-              className="w-16 h-16 md:w-24 md:h-24 object-cover rounded transition-transform group-hover:scale-105"
-              width={100}
-              height={100}
-              priority={true}
-              loading="eager"
-              quality={75}
-              blurDataURL={emptyImageURL}
-              placeholder="blur"
-            />
+            {imageURL ? (
+              <>
+                <Image
+                  src={imageURL}
+                  alt={data.car_wash_name}
+                  className={`w-16 h-16 md:w-24 md:h-24 object-cover rounded transition-transform group-hover:scale-105 ${
+                    isImageLoading ? 'opacity-0' : 'opacity-100'
+                  }`}
+                  width={100}
+                  height={100}
+                  quality={75}
+                  onError={() => setImageError(true)}
+                  onLoad={() => setIsImageLoading(false)}
+                  priority={false}
+                />
+                {isImageLoading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-neutral-100 rounded">
+                    <div className="animate-pulse w-8 h-8 rounded-full bg-neutral-200" />
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="w-16 h-16 md:w-24 md:h-24 bg-neutral-100 rounded flex items-center justify-center">
+                <ImageIcon className="w-8 h-8 text-neutral-300" />
+              </div>
+            )}
             <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-20 rounded transition-opacity" />
           </div>
           <div className="flex flex-col justify-between flex-1">
@@ -158,16 +175,12 @@ export function CarWashCard({ data, onClick, isSelected }: CarWashCardProps) {
         )}
       </div>
 
-      <ImageModal
+      {/* <ImageModal
         isOpen={isImageModalOpen}
         onClose={() => setIsImageModalOpen(false)}
-        imageUrl={
-          data.image_url ||
-          data.images.find((image) => image.image_type === "Site")?.image_url ||
-          emptyImageURL
-        }
+        imageUrl={imageURL}
         alt={data.car_wash_name}
-      />
+      /> */}
     </>
   );
 }

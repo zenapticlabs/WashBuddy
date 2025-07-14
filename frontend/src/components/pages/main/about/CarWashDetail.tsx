@@ -10,6 +10,7 @@ import {
   Phone,
   Star,
   XIcon,
+  ImageIcon,
 } from "lucide-react";
 import { CarWashResponse } from "@/types";
 import CreateCarWashReviewModal from "./CreateCarWashReviewModal";
@@ -26,6 +27,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { getReviews } from "@/services/ReviewService";
 import { IReviewShow } from "@/types/Review";
 import { ReviewsSummary } from "@/types";
+import emptyImage from "@/assets/empty.png";
 
 interface CarWashDetailProps {
   data?: CarWashResponse | null;
@@ -35,8 +37,6 @@ interface CarWashDetailProps {
   selectedWashTypes: string[];
 }
 
-const emptyImageURL =
-  "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx4dHRsdHR4dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR3/2wBDAR0XFyAeIRshIRshHRsdIR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR3/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k=";
 
 const CarWashDetail: React.FC<CarWashDetailProps> = ({
   data,
@@ -129,6 +129,13 @@ const CarWashDetail: React.FC<CarWashDetailProps> = ({
     }
   };
 
+  const imageURL = data?.image_url ||
+    data?.images.find((image) => image.image_type === "Site")?.image_url ||
+    data?.images.find((image) => image.image_type === "Exterior")?.image_url ||
+    data?.images.find((image) => image.image_type === "Interior")?.image_url ||
+    data?.images.find((image) => image.image_type === "Amenities")?.image_url ||
+    data?.images.find((image) => image.image_type === "Menu")?.image_url;
+
   const CarWashDetailContent = ({ data }: { data: CarWashResponse }) => (
     <>
       <ScrollArea className="w-full h-full rounded-xl overflow-hidden md:mt-2">
@@ -139,24 +146,23 @@ const CarWashDetail: React.FC<CarWashDetailProps> = ({
                 <Skeleton className="w-full h-full rounded-t-xl" />
               </div>
             )}
-            <Image
-              src={
-                data?.image_url ||
-                data.images.find((image) => image.image_type === "Site")
-                  ?.image_url ||
-                emptyImageURL
-              }
-              alt={data?.car_wash_name || "car_wash_name"}
-              className="w-full h-full object-cover"
-              width={400}
-              height={240}
-              priority={true}
-              loading="eager"
-              quality={50}
-              onLoadingComplete={() => setImageLoading(false)}
-              blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDABQODxIPDRQSEBIXFRQdHx4dHRsdHR4dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR3/2wBDAR0XFyAeIRshIRshHRsdIR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR0dHR3/wAARCAAIAAoDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAb/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/8QAFQEBAQAAAAAAAAAAAAAAAAAAAAX/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIRAxEAPwCdABmX/9k="
-              placeholder="blur"
-            />
+            {imageURL ? (
+              <Image
+                src={imageURL}
+                alt={data?.car_wash_name || "car_wash_name"}
+                className={`w-full h-full object-cover ${imageLoading ? 'opacity-0' : 'opacity-100'}`}
+                width={400}
+                height={240}
+                quality={75}
+                onError={() => setImageLoading(false)}
+                onLoadingComplete={() => setImageLoading(false)}
+                unoptimized={true}
+              />
+            ) : (
+              <div className="w-full h-full bg-neutral-100 flex items-center justify-center">
+                <ImageIcon className="w-12 h-12 text-neutral-300" />
+              </div>
+            )}
             <button
               className="absolute top-2 right-2 bg-white rounded-full p-1.5 cursor-pointer hover:bg-neutral-100"
               onClick={() => setOpen(false)}
