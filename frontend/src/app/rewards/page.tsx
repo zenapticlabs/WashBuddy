@@ -44,7 +44,12 @@ export default function Rewards() {
     <ProtectedRoute>
       <div className="flex flex-col h-screen">
         <Topbar sideBarAlwaysOpen={true} />
-        <div className="flex flex-row md:ml-[210px] h-[calc(100vh-66px)] relative">
+        <div className="md:ml-[210px]">
+          <div className="md:text-headline-2 text-headline-3 text-neutral-900 py-2 px-4 md:py-4 flex items-center gap-2 justify-between">
+            Washbuddy Rewards Coming Soon
+          </div>
+        </div>
+        {/* <div className="flex flex-row md:ml-[210px] h-[calc(100vh-66px)] relative">
           <div className="w-[640px] px-3 md:flex hidden ">
             <RewardList
               sortBy={sortBy}
@@ -68,8 +73,8 @@ export default function Rewards() {
             setSortBy={setSortBy}
             reviews={rewards}
           />
-        </div>
+        </div> */}
       </div>
-    </ProtectedRoute>
+    </ProtectedRoute >
   );
 }
