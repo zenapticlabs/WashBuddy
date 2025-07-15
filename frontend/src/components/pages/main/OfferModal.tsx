@@ -86,7 +86,7 @@ const StripePaymentForm = ({ carOffer, onSuccess }: { carOffer: ICarOffer, onSuc
                 elements,
                 redirect: 'if_required',
                 confirmParams: {
-                    return_url: `${window.location.origin}/payment/confirmation`,
+                    return_url: window.location.href,
                 },
             });
 
