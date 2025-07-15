@@ -27,6 +27,8 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { RedemptionModal } from "@/components/molecule/RedemptionModal";
+
 const StatusBadge = ({ status }: { status: string }) => {
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -69,6 +71,8 @@ export default function PurchaseHistory() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [selectedPayment, setSelectedPayment] = useState<PaymentHistory | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const handlePageChange = (page: number) => setCurrentPage(page);
   const [date, setDate] = useState<DateRange | undefined>({
     from: new Date(new Date().setMonth(new Date().getMonth() - 1)),
@@ -142,6 +146,14 @@ export default function PurchaseHistory() {
   const getPurchasePerPage = () => {
     return filteredPayments.slice((currentPage - 1) * 10, currentPage * 10);
   }
+
+  const handleRowClick = (payment: PaymentHistory) => {
+    console.log(payment);
+    if (payment.carwash_code && payment.car_wash_id) {
+      setSelectedPayment(payment);
+      setIsModalOpen(true);
+    }
+  };
 
   return (
     <ProtectedRoute>
@@ -219,7 +231,11 @@ export default function PurchaseHistory() {
                       </TableRow>
                     ) : (
                       getPurchasePerPage().map((payment) => (
-                        <TableRow key={payment.id} className="text-body-2">
+                        <TableRow 
+                          key={payment.id} 
+                          className={`text-body-2 ${payment.carwash_code ? 'cursor-pointer hover:bg-neutral-50' : ''}`}
+                          onClick={() => handleRowClick(payment)}
+                        >
                           <TableCell>
                             <Checkbox />
                           </TableCell>
@@ -239,7 +255,8 @@ export default function PurchaseHistory() {
                                 variant="ghost"
                                 size="icon"
                                 className="h-8 w-8"
-                                onClick={() => {
+                                onClick={(e) => {
+                                  e.stopPropagation();
                                   navigator.clipboard.writeText(payment.carwash_code);
                                 }}
                               >
@@ -267,6 +284,20 @@ export default function PurchaseHistory() {
             </div>
           </div>
         </div>
+
+        {selectedPayment && (
+          <RedemptionModal
+            open={isModalOpen}
+            onOpenChange={(open) => {
+              setIsModalOpen(open);
+              if (!open) {
+                setSelectedPayment(null);
+              }
+            }}
+            code={selectedPayment.carwash_code}
+            carWashId={selectedPayment.car_wash_id.toString()}
+          />
+        )}
       </div>
     </ProtectedRoute>
   );

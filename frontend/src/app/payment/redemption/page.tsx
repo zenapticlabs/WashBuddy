@@ -49,9 +49,13 @@ function RedemptionContent() {
     };
 
     const handleGetDirections = () => {
-        if (carWash) {
-            const address = encodeURIComponent(carWash.formatted_address);
-            window.open(`https://www.google.com/maps/search/?api=1&query=${address}`, "_blank");
+        if (carWash && carWash.location) {
+            const lat = carWash.location.coordinates[1];
+            const lon = carWash.location.coordinates[0];
+            // Use lat/lon for more precise navigation
+            // On iOS, this will open Apple Maps, on other platforms it will open Google Maps
+            const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+            window.open(mapsUrl, "_blank");
         }
     };
 
@@ -80,7 +84,18 @@ function RedemptionContent() {
                         <h2 className="text-xl font-semibold">{carWash.car_wash_name}</h2>
                         <div className="flex items-start gap-2 text-neutral-600">
                             <MapPin className="w-5 h-5 mt-1 flex-shrink-0" />
-                            <p>{carWash.formatted_address}</p>
+                            <div className="flex-1">
+                                <p className="hover:text-blue-600 cursor-pointer" onClick={handleGetDirections}>
+                                    {carWash.formatted_address}
+                                </p>
+                                <Button
+                                    variant="link"
+                                    className="h-auto p-0 text-blue-600 hover:text-blue-800 text-sm"
+                                    onClick={handleGetDirections}
+                                >
+                                    Get Directions →
+                                </Button>
+                            </div>
                         </div>
                     </div>
 

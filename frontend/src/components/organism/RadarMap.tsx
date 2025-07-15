@@ -86,8 +86,10 @@ export function RadarMap({
       if (carWashes?.length) {
         fitToMarkers();
       }
-      // Move trackWithRateLimit here to ensure map is loaded
-      trackWithRateLimit();
+      // Only track location if not in onlyPin mode
+      if (!onlyPin) {
+        trackWithRateLimit();
+      }
     });
 
     if (userId) {
