@@ -2,16 +2,46 @@
 import { Image } from "astro:assets";
 import drop_close from "../assets/drop_close.svg";
 const Accordian_list = [
-  { title: "How can I find the best car wash near me?" },
-  { title: "Can I compare car wash prices on this website?" },
-  { title: "Are the reviews on your site trustworthy?" },
-  { title: "Can I upload photos of car washes I visit?" },
-  {title:"How do I know if a car wash offers specific services, like waxing or detailing?"},
-  { title: "Is this website free to use?" },
-  { title: "How can car wash owners update their listing information?" },
-  { title: "Can I earn rewards by contributing to this site?" },
-  { title: "What makes this platform better than searching on Google Maps?" },
-  { title: "Does your website have a mobile app?" },
+  { 
+    title: "How can I find the best car wash near me?",
+    answer: "Simply enable location access or enter your ZIP code to browse top-rated car washes nearby. Filter by price, amenities, wash type, or user ratings to find the perfect match."
+  },
+  { 
+    title: "Can I compare car wash prices on this website?",
+    answer: "Yes! You can view and compare prices for individual wash packages across locations—no more guessing or driving around to find the best deal."
+  },
+  { 
+    title: "Are the reviews on your site trustworthy?",
+    answer: "We are still working on implementing our review functionality. When it's up and running – we will bear it all. We are drivers first."
+  },
+  { 
+    title: "Can I upload photos of car washes I visit?",
+    answer: "Yes! Users can upload photos of wash bays, waiting areas, and signage to help others know what to expect before they go."
+  },
+  {
+    title: "How do I know if a car wash offers specific services, like waxing or detailing?",
+    answer: "Currently, our site is optimized to sort through core car wash features and options. Later, we will offer additional functionality to search value-added services."
+  },
+  { 
+    title: "Is this website free to use?",
+    answer: "Yes, the platform is completely free for users. You can browse, compare, and contribute without paying a cent."
+  },
+  { 
+    title: "How can car wash owners update their listing information?",
+    answer: "Owners can claim their listing and submit updates through our business portal; email our support team to get started."
+  },
+  { 
+    title: "Can I earn rewards by contributing to this site?",
+    answer: "Yes! We will be launching rewards functionality soon to earn freebies for just visiting your favorite car washes!"
+  },
+  { 
+    title: "What makes this platform better than searching on Google Maps?",
+    answer: "Unlike Google Maps, WashBuddy is built specifically for car washes. You can filter by wash type, compare real-time pricing, spot hidden deals, and view user-submitted insights."
+  },
+  { 
+    title: "Does your website have a mobile app?",
+    answer: "We will be launching a stand-alone mobile version soon. Until then, find great deals right here!"
+  },
 ];
 ---
 
@@ -36,12 +66,7 @@ const Accordian_list = [
             />
           </button>
           <div class="accordion-content max-h-0 overflow-hidden transition-[max-height] duration-300 ease-out leading-5 text-[#41454B]">
-            <p class="mt-1">
-              Our website uses advanced geolocation technology to display the
-              top-rated car washes near your current location. Simply allow
-              location access or enter your ZIP code to see nearby options with
-              reviews, pricing, and photos.{" "}
-            </p>
+            <p class="mt-1">{list.answer}</p>
           </div>
         </div>
       ))
