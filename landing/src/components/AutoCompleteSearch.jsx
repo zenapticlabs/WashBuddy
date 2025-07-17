@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 const radarApiKey = import.meta.env.PUBLIC_RADAR_API_KEY;
+const mainSiteURL = import.meta.env.PUBLIC_MAIN_PAGE_URL;
 
 function AutoCompleteSearch() {
   const [query, setQuery] = useState("");
@@ -13,6 +14,10 @@ function AutoCompleteSearch() {
   useEffect(() => {
     rencentSeachesSetter();
   }, []);
+
+  useEffect(() => {
+    console.log(selectedLocation);
+  }, [selectedLocation]);
 
   const rencentSeachesSetter = () => {
     const searches = JSON.parse(localStorage.getItem("recentSearches"));
@@ -197,7 +202,7 @@ function AutoCompleteSearch() {
             )}
           </div>
           <a
-            href="https://washbuddy-frontend.vercel.app/"
+            href={`${mainSiteURL}?userLat=${selectedLocation.geometry?.coordinates[1]}&userLng=${selectedLocation.geometry?.coordinates[0]}`}
             class="h-[44px] min-w-[44px] w-[44px] border-2 border-[#189DEF80] rounded-full flex items-center justify-center cursor-pointer"
             target="blank"
           >

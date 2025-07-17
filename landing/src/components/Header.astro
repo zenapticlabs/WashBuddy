@@ -12,6 +12,8 @@ import notePencil from "../assets/note-pencil.svg";
 import stillStar from "../assets/still-star.svg";
 import headset from "../assets/headset.svg";
 
+const mainSiteURL = import.meta.env.PUBLIC_MAIN_PAGE_URL;
+
 const drawerItems = [
   {
     heading: "Find a wash",
@@ -62,11 +64,12 @@ const drawerItems = [
       Self-Service
     </span>
   </div>
-  <button
+  <a
+    href={`${mainSiteURL}/login`}
     class="px-[24px] py-[8px] border border-[#41454B] rounded-[8px] h-[40px] text-sm font-semibold cursor-pointer"
   >
     Sign in
-  </button>
+  </a>
 </header>
 <div
   class="fixed w-full bg-[#fff] hidden z-100 px-[20px] py-[24px] border-t border-[#F4F4F4] "
