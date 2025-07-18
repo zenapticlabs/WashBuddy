@@ -165,7 +165,30 @@ class ListOfferFilter(django_filters.FilterSet):
     package = django_filters.BaseInFilter(field_name="package__id", lookup_expr='in')
     offer_type = django_filters.BaseInFilter(field_name="offer_type", lookup_expr='in')
     name = django_filters.BaseInFilter(field_name="name", lookup_expr='in')
+
+    # Car Wash filters
+    carWashName = django_filters.BaseInFilter(field_name="package__car_wash__car_wash_name", lookup_expr='in')
+    country = django_filters.BaseInFilter(field_name="package__car_wash__country", lookup_expr='in')
+    countryCode = django_filters.BaseInFilter(field_name="package__car_wash__country_code", lookup_expr='in')
+    state = django_filters.BaseInFilter(field_name="package__car_wash__state", lookup_expr='in')
+    city = django_filters.BaseInFilter(field_name="package__car_wash__city", lookup_expr='in')
+    stateCode = django_filters.BaseInFilter(field_name="package__car_wash__state_code", lookup_expr='in')
+    reviewsCount = django_filters.BaseInFilter(field_name="package__car_wash__reviews_count", lookup_expr='in')
+    automaticCarWash = django_filters.BooleanFilter(field_name="package__car_wash__automatic_car_wash")
+    selfServiceCarWash = django_filters.BooleanFilter(field_name="package__car_wash__self_service_car_wash")
+    open24Hours = django_filters.BooleanFilter(field_name="package__car_wash__open_24_hours")
+    verified = django_filters.BooleanFilter(field_name="package__car_wash__verified")
+    washTypeName = django_filters.BaseInFilter(field_name="package__wash_types__name", lookup_expr='in')
+    washTypeSubClass = django_filters.BaseInFilter(field_name="package__wash_types__subclass", lookup_expr='in')
+    washTypeCategory = django_filters.BaseInFilter(field_name="package__category", lookup_expr='in')
+    amenityName = django_filters.BaseInFilter(field_name="package__car_wash__amenities__name", lookup_expr='in')
+    amenityCategory = django_filters.BaseInFilter(field_name="package__car_wash__amenities__category", lookup_expr='in')
+    active_bounty = django_filters.BooleanFilter(field_name="package__car_wash__active_bounty", label="Active Bounty")
     
     class Meta:
         model = Offer
-        fields = ("package", "offer_type", "name")
+        fields = ("package", "offer_type", "name", 
+                  "carWashName", "country", "countryCode", "state", "city", "stateCode", 
+                  "reviewsCount", "automaticCarWash", "selfServiceCarWash", "open24Hours", 
+                  "verified", "washTypeName", "washTypeSubClass", "washTypeCategory", 
+                  "amenityName", "amenityCategory", "active_bounty")
