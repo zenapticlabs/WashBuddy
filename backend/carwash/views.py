@@ -41,6 +41,17 @@ class AmenityListAPIView(generics.ListAPIView):
     serializer_class = AmenitySerializer
 
 
+# Swagger documentation for Car Wash Create View with custom request body
+@extend_schema(
+    summary="Create Car Wash",
+    description="Creates a new car wash entry with the provided details. Requires authentication.",
+    request=CarWashPostPatchSerializer,
+    responses={
+        201: OpenApiResponse(description="Car wash created successfully"),
+        400: OpenApiResponse(description="Invalid request data"),
+        401: OpenApiResponse(description="Authentication failed")
+    }
+)
 class CarWashCreateView(generics.CreateAPIView):
     serializer_class = CarWashPostPatchSerializer
     permission_classes = [IsAuthenticated] 
@@ -50,7 +61,9 @@ class CarWashCreateView(generics.CreateAPIView):
             "proposed_changes": serializer.data,
             "submitted_by": self.request.user.id,
             "payment_method": self.request.data.get("payment_method", "-"),
-            "payment_handle": self.request.data.get("payment_handle", "-")
+            "payment_handle": self.request.data.get("payment_handle", "-"),
+            "is_bounty_claim": self.request.data.get("is_bounty_claim", False),
+            "payouts_status": "PENDING" if self.request.data.get("is_bounty_claim", False) else "NOT_APPLICABLE"
         }
         serializer = CarWashUpdateRequestSerializer(data=data)
         if serializer.is_valid(raise_exception=True):
@@ -85,8 +98,17 @@ class CarWashUpdateView(generics.UpdateAPIView):
     @transaction.atomic
     def perform_update(self, serializer):
         try:
-            payment_method = self.request.data.pop("payment_method")
-            payment_handle = self.request.data.pop("payment_handle")
+            is_bounty_claim = self.request.data.pop("is_bounty_claim")
+        except KeyError:
+            raise DRFValidationError({
+                "error": "is_bounty_claim boolean is required."
+            })
+        try:
+            payment_method = None
+            payment_handle = None
+            if is_bounty_claim:
+                payment_method = self.request.data.pop("payment_method")
+                payment_handle = self.request.data.pop("payment_handle")
         except KeyError:
             raise DRFValidationError({
                 "error": "Payment method and handle are required."
@@ -101,23 +123,29 @@ class CarWashUpdateView(generics.UpdateAPIView):
             "submitted_by": self.request.user.id,
             "car_wash": serializer.instance.id,
             "payment_method": payment_method,
-            "payment_handle": payment_handle
+            "payment_handle": payment_handle,
+            "is_bounty_claim": is_bounty_claim,
+            "payouts_status": "PENDING" if self.request.data.get("is_bounty_claim", False) else "NOT_APPLICABLE"
         }
         serializer_data = CarWashUpdateRequestSerializer(data=data)
         if serializer_data.is_valid(raise_exception=True):
-            if not serializer.instance.active_bounty:
-                raise DRFValidationError({
-                    "error": "Cannot update car wash without an active bounty."
-                })
-            # user can sumbit one request per day
-            existing_requests = CarWashUpdateRequest.objects.filter(
-                submitted_by=self.request.user,
-                created_at__gte=timezone.now() - timezone.timedelta(days=1),
-            )
-            if existing_requests.exists():
-                raise DRFValidationError({
-                    "error": "You have already submitted a request today."
-                })
+            if is_bounty_claim:
+                if not serializer.instance.active_bounty:
+                    raise DRFValidationError({
+                        "error": "Cannot update car wash without an active bounty."
+                    })
+                
+                # Check for overriding bounty limit
+                if not self.request.user.profile.bounty_limit_override:
+                    # user can sumbit one request per day
+                    existing_requests = CarWashUpdateRequest.objects.filter(
+                        submitted_by=self.request.user,
+                        created_at__gte=timezone.now() - timezone.timedelta(days=1),
+                    )
+                    if existing_requests.exists():
+                        raise DRFValidationError({
+                            "error": "You have already submitted a request today."
+                        })
             serializer_data.save()
 
 class ListCarWashAPIView(DynamicFieldsViewMixin, ListAPIView):

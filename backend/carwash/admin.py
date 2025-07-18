@@ -417,6 +417,9 @@ class ProposedCarWashInline(NonrelatedStackedInline):
         proposed_changes.pop('packages', None)
         proposed_changes.pop('amenities', None)
         proposed_changes.pop('operating_hours', None)
+        proposed_changes.pop('payment_method', None)
+        proposed_changes.pop('payment_handle', None)
+        proposed_changes.pop('is_bounty_claim', None)
 
         queryset = []
         if len(list(proposed_changes.keys())) > 0 or location:
@@ -536,11 +539,12 @@ class ProposedPackagesInline(NonrelatedStackedInline):
 
 @admin.register(CarWashUpdateRequest)
 class CarWashUpdateRequestAdmin(ModelAdmin):
-    list_display = ('car_wash', 'submitted_by', 'approved', 'rejected', 'reviewed_at', 'created_at', 'updated_at', 'updated_by')
+    list_display = ('car_wash', 'submitted_by', 'is_bounty_claim', 'approved', 'rejected', 'reviewed_at', 'created_at', 'updated_at', 'updated_by')
     list_filter = (
         'approved',
         'rejected',
         'payouts_status',
+        'is_bounty_claim',
         ('created_at', DateFieldListFilter)
     )
     search_fields = ('car_wash__car_wash_name', 'submitted_by__email', 'submitted_by__username')

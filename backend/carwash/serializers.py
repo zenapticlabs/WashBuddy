@@ -183,6 +183,9 @@ class CarWashPostPatchSerializer(serializers.ModelSerializer):
     images = CarWashImagesPostPatchSerializer(many=True, required=False)
     location = GeometryField()
     packages = CarWashPackagesPostPatchSerializer(many=True, required=False)
+    payment_method = serializers.CharField(write_only=True, required=False)
+    payment_handle = serializers.CharField(write_only=True, required=False)
+    is_bounty_claim = serializers.BooleanField(write_only=True, required=True)
 
     class Meta:
         model = CarWash
@@ -371,4 +374,4 @@ class CarWashUpdateRequestSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CarWashUpdateRequest
-        fields = ['id', 'car_wash', 'proposed_changes', 'submitted_by', 'payment_method', 'payment_handle']
+        fields = ['id', 'car_wash', 'proposed_changes', 'submitted_by', 'payment_method', 'payment_handle', 'is_bounty_claim', 'payouts_status']
