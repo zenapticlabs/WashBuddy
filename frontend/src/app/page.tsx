@@ -23,7 +23,6 @@ import useLocationData from "@/hooks/useLocationData";
 import { RadarAddress } from "radar-sdk-js/dist/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { CarOfferCard } from "@/components/organism/carOfferCard";
-import { useHiddenOffer } from "@/hooks/useHiddenOffer";
 import OfferModal from "@/components/pages/main/OfferModal";
 import { getWashTypes } from "@/services/WashType";
 import { WashTypesProvider } from "@/contexts/WashTypesContext";
