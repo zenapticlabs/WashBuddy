@@ -394,12 +394,15 @@ class CarWashUpdateRequest(CustomModelMixin):
     submitted_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name="car_wash_update_requests")
     approved = models.BooleanField(default=False)
     reviewed_at = models.DateTimeField(null=True, blank=True)
-    payment_method = models.CharField(max_length=250)
-    payment_handle = models.CharField(max_length=250)
+
+    is_bounty_claim = models.BooleanField(default=False, verbose_name="Is Bounty Claim")
+    payment_method = models.CharField(max_length=250, null=True, blank=True)
+    payment_handle = models.CharField(max_length=250, null=True, blank=True)
     payouts_status = models.CharField(max_length=50, default="PENDING", choices=[
         ("PENDING", "Pending"),
         ("COMPLETED", "Completed"),
-        ("FAILED", "Failed")
+        ("FAILED", "Failed"),
+        ("NOT_APPLICABLE", "Not Applicable")
     ])
     rejected = models.BooleanField(default=False)
     rejection_reason = models.TextField(null=True, blank=True)
@@ -407,8 +410,8 @@ class CarWashUpdateRequest(CustomModelMixin):
     # once approved, it should be saved to car wash model
     def save(self, *args, **kwargs):
         try:
-            # Make Bounty InActive on create
-            if self.car_wash and not self.pk:
+            # Make Bounty InActive on create If its a bounty claim
+            if self.is_bounty_claim and self.car_wash and not self.pk:
                 self.car_wash.active_bounty = False
                 self.car_wash.save()
 
@@ -432,24 +435,25 @@ class CarWashUpdateRequest(CustomModelMixin):
                     if is_new:
                         self.car_wash = car_wash
 
-                    html_message = render_to_string(
-                        'bounty_acceptance.html',
-                        {
-                            'user_name': self.submitted_by.first_name,
-                            'car_wash_name': car_wash.car_wash_name,
-                            'payment_info': self.payment_handle
-                        }
-                    )
-                        
-                    # send email to the user about acceptance
-                    send_mail(
-                        subject="🎉 Your WashBuddy Bounty Submission is Approved!",
-                        message="Your bounty submission has been approved. Thank you for your contribution!",
-                        from_email=settings.DEFAULT_FROM_EMAIL,
-                        recipient_list=[self.submitted_by.email],
-                        html_message=html_message,
-                        fail_silently=False,
-                    )
+                    if self.is_bounty_claim:
+                        html_message = render_to_string(
+                            'bounty_acceptance.html',
+                            {
+                                'user_name': self.submitted_by.first_name,
+                                'car_wash_name': car_wash.car_wash_name,
+                                'payment_info': self.payment_handle
+                            }
+                        )
+                            
+                        # send email to the user about acceptance
+                        send_mail(
+                            subject="🎉 Your WashBuddy Bounty Submission is Approved!",
+                            message="Your bounty submission has been approved. Thank you for your contribution!",
+                            from_email=settings.DEFAULT_FROM_EMAIL,
+                            recipient_list=[self.submitted_by.email],
+                            html_message=html_message,
+                            fail_silently=False,
+                        )
             
             # Check if rejected status changed to True
             if existing_object and self.rejected and (not existing_object.rejected):
@@ -457,27 +461,28 @@ class CarWashUpdateRequest(CustomModelMixin):
                 if not self.rejection_reason:
                     raise ValidationError("Rejection reason is required when rejecting the update request.")
                 
-                # send email to the user about rejection
-                html_message = render_to_string(
-                    'bounty_rejection.html',
-                    {
-                        'user_name': self.submitted_by.first_name,
-                        'car_wash_name': self.car_wash.car_wash_name if self.car_wash else 'N/A',
-                        'rejection_reason': self.rejection_reason
-                    }
-                )
-                # send email to the user about rejection
-                send_mail(
-                    subject="⚠️ Update on Your WashBuddy Bounty Submission",
-                    message="Your bounty submission has been rejected. Please check your email for details.",
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[self.submitted_by.email],
-                    html_message=html_message,
-                    fail_silently=False,
-                )
-
-                self.car_wash.active_bounty = True
-                self.car_wash.save()
+                if self.is_bounty_claim:
+                    # send email to the user about rejection
+                    html_message = render_to_string(
+                        'bounty_rejection.html',
+                        {
+                            'user_name': self.submitted_by.first_name,
+                            'car_wash_name': self.car_wash.car_wash_name if self.car_wash else 'N/A',
+                            'rejection_reason': self.rejection_reason
+                        }
+                    )
+                    # send email to the user about rejection
+                    send_mail(
+                        subject="⚠️ Update on Your WashBuddy Bounty Submission",
+                        message="Your bounty submission has been rejected. Please check your email for details.",
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=[self.submitted_by.email],
+                        html_message=html_message,
+                        fail_silently=False,
+                    )
+                    
+                    self.car_wash.active_bounty = True
+                    self.car_wash.save()
             
             super().save(*args, **kwargs)
         except Exception as e:
