@@ -115,7 +115,7 @@ export function useCarWashes(filters: FilterState) {
       setCurrentPage(carWashResult.data[0].links.currentPage);
 
       // Filter and sort hidden offers
-      const hOffers = offerResult.data.filter((offer: ICarOffer) => {
+      const hOffers = offerResult.data[0].results.filter((offer: ICarOffer) => {
         return offer.offer_type === "GEOGRAPHICAL" && parseFloat(offer.radius_miles) <= 5;
       });
 
