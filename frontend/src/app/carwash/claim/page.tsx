@@ -281,7 +281,8 @@ const CarWashContent = () => {
                 originalData,
                 {
                     payment_method: paymentMethod,
-                    payment_handle: paymentHandle
+                    payment_handle: paymentHandle,
+                    is_bounty_claim: true
                 }
             );
 

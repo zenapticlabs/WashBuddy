@@ -84,7 +84,7 @@ export function useCarWashes(filters: FilterState) {
       let modifiedCarWashes = carWashResult.data[0].results as ExtendedCarWash[];
 
       // Fetch offers
-      const offerResult = await getOffers(filters.userLat, filters.userLng);
+      const offerResult = await getOffers(modifiedFilters);
       setOffers(offerResult.data);
       
       // Match offers with packages
