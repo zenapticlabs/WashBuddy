@@ -420,7 +420,7 @@ class UserStatsView(APIView):
             "total_car_wash_change_requests": user.car_wash_update_requests.count(),
             "can_claim_bounty": not (user.car_wash_update_requests.filter(created_at__gte=timezone.now() - timezone.timedelta(days=1)).exists()),
             "last_submitted_bounty_time": user.car_wash_update_requests.last().created_at if user.car_wash_update_requests.exists() else None,
-            "bounty_limit_override": user.profile.bounty_limit_override
+            "bounty_limit_override": user_profile.bounty_limit_override
         }
         
         return Response(stats, status=status.HTTP_200_OK)
