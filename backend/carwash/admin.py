@@ -518,7 +518,9 @@ class ProposedPackagesInline(NonrelatedStackedInline):
         Gets all nonrelated objects needed for inlines. Method must be implemented.
         """
         proposed_changes = deepcopy(obj.proposed_changes)
+        print(">>>>>>>>>>> proposed_changes: ", proposed_changes, flush=True)
         packages = proposed_changes.pop('packages', [])
+        print(">>>>>>>>>>> proposed_changes packages: ", packages, flush=True)
 
         query_objects = []
         for package_obj in packages:
