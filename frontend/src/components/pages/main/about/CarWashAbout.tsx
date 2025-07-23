@@ -95,7 +95,7 @@ export default function CarWashAbout({ data }: { data: CarWashResponse }) {
       return;
     }
     const userStats = await getUserStats();
-    if (userStats.can_claim_bounty) {
+    if (userStats.bounty_limit_override || userStats.can_claim_bounty) {
       router.push(`/carwash/claim?id=${data.id}`);
     } else {
       toast({
