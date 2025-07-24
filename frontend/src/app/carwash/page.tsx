@@ -267,7 +267,7 @@ const CarWashContent = () => {
       }
 
       setIsLoading(true);
-      let currentData = { ...DEFAULT_PAYLOAD, ...formData };
+      let currentData = { ...DEFAULT_PAYLOAD, ...formData, is_bounty_claim: false };
       
       if (!isEdit) {
         // For new carwash, include all data including address
