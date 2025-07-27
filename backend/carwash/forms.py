@@ -64,7 +64,7 @@ class CarWashPackageForm(forms.ModelForm):
 
     class Meta:
         model = CarWashPackage
-        exclude = ('created_by', 'updated_by', 'created_at', 'updated_at', 'status', 'car_wash', 'wash_types')
+        exclude = ('created_by', 'updated_by', 'created_at', 'updated_at', 'status', 'car_wash')
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
