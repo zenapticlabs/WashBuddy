@@ -216,6 +216,7 @@ class CarWashAdmin(ImportExportModelAdmin, CustomModelAdmin):
         CarWashImageInline,
         AmenityCarWashMappingInline
     ]
+    save_as = True
 
     def save_model(self, request, obj, form, change):
         if not change:
