@@ -52,6 +52,7 @@ export function RadarMap({
 
     // Extend bounds to include all car wash locations
     carWashes.forEach((carWash) => {
+      if (!carWash.location) return;
       bounds.extend(getLngLat(carWash.location.coordinates));
     });
 
@@ -156,6 +157,7 @@ export function RadarMap({
 
     // Add new markers
     carWashes?.forEach((carWash: CarWashResponse) => {
+      if (!carWash.location) return;
       const price =
         carWash.packages?.length > 0
           ? `$${Math.min(...carWash.packages.map((pkg) => Number(pkg.price)))}`
