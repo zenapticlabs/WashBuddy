@@ -92,7 +92,6 @@ const CarWashContent = () => {
       setAmenitiesLoading(false);
     });
   }, []);
-  useEffect(() => { }, [locationData]);
 
   useEffect(() => {
     if (locationData) {
