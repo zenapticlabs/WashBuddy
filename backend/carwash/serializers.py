@@ -185,7 +185,7 @@ class CarWashPostPatchSerializer(serializers.ModelSerializer):
     packages = CarWashPackagesPostPatchSerializer(many=True, required=False)
     payment_method = serializers.CharField(write_only=True, required=False)
     payment_handle = serializers.CharField(write_only=True, required=False)
-    is_bounty_claim = serializers.BooleanField(write_only=True, required=True)
+    is_bounty_claim = serializers.BooleanField(write_only=True, required=False)
 
     class Meta:
         model = CarWash
