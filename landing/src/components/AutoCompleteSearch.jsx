@@ -153,9 +153,17 @@ function AutoCompleteSearch() {
     rencentSeachesSetter();
   };
 
-  const onRecentSearchClick = (e) => {
-    const selectedAddress = e.target.innerText;
-    setQuery(selectedAddress);
+  const onRecentSearchClick = (recentLocation) => {
+    const displayText = [
+      recentLocation?.addressLabel,
+      recentLocation?.street,
+      recentLocation?.locality,
+      recentLocation?.state,
+    ]
+      .filter(Boolean)
+      .join(" ");
+    setQuery(displayText);
+    setSelectedLocation(recentLocation);
   };
 
   return (
@@ -248,7 +256,7 @@ function AutoCompleteSearch() {
                   <button
                     className="bg-neutral-50 rounded-[1000px] p-[10px] cursor-pointer opacity-80 hover:opacity-200"
                     key={index}
-                    onClick={onRecentSearchClick}
+                    onClick={() => onRecentSearchClick(address)}
                   >
                     {[
                       address?.addressLabel,
