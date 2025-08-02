@@ -17,6 +17,7 @@ from django.contrib.admin import DateFieldListFilter
 from django.contrib.gis.geos import Point
 from .forms import CarWashForm, CarWashImageForm, CarWashOperatingHoursForm, CarWashPackageForm, CarWashUpdateRequestForm, OfferForm
 from unfold.contrib.inlines.admin import NonrelatedStackedInline
+from leaflet.admin import LeafletGeoAdmin
 
 from .models import (
     CarWash, 
@@ -202,7 +203,7 @@ class CarWashResource(resources.ModelResource):
         )
        
 @admin.register(CarWash)
-class CarWashAdmin(ImportExportModelAdmin, CustomModelAdmin):
+class CarWashAdmin(ImportExportModelAdmin, CustomModelAdmin, LeafletGeoAdmin):
     import_form_class = ImportForm
     export_form_class = ExportForm
     resource_class = CarWashResource

@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     'import_export',
     'drf_spectacular',
     'django_select2',
+    'leaflet'
 ]
 
 REST_FRAMEWORK = {
@@ -222,3 +223,9 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+LEAFLET_CONFIG = {
+    'DEFAULT_CENTER': (38.023, -76.87),
+    'DEFAULT_ZOOM': 3,
+    'SCALE': 'both',
+}
