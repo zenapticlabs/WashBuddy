@@ -3,6 +3,8 @@ import { Image } from "astro:assets";
 import carwash from "../assets/Car_wash.svg";
 import portal from "../assets/Portal.svg";
 import portalblue from "../assets/Portal_b.svg";
+
+const mainPageUrl = import.meta.env.PUBLIC_MAIN_PAGE_URL;
 ---
 
 <div class="container mx-auto flex md:py-20 md:px-6 gap-24 max-lg:gap-16 max-lg:flex-col max-lg:p-6 max-lg:mt-9">
@@ -31,10 +33,12 @@ import portalblue from "../assets/Portal_b.svg";
         >
             List your car wash here 
         </p>
-        <button class="bg-[#189DEF] px-6 py-2 rounded-lg text-[#F8FCFF] text-base font-semibold whitespace-nowrap max-lg:w-full max-lg:h-[48px] max-lg:mt-2.5 cursor-pointer"
+        <a 
+            href={`${mainPageUrl}/carwash`}
+            class="bg-[#189DEF] px-6 py-2 rounded-lg text-[#F8FCFF] text-base font-semibold whitespace-nowrap max-lg:w-full max-lg:h-[48px] max-lg:mt-2.5 cursor-pointer inline-block text-center"
         >
             List your car wash
-        </button>
+        </a>
         </div>
         <div class="p-6 rounded-3xl hover:shadow-[0px_4px_64px_0px_rgba(182,182,182,0.25)] flex flex-col justify-center items-center cursor-pointer max-h-[232px] max-lg:shadow-[0px_4px_64px_0px_rgba(182,182,182,0.25)] max-lg:h-[227px]"
         >
@@ -60,10 +64,12 @@ import portalblue from "../assets/Portal_b.svg";
         >
         Update your portal here 
         </p>
-        <button class=" bg-[#189DEF] px-6 py-2 rounded-lg text-[#F8FCFF] text-base font-semibold whitespace-nowrap max-lg:w-full max-lg:h-[48px] max-lg:mt-2.5 cursor-pointer"
+        <a 
+            href={`${mainPageUrl}`}
+            class="bg-[#189DEF] px-6 py-2 rounded-lg text-[#F8FCFF] text-base font-semibold whitespace-nowrap max-lg:w-full max-lg:h-[48px] max-lg:mt-2.5 cursor-pointer inline-block text-center"
         >
-        Update your portal
-        </button>
+            Update your portal
+        </a>
         </div>
     </div>
 </div>
