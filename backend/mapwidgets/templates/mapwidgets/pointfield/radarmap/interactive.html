@@ -1,0 +1,69 @@
+{% load i18n %}
+
+<div class="mw-wrap" id="{{ name }}-mw-wrap">
+    {% block container %}
+        <div class="mw-header">
+            {% block header %}
+                <div class="mw-map-wrapper">
+                    <input type="text" class="form-control" id="{{ name }}-mw-radar-address-input"
+                            role="presentation" autocomplete="off"
+                            placeholder="{% trans 'Find a Location by Address' %}"/>
+                </div>
+                <div style="display: none" class="hide">
+                    <textarea id="{{ id }}" name="{{ name }}">{{ serialized }}</textarea>
+                    {% block extra_input %}
+                    {% endblock extra_input %}
+
+                </div>
+                
+            {% endblock header %}
+        </div>
+    {% endblock container %}
+</div>
+
+{% block javascript %}
+    <script type="application/javascript">
+        (function ($) {
+            const mapOptions = JSON.parse("{{ options|escapejs }}");
+            const fieldValue = JSON.parse("{{ field_value|escapejs }}");
+
+            const wrapElemSelector = "#{{ name }}-mw-wrap";
+            const mapElemID = "{{ name }}-map-elem";
+            const mapboxGeocoderWrapID = "{{ name }}-geocoder-wrap";
+            const locationInputID = "#{{ id }}";
+            const radarMapAutoInputId = "{{ name }}-mw-radar-address-input";
+
+            const mapWidgetOptions = {
+                djangoInput: $(locationInputID),
+                geocoderWrapID: mapboxGeocoderWrapID,
+                geocoderInputPlaceholderText: "{% trans 'Find a Location by Address' %}",
+                wrapElemSelector: wrapElemSelector,
+                djangoGeoJSONValue: fieldValue,
+                mapElement: document.getElementById(mapElemID),
+                mapCenterLocationName: mapOptions.mapCenterLocationName,
+                mapCenterLocation: mapOptions.mapCenterLocation,
+                coordinatesOverlayToggleBtn: $(".mw-btn-coordinates", wrapElemSelector),
+                coordinatesOverlayDoneBtn: $(".mw-btn-coordinates-done", wrapElemSelector),
+                coordinatesOverlayInputs: $(".mw-overlay-input", wrapElemSelector),
+                coordinatesOverlay: $(".mw-coordinates-overlay", wrapElemSelector),
+                myLocationBtn: $(".mw-btn-my-location", wrapElemSelector),
+                mapOptions: mapOptions,
+                addressAutoCompleteInput: document.getElementById(radarMapAutoInputId),
+                deleteBtn: $(".mw-btn-delete", wrapElemSelector),
+                addMarkerBtn: $(".mw-btn-add-marker", wrapElemSelector),
+                loaderOverlayElem: $(".mw-loader-overlay", wrapElemSelector),
+                zoom: mapOptions.zoom,
+                markerFitZoom: mapOptions.markerFitZoom,
+                streetViewControl: mapOptions.streetViewControl,
+                markerCreateTriggerNameSpace: "mapboxPointFieldWidget:markerCreate",
+                markerChangeTriggerNameSpace: "mapboxPointFieldWidget:markerChange",
+                markerDeleteTriggerNameSpace: "mapboxPointFieldWidget:markerDelete",
+                placeChangedTriggerNameSpace: "mapboxPointFieldWidget:placeChanged"
+            };
+            new DjangoRadarMapPointFieldWidget(mapWidgetOptions);
+            {% block extra_javascript %}
+
+            {% endblock %}
+        })(mapWidgets.jQuery);
+    </script>
+{% endblock javascript %}

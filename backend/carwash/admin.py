@@ -15,9 +15,10 @@ from unfold.widgets import UnfoldAdminSingleTimeWidget, UnfoldBooleanSwitchWidge
 from django.contrib.admin.widgets import AutocompleteSelect
 from django.contrib.admin import DateFieldListFilter
 from django.contrib.gis.geos import Point
-from .forms import CarWashForm, CarWashImageForm, CarWashOperatingHoursForm, CarWashPackageForm, CarWashUpdateRequestForm, OfferForm
+from .forms import CarWashFormInline, CarWashImageForm, CarWashOperatingHoursForm, CarWashPackageForm, CarWashUpdateRequestForm, OfferForm
 from unfold.contrib.inlines.admin import NonrelatedStackedInline
-from leaflet.admin import LeafletGeoAdmin
+from django.contrib.gis.db import models
+from mapwidgets import widgets
 
 from .models import (
     CarWash, 
@@ -203,7 +204,7 @@ class CarWashResource(resources.ModelResource):
         )
        
 @admin.register(CarWash)
-class CarWashAdmin(ImportExportModelAdmin, CustomModelAdmin, LeafletGeoAdmin):
+class CarWashAdmin(ImportExportModelAdmin, CustomModelAdmin):
     import_form_class = ImportForm
     export_form_class = ExportForm
     resource_class = CarWashResource
@@ -218,6 +219,9 @@ class CarWashAdmin(ImportExportModelAdmin, CustomModelAdmin, LeafletGeoAdmin):
         AmenityCarWashMappingInline
     ]
     save_as = True
+    formfield_overrides = {
+        models.PointField: {"widget": widgets.RadarMapPointFieldWidget}
+    }
 
     def save_model(self, request, obj, form, change):
         if not change:
@@ -402,7 +406,7 @@ class ProposedCarWashInline(NonrelatedStackedInline):
     extra = 0
     can_delete = False
     show_change_link = False
-    form = CarWashForm
+    form = CarWashFormInline
     hide_title = True
 
     def get_form_queryset(self, obj):
