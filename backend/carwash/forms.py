@@ -10,7 +10,7 @@ class CarWashUpdateRequestForm(forms.ModelForm):
         model = CarWashUpdateRequest
         exclude = ('proposed_changes', )
 
-class CarWashForm(forms.ModelForm):
+class CarWashFormInline(forms.ModelForm):
     latitude = forms.FloatField(required=False, widget=UnfoldAdminDecimalFieldWidget())
     longitude = forms.FloatField(required=False, widget=UnfoldAdminDecimalFieldWidget())
 
