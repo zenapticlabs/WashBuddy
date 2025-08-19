@@ -233,7 +233,7 @@ class CarWashAdmin(ImportExportModelAdmin, CustomModelAdmin):
         if location_information.get('addresses') and len(location_information['addresses']) > 0:
             location_info = location_information['addresses'][0]
             save_location_information(obj, location_info)
-            
+
         super().save_model(request, obj, form, change)
 
 @admin.register(CarWashPackage)
