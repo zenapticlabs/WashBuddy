@@ -2,6 +2,8 @@ import jwt
 import os
 import logging
 from rest_framework.exceptions import AuthenticationFailed
+import requests
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
@@ -54,3 +56,40 @@ class FakeQuerySet:
 
     def __getitem__(self, item):
         return self._instances[item]
+    
+def getLocationFromCoordinates(latitude, longitude):
+
+    url = f"https://api.radar.io/v1/geocode/reverse?coordinates={latitude},{longitude}"
+
+    headers = {
+        'Authorization': settings.PUBLIC_RADAR_API_KEY
+    }
+
+    response = requests.request("GET", url, headers=headers, data={})
+
+    return response.json()
+
+
+def save_location_information(obj, location_information):
+    """
+    Save location information to the CarWash instance.
+    """
+    if location_information.get('street'):
+        obj.street = location_information['street']
+    if location_information.get('city'):
+        obj.city = location_information['city']
+    if location_information.get('state'):
+        obj.state = location_information['state']
+    if location_information.get('stateCode'):
+        obj.state_code = location_information['stateCode']
+    if location_information.get('postalCode'):
+        obj.postal_code = location_information['postalCode']
+    if location_information.get('country'):
+        obj.country = location_information['country']
+    if location_information.get('countryCode'):
+        obj.country_code = location_information['countryCode']
+    if location_information.get('formattedAddress'):
+        obj.formatted_address = location_information['formattedAddress']
+
+    obj.save()
+    return obj

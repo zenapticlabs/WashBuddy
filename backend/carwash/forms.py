@@ -102,3 +102,10 @@ class OfferForm(forms.ModelForm):
                 pass
         elif self.instance.pk:
             self.fields['package'].queryset = CarWashPackage.objects.filter(car_wash=self.instance.package.car_wash)
+
+
+class CarWashForm(forms.ModelForm):
+
+    class Meta:
+        model = CarWash
+        exclude = ["street", "city", "state", "state_code", "postal_code", "country", "country_code", "formatted_address"]

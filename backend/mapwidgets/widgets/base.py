@@ -21,7 +21,6 @@ class BasePointFieldInteractiveWidget(SettingsMixin, forms.BaseGeometryWidget):
 
     def get_js_paths(self, extra_js=None, minified=False):
         extra_js = extra_js or []
-        print("ASDBC ", self.settings, flush=True)
         media_settings = self.settings.media
         return extra_js + (
             media_settings.js.minified if minified else media_settings.js.dev

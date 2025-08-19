@@ -224,9 +224,10 @@ EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
+PUBLIC_RADAR_API_KEY = os.environ.get('PUBLIC_RADAR_API_KEY')
 
 MAP_WIDGETS = {
     "RadarMap": {
-        "apiKey": os.environ.get('PUBLIC_RADAR_API_KEY'),
+        "apiKey": PUBLIC_RADAR_API_KEY,
     }
 }

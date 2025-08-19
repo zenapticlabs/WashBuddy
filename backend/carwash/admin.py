@@ -1,6 +1,6 @@
 from copy import deepcopy
 from django.contrib import admin
-from .utils import FakeQuerySet
+from .utils import FakeQuerySet, getLocationFromCoordinates, save_location_information
 from unfold.admin import ModelAdmin
 from import_export.admin import ImportExportModelAdmin
 from unfold.contrib.import_export.forms import ExportForm, ImportForm
@@ -15,7 +15,7 @@ from unfold.widgets import UnfoldAdminSingleTimeWidget, UnfoldBooleanSwitchWidge
 from django.contrib.admin.widgets import AutocompleteSelect
 from django.contrib.admin import DateFieldListFilter
 from django.contrib.gis.geos import Point
-from .forms import CarWashFormInline, CarWashImageForm, CarWashOperatingHoursForm, CarWashPackageForm, CarWashUpdateRequestForm, OfferForm
+from .forms import CarWashForm, CarWashFormInline, CarWashImageForm, CarWashOperatingHoursForm, CarWashPackageForm, CarWashUpdateRequestForm, OfferForm
 from unfold.contrib.inlines.admin import NonrelatedStackedInline
 from django.contrib.gis.db import models
 from mapwidgets import widgets
@@ -222,11 +222,18 @@ class CarWashAdmin(ImportExportModelAdmin, CustomModelAdmin):
     formfield_overrides = {
         models.PointField: {"widget": widgets.RadarMapPointFieldWidget}
     }
+    form = CarWashForm
 
     def save_model(self, request, obj, form, change):
         if not change:
             obj.created_by = request.user
         obj.updated_by = request.user
+
+        location_information = getLocationFromCoordinates(obj.location.y, obj.location.x)
+        if location_information.get('addresses') and len(location_information['addresses']) > 0:
+            location_info = location_information['addresses'][0]
+            save_location_information(obj, location_info)
+
         super().save_model(request, obj, form, change)
 
 @admin.register(CarWashPackage)
