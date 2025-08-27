@@ -471,8 +471,14 @@ class ProposedOperatingHoursInline(NonrelatedStackedInline):
 
         query_objects = []
         for operating_hour in operating_hours:
+            object_formed = {
+                "day_of_week": operating_hour.get('day_of_week', 0),
+                "is_closed": operating_hour.get('is_closed', False),
+                "opening_time": operating_hour.get('opening_time', None),
+                "closing_time": operating_hour.get('closing_time', None),
+            }
             car_wash_operating_hours_object = self.model(
-                **operating_hour,
+                **object_formed,
             )
             query_objects.append(car_wash_operating_hours_object)
         qs = FakeQuerySet(query_objects)
@@ -500,11 +506,15 @@ class ProposedImagesInline(NonrelatedStackedInline):
         """
         proposed_changes = deepcopy(obj.proposed_changes)
         images = proposed_changes.pop('images', [])
-
+        
         query_objects = []
         for image_obj in images:
+            object_formed = {
+                "image_url": image_obj.get('image_url', ''),
+                "image_type": image_obj.get('image_type', '')
+            }
             car_wash_images_object = self.model(
-                **image_obj,
+                **object_formed,
             )
             query_objects.append(car_wash_images_object)
         qs = FakeQuerySet(query_objects)
@@ -537,9 +547,17 @@ class ProposedPackagesInline(NonrelatedStackedInline):
         for package_obj in packages:
             package_obj.pop('wash_types', [])
             package_obj.pop('id', 0)
+            
+            object_formed = {
+                "name": package_obj.get('name', ''),
+                "description": package_obj.get('description', None),
+                "price": package_obj.get('price', 0),
+                "rate_duration": package_obj.get('rate_duration', 0),
+                "category": package_obj.get('category', 'automatic')
+            }
 
             car_wash_packages_object = self.model(
-                **package_obj
+                **object_formed
             )
             query_objects.append(car_wash_packages_object)
         qs = FakeQuerySet(query_objects)
