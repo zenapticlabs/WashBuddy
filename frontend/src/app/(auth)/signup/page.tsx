@@ -261,7 +261,7 @@ function SignupContent() {
             />
             Continue with Google
           </Button>
-          <Button
+          {/* <Button
             variant="outline"
             className="w-full border-neutral-100 flex items-center gap-2"
           >
@@ -281,7 +281,7 @@ function SignupContent() {
               height={18}
             />
             Continue with Facebook
-          </Button>
+          </Button> */}
         </div>
         <div className="text-body-2">
           By signing up you accept our{" "}

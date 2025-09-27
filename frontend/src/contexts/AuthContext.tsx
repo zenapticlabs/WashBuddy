@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { User } from "@supabase/supabase-js";
 import { getUserStats } from "@/services/AuthService";
+import { usePostHog } from 'posthog-js/react';
 
 
 type AuthContextType = {
@@ -31,6 +32,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const supabase = createClientComponentClient();
+  const posthog = usePostHog();
+
+  // Track user identification in PostHog
+  useEffect(() => {
+    if (user && posthog) {
+      console.log('👤 Identifying user in PostHog:', user.id);
+      
+      // Identify user with their unique ID
+      posthog.identify(user.id, {
+        email: user.email,
+        created_at: user.created_at,
+        last_sign_in_at: user.last_sign_in_at,
+        email_confirmed_at: user.email_confirmed_at,
+        // Add any custom user properties from user_metadata
+        ...(user.user_metadata && {
+          first_name: user.user_metadata.firstName,
+          last_name: user.user_metadata.lastName,
+        })
+      });
+
+      // Set user properties
+      posthog.people.set({
+        email: user.email,
+        created_at: user.created_at,
+        last_sign_in_at: user.last_sign_in_at,
+        ...(user.user_metadata && {
+          first_name: user.user_metadata.firstName,
+          last_name: user.user_metadata.lastName,
+        })
+      });
+    } else if (!user && posthog) {
+      console.log('👤 User logged out, resetting PostHog');
+      // Reset PostHog when user logs out
+      posthog.reset();
+    }
+  }, [user, posthog]);
 
   useEffect(() => {
     // Check active sessions and sets the user

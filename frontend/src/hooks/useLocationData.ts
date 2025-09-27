@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 
 interface LocationData {
   address: string;
@@ -22,7 +22,7 @@ const useLocationData = () => {
   const [locationData, setLocationData] = useState<LocationData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [retryCount, setRetryCount] = useState(0);
+  const retryCountRef = useRef(0);
 
   const fetchLocationFromCoordinates = useCallback(async (lat: number, lng: number) => {
     try {
@@ -126,14 +126,14 @@ const useLocationData = () => {
         },
       });
 
-      setRetryCount(0);
+      retryCountRef.current = 0;
       setError(null);
     } catch (err) {
       console.error("Location error:", err);
 
-      if (retryCount < MAX_RETRIES) {
-        setRetryCount((prev) => prev + 1);
-        setError(`Retrying... Attempt ${retryCount + 1} of ${MAX_RETRIES}`);
+      if (retryCountRef.current < MAX_RETRIES) {
+        retryCountRef.current += 1;
+        setError(`Retrying... Attempt ${retryCountRef.current} of ${MAX_RETRIES}`);
         // Retry after a short delay
         setTimeout(() => {
           fetchLocationData();
@@ -162,19 +162,19 @@ const useLocationData = () => {
         }
 
         setError(errorMessage);
-        setRetryCount(0);
+        retryCountRef.current = 0;
       }
     } finally {
-      if (retryCount >= MAX_RETRIES) {
+      if (retryCountRef.current >= MAX_RETRIES) {
         setLoading(false);
       }
     }
-  }, [retryCount]);
+  }, []);
 
-  return { 
-    locationData, 
-    error, 
-    loading, 
+  return {
+    locationData,
+    error,
+    loading,
     fetchLocationData,
     fetchLocationFromCoordinates
   };

@@ -7,6 +7,7 @@ from django.db.models import Sum, Value, DecimalField, FloatField, Q
 from django.db.models.functions import Coalesce
 from django.db.models import Min, DecimalField, Value
 
+
 class DynamicSearchFilter(filters.SearchFilter):
     def get_search_fields(self, view, request):
         search_fields = request.GET.get("search_fields")
@@ -15,82 +16,138 @@ class DynamicSearchFilter(filters.SearchFilter):
         else:
             return search_fields
 
+
 class CustomOrderingCarWashFilter(django_filters.OrderingFilter):
     def filter(self, qs, value):
         if not value:
             return qs
 
         custom_ordering = {
-            'price_high_to_low': ['-min_price', 'car_wash_name'],
-            'price_low_to_high': ['min_price', 'car_wash_name'],
-            'recommended': ['-reviews_average'],
-            "distance_near_to_far": ["distance"]
+            "price_high_to_low": ["-min_price", "car_wash_name"],
+            "price_low_to_high": ["min_price", "car_wash_name"],
+            "recommended": ["-reviews_average"],
+            "distance_near_to_far": ["distance"],
         }
 
-        if value[0] in ['price_high_to_low', 'price_low_to_high']:
+        if value[0] in ["price_high_to_low", "price_low_to_high"]:
             qs = qs.annotate(
-                min_price=Coalesce(Min("packages__price"), Value(0, output_field=DecimalField()))
+                min_price=Coalesce(
+                    Min("packages__price"), Value(0, output_field=DecimalField())
+                )
             )
 
         ordering = custom_ordering.get(value[0], value)
         return qs.order_by(*ordering)
+
 
 class ListCarWashFilter(django_filters.FilterSet):
     """
     Filter class for car wash list.
     """
 
-    carWashName = django_filters.BaseInFilter(field_name="car_wash_name", lookup_expr='in')
-    country = django_filters.BaseInFilter(field_name="country", lookup_expr='in')
-    countryCode = django_filters.BaseInFilter(field_name="country_code", lookup_expr='in')
-    state = django_filters.BaseInFilter(field_name="state", lookup_expr='in')
-    city = django_filters.BaseInFilter(field_name="city", lookup_expr='in')
-    stateCode = django_filters.BaseInFilter(field_name="state_code", lookup_expr='in')
-    reviewsCount = django_filters.BaseInFilter(field_name="reviews_count", lookup_expr='in')
-    automaticCarWash = django_filters.BooleanFilter(field_name="automatic_car_wash")
-    selfServiceCarWash = django_filters.BooleanFilter(field_name="self_service_car_wash")
+    carWashName = django_filters.BaseInFilter(
+        field_name="car_wash_name", lookup_expr="in"
+    )
+    country = django_filters.BaseInFilter(field_name="country", lookup_expr="in")
+    countryCode = django_filters.BaseInFilter(
+        field_name="country_code", lookup_expr="in"
+    )
+    state = django_filters.BaseInFilter(field_name="state", lookup_expr="in")
+    city = django_filters.BaseInFilter(field_name="city", lookup_expr="in")
+    stateCode = django_filters.BaseInFilter(field_name="state_code", lookup_expr="in")
+    reviewsCount = django_filters.BaseInFilter(
+        field_name="reviews_count", lookup_expr="in"
+    )
+    automaticCarWash = django_filters.BooleanFilter(method="filter_automatic_car_wash")
+    selfServiceCarWash = django_filters.BooleanFilter(
+        method="filter_self_service_car_wash"
+    )
     open24Hours = django_filters.BooleanFilter(field_name="open_24_hours")
     verified = django_filters.BooleanFilter(field_name="verified")
-    washTypeName = django_filters.BaseInFilter(field_name="packages__wash_types__name", lookup_expr='in')
-    washTypeSubClass = django_filters.BaseInFilter(field_name="packages__wash_types__subclass", lookup_expr='in')
-    washTypeCategory = django_filters.BaseInFilter(field_name="packages__category", lookup_expr='in')
-    amenityName = django_filters.BaseInFilter(field_name="amenities__name", lookup_expr='in')
-    amenityCategory = django_filters.BaseInFilter(field_name="amenities__category", lookup_expr='in')
-    sortBy = CustomOrderingCarWashFilter(fields=(
-            ('id', 'id'),
-            ('car_wash_name', 'car_wash_name'),
-            ('created_at', 'created_at'),
-            ('price_high_to_low', 'price_high_to_low'),
-            ('price_low_to_high', 'price_low_to_high'),
-            ('recommended', 'recommended'),
-            ('distance_near_to_far', 'distance_near_to_far'),
-        ))
-    searchLocations = django_filters.BaseInFilter(method='filter_search', label='Search Locations')
-    price_lte = django_filters.BaseInFilter(method='price', label='Price Range')
-    userLat = django_filters.NumberFilter(method="filter_user_location", label="User's search Latitude")
-    userLng = django_filters.NumberFilter(method="filter_user_location", label="User's search Longitude")
-    distance = django_filters.NumberFilter(method="get_nearest_shops", label="Distance in miles of radius")
-    offers = django_filters.BaseInFilter(field_name="packages__offer__offer_type", lookup_expr='in')
-    active_bounty = django_filters.BooleanFilter(field_name="active_bounty", label="Active Bounty")
-    
+    washTypeName = django_filters.BaseInFilter(
+        field_name="packages__wash_types__name", lookup_expr="in"
+    )
+    washTypeSubClass = django_filters.BaseInFilter(
+        field_name="packages__wash_types__subclass", lookup_expr="in"
+    )
+    washTypeCategory = django_filters.BaseInFilter(
+        field_name="packages__category", lookup_expr="in"
+    )
+    amenityName = django_filters.BaseInFilter(
+        field_name="amenities__name", lookup_expr="in"
+    )
+    amenityCategory = django_filters.BaseInFilter(
+        field_name="amenities__category", lookup_expr="in"
+    )
+    sortBy = CustomOrderingCarWashFilter(
+        fields=(
+            ("id", "id"),
+            ("car_wash_name", "car_wash_name"),
+            ("created_at", "created_at"),
+            ("price_high_to_low", "price_high_to_low"),
+            ("price_low_to_high", "price_low_to_high"),
+            ("recommended", "recommended"),
+            ("distance_near_to_far", "distance_near_to_far"),
+        )
+    )
+    searchLocations = django_filters.BaseInFilter(
+        method="filter_search", label="Search Locations"
+    )
+    price_lte = django_filters.BaseInFilter(method="price", label="Price Range")
+    userLat = django_filters.NumberFilter(
+        method="filter_user_location", label="User's search Latitude"
+    )
+    userLng = django_filters.NumberFilter(
+        method="filter_user_location", label="User's search Longitude"
+    )
+    distance = django_filters.NumberFilter(
+        method="get_nearest_shops", label="Distance in miles of radius"
+    )
+    offers = django_filters.BaseInFilter(
+        field_name="packages__offer__offer_type", lookup_expr="in"
+    )
+    active_bounty = django_filters.BooleanFilter(
+        field_name="active_bounty", label="Active Bounty"
+    )
+
     class Meta:
         model = CarWash
-        fields = ("carWashName", "country", "countryCode", "state", "city", "stateCode", "reviewsCount", 
-                  "automaticCarWash", "selfServiceCarWash", "open24Hours", "verified", "washTypeName", 
-                  "washTypeSubClass", "washTypeCategory", "amenityName", "amenityCategory", "distance",
-                  "sortBy", "offers", "active_bounty")
-        
+        fields = (
+            "carWashName",
+            "country",
+            "countryCode",
+            "state",
+            "city",
+            "stateCode",
+            "reviewsCount",
+            "automaticCarWash",
+            "selfServiceCarWash",
+            "open24Hours",
+            "verified",
+            "washTypeName",
+            "washTypeSubClass",
+            "washTypeCategory",
+            "amenityName",
+            "amenityCategory",
+            "distance",
+            "sortBy",
+            "offers",
+            "active_bounty",
+        )
+
     def filter_user_location(self, queryset, name, value):
         return queryset
-        
+
     def get_nearest_shops(self, queryset, name, value):
         if value:
             return queryset.filter(distance__lte=float(value))
         return queryset
-    
+
     def price(self, queryset, name, value):
         queryset = queryset.annotate(
-            min_price=Coalesce(Min("packages__price"), Value(0, output_field=DecimalField()))
+            min_price=Coalesce(
+                Min("packages__price"), Value(0, output_field=DecimalField())
+            )
         )
         if value:
             return queryset.filter(min_price__lte=float(value[0]))
@@ -98,16 +155,34 @@ class ListCarWashFilter(django_filters.FilterSet):
 
     def filter_search(self, queryset, name, value):
         return queryset.filter(
-            Q(street__icontains=value) |
-            Q(city__icontains=value) |
-            Q(state__icontains=value) |
-            Q(state_code__icontains=value) |
-            Q(postal_code__icontains=value) |
-            Q(country__icontains=value) |
-            Q(country_code__icontains=value) |
-            Q(formatted_address__icontains=value)
+            Q(street__icontains=value)
+            | Q(city__icontains=value)
+            | Q(state__icontains=value)
+            | Q(state_code__icontains=value)
+            | Q(postal_code__icontains=value)
+            | Q(country__icontains=value)
+            | Q(country_code__icontains=value)
+            | Q(formatted_address__icontains=value)
         )
-    
+
+    def filter_automatic_car_wash(self, queryset, name, value):
+        """
+        If automaticCarWash is true, return only car washes that have packages
+        with category="automatic"
+        """
+        if value:
+            return queryset.filter(packages__category="automatic").distinct()
+        return queryset
+
+    def filter_self_service_car_wash(self, queryset, name, value):
+        """
+        If selfServiceCarWash is true, return only car washes that have packages
+        with category="selfservice"
+        """
+        if value:
+            return queryset.filter(packages__category="selfservice").distinct()
+        return queryset
+
 
 class CustomOrderingCarWashReviewFilter(django_filters.OrderingFilter):
     def filter(self, qs, value):
@@ -115,13 +190,14 @@ class CustomOrderingCarWashReviewFilter(django_filters.OrderingFilter):
             return qs
 
         custom_ordering = {
-            'newest': ['-created_at'],
-            'highest': ['-overall_rating'],
-            'lowest': ['overall_rating'],
+            "newest": ["-created_at"],
+            "highest": ["-overall_rating"],
+            "lowest": ["overall_rating"],
         }
-                
+
         ordering = custom_ordering.get(value[0], value)
         return qs.order_by(*ordering)
+
 
 class ListCarWashReviewFilter(django_filters.FilterSet):
     """
@@ -129,66 +205,149 @@ class ListCarWashReviewFilter(django_filters.FilterSet):
     """
 
     carWashId = django_filters.BaseInFilter(field_name="car_wash__id")
-    carWashName = django_filters.BaseInFilter(field_name="car_wash__car_wash_name", lookup_expr='in')
-    searchText = django_filters.CharFilter(field_name="comment", lookup_expr='icontains')
-    sortBy = CustomOrderingCarWashReviewFilter(fields=(
-            ('id', 'id'),
-            ('relevance', 'relevance'),
-            ('newest', 'newest'),
-            ('highest', 'highest'),
-            ('lowest', 'lowest')
-        ))
+    carWashName = django_filters.BaseInFilter(
+        field_name="car_wash__car_wash_name", lookup_expr="in"
+    )
+    searchText = django_filters.CharFilter(
+        field_name="comment", lookup_expr="icontains"
+    )
+    sortBy = CustomOrderingCarWashReviewFilter(
+        fields=(
+            ("id", "id"),
+            ("relevance", "relevance"),
+            ("newest", "newest"),
+            ("highest", "highest"),
+            ("lowest", "lowest"),
+        )
+    )
 
     class Meta:
         model = CarWashReview
-        fields = ("carWashId", "carWashName", "overall_rating", "wash_quality_rating", "price_value_rating", "facility_cleanliness_rating", "customer_service_rating", 
-                  "amenities_extra_rating", "searchText", "sortBy")
+        fields = (
+            "carWashId",
+            "carWashName",
+            "overall_rating",
+            "wash_quality_rating",
+            "price_value_rating",
+            "facility_cleanliness_rating",
+            "customer_service_rating",
+            "amenities_extra_rating",
+            "searchText",
+            "sortBy",
+        )
+
 
 class ListCarWashCodeFilter(django_filters.FilterSet):
     """
     Filter class for car wash code list.
     """
-    
-    offer = django_filters.BaseInFilter(field_name="offer__id", lookup_expr='in')
-    is_used = django_filters.BaseInFilter(field_name="is_used", lookup_expr='in')
-    code = django_filters.BaseInFilter(field_name="code", lookup_expr='in')
-    
+
+    offer = django_filters.BaseInFilter(field_name="offer__id", lookup_expr="in")
+    is_used = django_filters.BaseInFilter(field_name="is_used", lookup_expr="in")
+    code = django_filters.BaseInFilter(field_name="code", lookup_expr="in")
+
     class Meta:
         model = CarWashCode
         fields = ("offer", "is_used", "code")
+
 
 class ListOfferFilter(django_filters.FilterSet):
     """
     Filter class for offer list.
     """
-    
-    package = django_filters.BaseInFilter(field_name="package__id", lookup_expr='in')
-    offer_type = django_filters.BaseInFilter(field_name="offer_type", lookup_expr='in')
-    name = django_filters.BaseInFilter(field_name="name", lookup_expr='in')
+
+    package = django_filters.BaseInFilter(field_name="package__id", lookup_expr="in")
+    offer_type = django_filters.BaseInFilter(field_name="offer_type", lookup_expr="in")
+    name = django_filters.BaseInFilter(field_name="name", lookup_expr="in")
 
     # Car Wash filters
-    carWashName = django_filters.BaseInFilter(field_name="package__car_wash__car_wash_name", lookup_expr='in')
-    country = django_filters.BaseInFilter(field_name="package__car_wash__country", lookup_expr='in')
-    countryCode = django_filters.BaseInFilter(field_name="package__car_wash__country_code", lookup_expr='in')
-    state = django_filters.BaseInFilter(field_name="package__car_wash__state", lookup_expr='in')
-    city = django_filters.BaseInFilter(field_name="package__car_wash__city", lookup_expr='in')
-    stateCode = django_filters.BaseInFilter(field_name="package__car_wash__state_code", lookup_expr='in')
-    reviewsCount = django_filters.BaseInFilter(field_name="package__car_wash__reviews_count", lookup_expr='in')
-    automaticCarWash = django_filters.BooleanFilter(field_name="package__car_wash__automatic_car_wash")
-    selfServiceCarWash = django_filters.BooleanFilter(field_name="package__car_wash__self_service_car_wash")
-    open24Hours = django_filters.BooleanFilter(field_name="package__car_wash__open_24_hours")
+    carWashName = django_filters.BaseInFilter(
+        field_name="package__car_wash__car_wash_name", lookup_expr="in"
+    )
+    country = django_filters.BaseInFilter(
+        field_name="package__car_wash__country", lookup_expr="in"
+    )
+    countryCode = django_filters.BaseInFilter(
+        field_name="package__car_wash__country_code", lookup_expr="in"
+    )
+    state = django_filters.BaseInFilter(
+        field_name="package__car_wash__state", lookup_expr="in"
+    )
+    city = django_filters.BaseInFilter(
+        field_name="package__car_wash__city", lookup_expr="in"
+    )
+    stateCode = django_filters.BaseInFilter(
+        field_name="package__car_wash__state_code", lookup_expr="in"
+    )
+    reviewsCount = django_filters.BaseInFilter(
+        field_name="package__car_wash__reviews_count", lookup_expr="in"
+    )
+    automaticCarWash = django_filters.BooleanFilter(method="filter_automatic_car_wash")
+    selfServiceCarWash = django_filters.BooleanFilter(
+        method="filter_self_service_car_wash"
+    )
+    open24Hours = django_filters.BooleanFilter(
+        field_name="package__car_wash__open_24_hours"
+    )
     verified = django_filters.BooleanFilter(field_name="package__car_wash__verified")
-    washTypeName = django_filters.BaseInFilter(field_name="package__wash_types__name", lookup_expr='in')
-    washTypeSubClass = django_filters.BaseInFilter(field_name="package__wash_types__subclass", lookup_expr='in')
-    washTypeCategory = django_filters.BaseInFilter(field_name="package__category", lookup_expr='in')
-    amenityName = django_filters.BaseInFilter(field_name="package__car_wash__amenities__name", lookup_expr='in')
-    amenityCategory = django_filters.BaseInFilter(field_name="package__car_wash__amenities__category", lookup_expr='in')
-    active_bounty = django_filters.BooleanFilter(field_name="package__car_wash__active_bounty", label="Active Bounty")
-    
+    washTypeName = django_filters.BaseInFilter(
+        field_name="package__wash_types__name", lookup_expr="in"
+    )
+    washTypeSubClass = django_filters.BaseInFilter(
+        field_name="package__wash_types__subclass", lookup_expr="in"
+    )
+    washTypeCategory = django_filters.BaseInFilter(
+        field_name="package__category", lookup_expr="in"
+    )
+    amenityName = django_filters.BaseInFilter(
+        field_name="package__car_wash__amenities__name", lookup_expr="in"
+    )
+    amenityCategory = django_filters.BaseInFilter(
+        field_name="package__car_wash__amenities__category", lookup_expr="in"
+    )
+    active_bounty = django_filters.BooleanFilter(
+        field_name="package__car_wash__active_bounty", label="Active Bounty"
+    )
+
+    def filter_automatic_car_wash(self, queryset, name, value):
+        """
+        If automaticCarWash is true, return only offers for packages
+        with category="automatic"
+        """
+        if value:
+            return queryset.filter(package__category="automatic").distinct()
+        return queryset
+
+    def filter_self_service_car_wash(self, queryset, name, value):
+        """
+        If selfServiceCarWash is true, return only offers for packages
+        with category="selfservice"
+        """
+        if value:
+            return queryset.filter(package__category="selfservice").distinct()
+        return queryset
+
     class Meta:
         model = Offer
-        fields = ("package", "offer_type", "name", 
-                  "carWashName", "country", "countryCode", "state", "city", "stateCode", 
-                  "reviewsCount", "automaticCarWash", "selfServiceCarWash", "open24Hours", 
-                  "verified", "washTypeName", "washTypeSubClass", "washTypeCategory", 
-                  "amenityName", "amenityCategory", "active_bounty")
+        fields = (
+            "package",
+            "offer_type",
+            "name",
+            "carWashName",
+            "country",
+            "countryCode",
+            "state",
+            "city",
+            "stateCode",
+            "reviewsCount",
+            "automaticCarWash",
+            "selfServiceCarWash",
+            "open24Hours",
+            "verified",
+            "washTypeName",
+            "washTypeSubClass",
+            "washTypeCategory",
+            "amenityName",
+            "amenityCategory",
+            "active_bounty",
+        )

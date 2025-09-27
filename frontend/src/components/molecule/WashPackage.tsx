@@ -22,6 +22,7 @@ import { Car_Wash_Type, CarWashTypes, WashTypes } from "@/utils/constants";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import { useMetaPixel } from "@/hooks/useMetaPixel";
 
 
 // Initialize Stripe
@@ -39,6 +40,7 @@ const StripePaymentForm = ({ carWashPackage, onSuccess }: { carWashPackage: CarW
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [paymentStatus, setPaymentStatus] = useState<string | null>(null);
+  const metaPixel = useMetaPixel();
 
   const checkPaymentStatus = async (paymentIntentId: string) => {
     try {
@@ -47,6 +49,8 @@ const StripePaymentForm = ({ carWashPackage, onSuccess }: { carWashPackage: CarW
       setPaymentStatus(status);
 
       if (status === 'completed') {
+        // Track Purchase for Meta Pixel
+        metaPixel.trackPurchase(Number(carWashPackage.price), 'USD');
         onSuccess(response.data.carwash_code);
       } else if (status === 'failed') {
         setError(response.data.error_message || 'Payment failed');
@@ -62,6 +66,8 @@ const StripePaymentForm = ({ carWashPackage, onSuccess }: { carWashPackage: CarW
           if (pollResponse.data.status === 'completed') {
             clearInterval(pollInterval);
             setPaymentStatus('completed');
+            // Track Purchase for Meta Pixel
+            metaPixel.trackPurchase(Number(carWashPackage.price), 'USD');
             onSuccess(pollResponse.data.carwash_code);
           } else if (pollResponse.data.status === 'failed') {
             clearInterval(pollInterval);
@@ -89,6 +95,9 @@ const StripePaymentForm = ({ carWashPackage, onSuccess }: { carWashPackage: CarW
 
     setIsProcessing(true);
     setError(null);
+
+    // Track InitiateCheckout for Meta Pixel
+    metaPixel.trackInitiateCheckout();
 
     try {
       const { error: submitError, paymentIntent } = await stripe.confirmPayment({
@@ -144,6 +153,7 @@ const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
   const { toast } = useToast();
   const router = useRouter();
   const { washTypes } = useWashTypes();
+  const metaPixel = useMetaPixel();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showPurchase, setShowPurchase] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
@@ -225,6 +235,8 @@ const WashPackage: React.FC<WashPackageProps> = ({ data, carWash }) => {
       return;
     }
     setShowPurchase(true);
+    // Track AddToCart event for Meta Pixel
+    metaPixel.trackAddToCart();
   };
 
   const handleCopyCode = () => {

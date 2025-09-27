@@ -15,6 +15,8 @@ import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-
 import { useSearchParams } from "next/navigation";
 import { getCarwashById } from "@/services/CarwashService";
 import { CarWashPackage, CarWashResponse } from "@/types/CarServices";
+import { useAnalytics } from "@/hooks/useAnalytics";
+import { useMetaPixel } from "@/hooks/useMetaPixel";
 
 // Initialize Stripe
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
@@ -25,6 +27,8 @@ const StripePaymentForm = ({ carWashPackage }: { carWash: CarWashResponse, carWa
     const elements = useElements();
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const analytics = useAnalytics();
+    const metaPixel = useMetaPixel();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -37,6 +41,16 @@ const StripePaymentForm = ({ carWashPackage }: { carWash: CarWashResponse, carWa
         setError(null);
 
         try {
+            analytics.track('payment_initiated', { 
+                package_id: carWashPackage?.id,
+                package_name: carWashPackage?.name,
+                price: carWashPackage?.price,
+                payment_method: 'stripe'
+            });
+
+            // Track InitiateCheckout for Meta Pixel
+            metaPixel.trackInitiateCheckout();
+
             const { error } = await stripe.confirmPayment({
                 elements,
                 confirmParams: {
@@ -45,9 +59,22 @@ const StripePaymentForm = ({ carWashPackage }: { carWash: CarWashResponse, carWa
             });
 
             if (error) {
+                analytics.track('payment_failed', { 
+                    package_id: carWashPackage?.id,
+                    error: error.message,
+                    payment_method: 'stripe'
+                });
                 setError(error.message || 'An error occurred');
+            } else {
+                // Track Purchase for Meta Pixel on successful payment
+                metaPixel.trackPurchase(carWashPackage?.price || 0, 'USD');
             }
         } catch (error: any) {
+            analytics.track('payment_error', { 
+                package_id: carWashPackage?.id,
+                error: error.message,
+                payment_method: 'stripe'
+            });
             setError(error?.message || 'An unexpected error occurred');
         } finally {
             setIsProcessing(false);
@@ -78,6 +105,8 @@ const MainContent = () => {
     const searchParams = useSearchParams();
     const carWashId = searchParams.get('carWashId');
     const packageId = searchParams.get('packageId');
+    const analytics = useAnalytics();
+    const metaPixel = useMetaPixel();
 
     useEffect(() => {
         if (carWashId && packageId) {
@@ -90,7 +119,7 @@ const MainContent = () => {
                 setCarWashFetchLoading(false);
             });
         }
-    }, [carWashId, packageId]);
+    }, [carWashId, packageId, analytics]);
 
     // Fetch client secret when component mounts
     useEffect(() => {
@@ -143,7 +172,14 @@ const MainContent = () => {
                             <div className="p-4">
                                 <RadioGroup
                                     defaultValue="stripe"
-                                    onValueChange={(value) => setPaymentMethod(value)}
+                                    onValueChange={(value) => {
+                                        setPaymentMethod(value);
+                                        analytics.track('payment_method_selected', { 
+                                            payment_method: value,
+                                            package_id: carWashPackage?.id,
+                                            package_name: carWashPackage?.name
+                                        });
+                                    }}
                                 >
                                     <div className="flex items-center space-x-2 border-b border-neutral-100 pb-2">
                                         <RadioGroupItem value="venmo" id="r1" />

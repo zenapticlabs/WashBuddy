@@ -27,6 +27,7 @@ import OfferModal from "@/components/pages/main/OfferModal";
 import { getWashTypes } from "@/services/WashType";
 import { WashTypesProvider } from "@/contexts/WashTypesContext";
 import { getUserStats } from "@/services/AuthService";
+import { useMetaPixel } from "@/hooks/useMetaPixel";
 
 export default function Home() {
   const [washTypes, setWashTypes] = useState<IWashType[]>([]);
@@ -58,6 +59,7 @@ function HomeContent() {
   const RADAR_KEY = process.env.NEXT_PUBLIC_RADAR_API_KEY;
   const searchParams = useSearchParams();
   const { user } = useAuth();
+  const metaPixel = useMetaPixel();
   const [openAbout, setOpenAbout] = useState(false);
   const [selectedCarWash, setSelectedCarWash] =
     useState<CarWashResponse | null>(null);
@@ -224,9 +226,13 @@ function HomeContent() {
       userLat: center.latitude,
       userLng: center.longitude,
     });
+    // Track Search event for Meta Pixel
+    metaPixel.trackSearch();
   };
   const handleOfferClick = () => {
     setOfferOpen(true);
+    // Track AddToCart event for Meta Pixel
+    metaPixel.trackAddToCart();
   };
   return (
     <div className="flex flex-col h-screen">

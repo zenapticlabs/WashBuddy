@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { InputOTP } from "@/components/molecule/InputOTP";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useAnalytics } from "@/hooks/useAnalytics";
 
 // Separate component to use search params
 function LoginContent() {
@@ -23,6 +24,7 @@ function LoginContent() {
     user,
     signinWithPassword,
   } = useAuth();
+  const analytics = useAnalytics();
 
   // Get email and step from URL query parameters
   const email = searchParams.get('email') || '';
@@ -42,17 +44,20 @@ function LoginContent() {
       const { error } = await verifyOtp(email, otp.join(""));
 
       if (error) {
+        analytics.track('otp_verification_failed', { email, error: error.message });
         toast.error("An unexpected error occurred");
         return;
       }
+      analytics.trackUserLogin('otp');
       toast.success("OTP verified successfully");
       window.location.href = "/";
     } catch (error: any) {
+      analytics.track('otp_verification_error', { email, error: error.message });
       toast.error("Failed to verify OTP");
     } finally {
       setLoading(false);
     }
-  }, [email, otp, verifyOtp]);
+  }, [email, otp, verifyOtp, analytics]);
 
   // Add effect to watch for OTP completion
   useEffect(() => {
@@ -91,6 +96,7 @@ function LoginContent() {
     }
 
     setEmailError(null);
+    analytics.track('email_entered', { email });
     // Move to auth options step
     setStep(3);
   };
@@ -106,14 +112,17 @@ function LoginContent() {
     try {
       const { error } = await signinWithPassword(email, password);
       if (error) {
+        analytics.track('password_login_failed', { email, error: error.message });
         setPasswordError(error.message);
         toast.error(error.message);
         return;
       }
+      analytics.trackUserLogin('password');
       toast.success("Signed in successfully");
       window.location.href = "/";
     } catch (error: any) {
       const errorMessage = error?.message || "An unexpected error occurred";
+      analytics.track('password_login_error', { email, error: errorMessage });
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -126,12 +135,15 @@ function LoginContent() {
       const { error } = await signInWithOtp(email);
 
       if (error) {
+        analytics.track('otp_send_failed', { email, error: error.message });
         toast.error("An unexpected error occurred");
         return;
       }
+      analytics.track('otp_sent', { email });
       toast.success("OTP sent successfully");
       setStep(4);
     } catch (error: any) {
+      analytics.track('otp_send_error', { email, error: error.message });
       toast.error(error?.message || "Failed to send OTP");
     } finally {
       setLoading(false);
@@ -143,9 +155,13 @@ function LoginContent() {
     try {
       const { error } = await signInWithGoogle();
       if (error) {
+        analytics.track('google_login_failed', { error: error.message });
         toast.error("An unexpected error occurred");
+      } else {
+        analytics.trackUserLogin('google');
       }
     } catch (error: any) {
+      analytics.track('google_login_error', { error: error.message });
       toast.error(error?.message || "Failed to sign in with Google");
     } finally {
       setLoading(false);
@@ -197,7 +213,7 @@ function LoginContent() {
             />
             Continue with Google
           </Button>
-          <Button
+          {/* <Button
             variant="outline"
             className="w-full border-neutral-100 flex items-center gap-2"
           >
@@ -217,7 +233,7 @@ function LoginContent() {
               height={18}
             />
             Continue with Facebook
-          </Button>
+          </Button> */}
         </div>
         <div className="text-body-2">
           By signing up you accept our{" "}
