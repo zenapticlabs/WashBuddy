@@ -41,10 +41,39 @@ export function useCarWashes(filters: FilterState) {
     return offer.offer_type === 'ONE_TIME';
   };
 
+  // Haversine formula to calculate distance between two points in miles
+  const calculateDistance = (
+    lat1: number,
+    lon1: number,
+    lat2: number,
+    lon2: number
+  ): number => {
+    const R = 3959; // Earth's radius in miles
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c;
+
+    return distance;
+  };
+
+  // Helper function to convert degrees to radians
+  const toRad = (degrees: number): number => {
+    return degrees * (Math.PI / 180);
+  };
+
   const getLowestPricePackage = (packages: ExtendedCarWashPackage[]) => {
     let lowestPack: ExtendedCarWashPackage | null = null;
     let lowestPriceValue = Number.MAX_VALUE;
-    
+
     packages.forEach(pack => {
       // Check package base price
       const packagePrice: number = Number(pack.price);
@@ -78,22 +107,23 @@ export function useCarWashes(filters: FilterState) {
           modifiedFilters.offers = ["TIME_DEPENDENT", "ONE_TIME", "GEOGRAPHICAL"];
         } else if (filters.offerFilter.includes("2")) {
           modifiedFilters.active_bounty = true;
-        } 
+        }
       }
       const carWashResult = await getCarwashes(modifiedFilters);
       let modifiedCarWashes = carWashResult.data[0].results as ExtendedCarWash[];
 
       // Fetch offers
       const offerResult = await getOffers(modifiedFilters);
+      console.log("offerResult", offerResult);
       setOffers(offerResult.data);
-      
+
       // Match offers with packages
       modifiedCarWashes = modifiedCarWashes.map(carWash => ({
         ...carWash,
         packages: carWash.packages.map(pkg => {
           const matchingOffer = offerResult.data.find(
-            (offer: ICarOffer) => 
-              offer.package_id === pkg.id && 
+            (offer: ICarOffer) =>
+              offer.package_id === pkg.id &&
               offer.car_wash_id === carWash.id
           );
           return {
@@ -116,7 +146,27 @@ export function useCarWashes(filters: FilterState) {
 
       // Filter and sort hidden offers
       const hOffers = offerResult.data[0].results.filter((offer: ICarOffer) => {
-        return offer.offer_type === "GEOGRAPHICAL" && parseFloat(offer.radius_miles) <= 5;
+        if (offer.offer_type !== "GEOGRAPHICAL") {
+          return false;
+        }
+
+        // Find the car wash for this offer
+        const carWash = modifiedCarWashes.find(cw => cw.id === offer.car_wash_id);
+        if (!carWash || !carWash.location?.coordinates) {
+          return false;
+        }
+
+        // Calculate distance between user location and car wash location
+        const [carWashLng, carWashLat] = carWash.location.coordinates;
+        const distance = calculateDistance(
+          filters.userLat,
+          filters.userLng,
+          carWashLat,
+          carWashLng
+        );
+
+        // Check if user is within the offer's radius
+        return distance <= parseFloat(offer.radius_miles);
       });
 
       const sortedOffers = hOffers.sort((a: ICarOffer, b: ICarOffer) => {
@@ -126,6 +176,8 @@ export function useCarWashes(filters: FilterState) {
         }
         return priceComparison;
       });
+
+      console.log("sortedOffers", sortedOffers);
 
       setHiddenOffer(sortedOffers[0] || null);
     }

@@ -308,6 +308,12 @@ class ListOfferFilter(django_filters.FilterSet):
     active_bounty = django_filters.BooleanFilter(
         field_name="package__car_wash__active_bounty", label="Active Bounty"
     )
+    offerFilter = django_filters.BaseInFilter(
+        field_name="id",
+        lookup_expr="in",
+        label="Offer Filter",
+        method="filter_offer_filter",
+    )
 
     def filter_automatic_car_wash(self, queryset, name, value):
         """
@@ -325,6 +331,14 @@ class ListOfferFilter(django_filters.FilterSet):
         """
         if value:
             return queryset.filter(package__category="selfservice").distinct()
+        return queryset
+
+    def filter_offer_filter(self, queryset, name, value):
+        """
+        Filter offers by specific offer IDs. If empty or None, return all offers.
+        """
+        if value and len(value) > 0 and value[0]:  # Check if value is not empty
+            return queryset.filter(id__in=value)
         return queryset
 
     class Meta:
@@ -350,4 +364,5 @@ class ListOfferFilter(django_filters.FilterSet):
             "amenityName",
             "amenityCategory",
             "active_bounty",
+            "offerFilter",
         )

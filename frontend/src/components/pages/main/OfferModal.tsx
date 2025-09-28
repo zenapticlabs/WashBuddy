@@ -8,7 +8,7 @@ import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-
 import axiosInstance from "@/lib/axios";
 import { Sheet, SheetTitle } from "@/components/ui/sheet";
 import { SheetContent } from "@/components/ui/sheet";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, Loader2, CreditCard, AlertCircle, CheckCircle2 } from "lucide-react";
 import { getCarwashById } from "@/services/CarwashService";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,6 +18,95 @@ import { useMetaPixel } from "@/hooks/useMetaPixel";
 // Initialize Stripe
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
+// Animated Processing Screen Component
+const PaymentProcessingScreen = ({ status, error }: { status: string | null, error: string | null }) => {
+    if (!status && !error) return null;
+
+    const getStatusConfig = () => {
+        if (error) {
+            return {
+                icon: <AlertCircle className="h-8 w-8 text-red-500" />,
+                title: "Payment Failed",
+                message: error,
+                bgColor: "bg-red-50",
+                borderColor: "border-red-200",
+                textColor: "text-red-700"
+            };
+        }
+        
+        switch (status) {
+            case 'pending':
+                return {
+                    icon: <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />,
+                    title: "Processing Payment",
+                    message: "Please wait while we process your payment. This may take a few moments.",
+                    bgColor: "bg-blue-50",
+                    borderColor: "border-blue-200",
+                    textColor: "text-blue-700"
+                };
+            case 'processing':
+                return {
+                    icon: <CreditCard className="h-8 w-8 text-yellow-500 animate-pulse" />,
+                    title: "Payment in Progress",
+                    message: "Your payment is being processed. Please do not close this window.",
+                    bgColor: "bg-yellow-50",
+                    borderColor: "border-yellow-200",
+                    textColor: "text-yellow-700"
+                };
+            case 'completed':
+                return {
+                    icon: <CheckCircle2 className="h-8 w-8 text-green-500" />,
+                    title: "Payment Successful",
+                    message: "Your payment has been processed successfully!",
+                    bgColor: "bg-green-50",
+                    borderColor: "border-green-200",
+                    textColor: "text-green-700"
+                };
+            default:
+                return {
+                    icon: <Loader2 className="h-8 w-8 text-gray-500 animate-spin" />,
+                    title: "Processing",
+                    message: "Please wait...",
+                    bgColor: "bg-gray-50",
+                    borderColor: "border-gray-200",
+                    textColor: "text-gray-700"
+                };
+        }
+    };
+
+    const config = getStatusConfig();
+
+    return (
+        <div className={`p-4 rounded-lg border ${config.bgColor} ${config.borderColor} ${config.textColor}`}>
+            <div className="flex items-center space-x-3">
+                <div className="flex-shrink-0">
+                    {config.icon}
+                </div>
+                <div className="flex-1 min-w-0">
+                    <h3 className="text-sm font-medium mb-1">
+                        {config.title}
+                    </h3>
+                    <p className="text-xs opacity-90">
+                        {config.message}
+                    </p>
+                </div>
+            </div>
+            
+            {/* Animated progress bar for pending/processing states */}
+            {(status === 'pending' || status === 'processing') && (
+                <div className="mt-3">
+                    <div className="w-full bg-white bg-opacity-50 rounded-full h-1.5 overflow-hidden">
+                        <div className="h-full bg-current rounded-full animate-pulse" style={{
+                            width: '60%',
+                            animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                        }}></div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
 interface OfferModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
@@ -25,12 +114,21 @@ interface OfferModalProps {
 }
 
 // Stripe Payment Form Component
-const StripePaymentForm = ({ carOffer, onSuccess }: { carOffer: ICarOffer, onSuccess: (code: string) => void }) => {
+const StripePaymentForm = ({ carOffer, onSuccess, onStatusChange }: { 
+    carOffer: ICarOffer, 
+    onSuccess: (code: string) => void,
+    onStatusChange: (status: string | null, error: string | null) => void
+}) => {
     const stripe = useStripe();
     const elements = useElements();
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [paymentStatus, setPaymentStatus] = useState<string | null>(null);
+
+    // Notify parent component of status changes
+    useEffect(() => {
+        onStatusChange(paymentStatus, error);
+    }, [paymentStatus, error, onStatusChange]);
 
     const checkPaymentStatus = async (paymentIntentId: string) => {
         try {
@@ -113,18 +211,25 @@ const StripePaymentForm = ({ carOffer, onSuccess }: { carOffer: ICarOffer, onSuc
     return (
         <form onSubmit={handleSubmit} className="space-y-4 mb-2">
             <PaymentElement />
-            {error && <div className="text-red-500 text-sm">{error}</div>}
-            {paymentStatus && paymentStatus !== 'completed' && (
-                <div className={`text-sm ${paymentStatus === 'pending' ? 'text-yellow-500' : 'text-red-500'}`}>
-                    Payment status: {paymentStatus}
-                </div>
-            )}
+            
             <Button
                 type="submit"
-                disabled={!stripe || isProcessing}
+                disabled={!stripe || isProcessing || paymentStatus === 'pending'}
                 className="w-full"
             >
-                {isProcessing ? 'Processing...' : `Pay $${carOffer.offer_price}`}
+                {isProcessing ? (
+                    <div className="flex items-center space-x-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>Processing...</span>
+                    </div>
+                ) : paymentStatus === 'pending' ? (
+                    <div className="flex items-center space-x-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span>Processing Payment...</span>
+                    </div>
+                ) : (
+                    `Pay $${carOffer.offer_price}`
+                )}
             </Button>
         </form>
     );
@@ -142,6 +247,8 @@ const OfferModal: React.FC<OfferModalProps> = ({ open, onOpenChange, data }) => 
     const [carwashLoading, setCarwashLoading] = useState(false);
     const [carWashPackage, setCarWashPackage] = useState<any>(null);
     const [stripeFormLoading, setStripeFormLoading] = useState(false);
+    const [paymentStatus, setPaymentStatus] = useState<string | null>(null);
+    const [paymentError, setPaymentError] = useState<string | null>(null);
     const { user } = useAuth();
     const metaPixel = useMetaPixel();
     
@@ -165,6 +272,8 @@ const OfferModal: React.FC<OfferModalProps> = ({ open, onOpenChange, data }) => 
         setShowConfirmation(true);
         setShowStripeForm(false);
         setCode(null);
+        setPaymentStatus(null);
+        setPaymentError(null);
         onOpenChange(false);
     }
 
@@ -182,6 +291,8 @@ const OfferModal: React.FC<OfferModalProps> = ({ open, onOpenChange, data }) => 
         setShowConfirmation(false);
         setShowStripeForm(true);
         setStripeFormLoading(true);
+        setPaymentStatus(null);
+        setPaymentError(null);
 
         // Track InitiateCheckout event for Meta Pixel
         metaPixel.trackInitiateCheckout();
@@ -203,6 +314,11 @@ const OfferModal: React.FC<OfferModalProps> = ({ open, onOpenChange, data }) => 
         // Track Purchase event for Meta Pixel with the offer price
         metaPixel.trackPurchase(Number(data.offer_price), 'USD');
         router.push(`/payment/redemption?code=${code}&carWashId=${carWash?.id}`);
+    };
+
+    const handlePaymentStatusChange = (status: string | null, error: string | null) => {
+        setPaymentStatus(status);
+        setPaymentError(error);
     };
 
     const handleCopyCode = () => {
@@ -238,12 +354,16 @@ const OfferModal: React.FC<OfferModalProps> = ({ open, onOpenChange, data }) => 
                     </div>
                 )}
 
+                {/* Payment Processing Screen - shown at the top when there's a status or error */}
+                <PaymentProcessingScreen status={paymentStatus} error={paymentError} />
+
                 {showStripeForm && clientSecret && !code && (
                     <div className="mt-4">
                         <Elements stripe={stripePromise} options={{ clientSecret }}>
                             <StripePaymentForm
                                 carOffer={data}
                                 onSuccess={handlePaymentSuccess}
+                                onStatusChange={handlePaymentStatusChange}
                             />
                         </Elements>
                     </div>
