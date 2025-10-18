@@ -1,4 +1,3 @@
-app = "washbuddy"
 primary_region = "ord"
 
 [build]
