@@ -9,6 +9,7 @@ interface AutoCompleteProps {
   inputValue: string;
   setInputValue: (value: string) => void;
   currentLocation: any;
+  onRequestLocation?: () => void; // Add callback to request location
 }
 
 const AutoComplete: React.FC<AutoCompleteProps> = ({
@@ -16,6 +17,7 @@ const AutoComplete: React.FC<AutoCompleteProps> = ({
   inputValue,
   setInputValue,
   currentLocation,
+  onRequestLocation,
 }) => {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [suggestions, setSuggestions] = useState<RadarAddress[]>([]);
@@ -82,27 +84,51 @@ const AutoComplete: React.FC<AutoCompleteProps> = ({
   };
 
   const handleSelectCurrentLocation = () => {
-    const tempCurrentLocation: RadarAddress = {
-      addressLabel: currentLocation.address,
-      city: currentLocation.city,
-      state: currentLocation.state,
-      stateCode: currentLocation.state_code,
-      country: currentLocation.country,
-      countryCode: currentLocation.country_code,
-      formattedAddress: currentLocation.formatted_address,
-      geometry: {
-        type: "Point",
-        coordinates: [
-          currentLocation.location.coordinates[0],
-          currentLocation.location.coordinates[1],
-        ],
-      },
-      latitude: currentLocation.location.coordinates[1],
-      longitude: currentLocation.location.coordinates[0],
-    };
-    onSelect(tempCurrentLocation);
-    setInputValue(tempCurrentLocation.formattedAddress || "");
-    setSuggestions([]);
+    if (currentLocation) {
+      // If we already have location data, use it
+      const tempCurrentLocation: RadarAddress = {
+        addressLabel: currentLocation.address,
+        city: currentLocation.city,
+        state: currentLocation.state,
+        stateCode: currentLocation.state_code,
+        country: currentLocation.country,
+        countryCode: currentLocation.country_code,
+        formattedAddress: currentLocation.formatted_address,
+        geometry: {
+          type: "Point",
+          coordinates: [
+            currentLocation.location.coordinates[0],
+            currentLocation.location.coordinates[1],
+          ],
+        },
+        latitude: currentLocation.location.coordinates[1],
+        longitude: currentLocation.location.coordinates[0],
+      };
+      onSelect(tempCurrentLocation);
+      setInputValue(tempCurrentLocation.formattedAddress || "");
+      setSuggestions([]);
+    } else {
+      // Force browser permission popup by calling geolocation directly
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            // Success - trigger the location request callback
+            onRequestLocation?.();
+          },
+          (error) => {
+            // Error - still trigger the callback to handle the error
+            onRequestLocation?.();
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0
+          }
+        );
+      } else {
+        onRequestLocation?.();
+      }
+    }
   };
   return (
     <div ref={wrapperRef} className="relative">

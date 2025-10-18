@@ -6,9 +6,10 @@ interface SearchBarProps {
   onChange: (option: RadarAddress | null) => void;
   currentLocation: any;
   selectedLocation: any;
+  onRequestLocation?: () => void;
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ onChange, currentLocation, selectedLocation }) => {
+const SearchBar: React.FC<SearchBarProps> = ({ onChange, currentLocation, selectedLocation, onRequestLocation }) => {
   const [recentSearches, setRecentSearches] = useState<RadarAddress[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isDragging, setIsDragging] = useState(false);
@@ -88,6 +89,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ onChange, currentLocation, select
         inputValue={inputValue}
         setInputValue={setInputValue}
         currentLocation={currentLocation}
+        onRequestLocation={onRequestLocation}
       />
       {recentSearches.length > 0 && (
         <div className="flex items-center gap-2 pt-3 lg:pt-0 px-2 w-full overflow-hidden">

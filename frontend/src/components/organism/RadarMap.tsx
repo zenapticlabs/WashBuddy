@@ -73,8 +73,8 @@ export function RadarMap({
     const map = new maplibregl.Map({
       container: "radar-map",
       style: `https://api.radar.io/maps/styles/radar-default-v1?publishableKey=${publishableKey}`,
-      center: [-89.4012, 43.0731],
-      zoom: 7,
+      center: [-98.5795, 39.8283],
+      zoom: 4,
       attributionControl: false,
     });
 
