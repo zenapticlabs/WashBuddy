@@ -73,6 +73,7 @@ function HomeContent() {
   const [offerOpen, setOfferOpen] = useState(false);
   const {
     locationData,
+    error,
     fetchLocationData,
     fetchLocationFromCoordinates
   } = useLocationData();
@@ -249,6 +250,7 @@ function HomeContent() {
         currentLocation={currentLocation}
         setAddress={setAddress}
         selectedLocation={selectedLocation}
+        onRequestLocation={fetchLocationData}
       />
       <div className="flex flex-1 overflow-hidden bg-neutral-100 relative md:flex-row flex-col">
         <div className="w-[550px] relative bg-white hidden md:flex flex-col">
@@ -257,7 +259,7 @@ function HomeContent() {
           </div>
           <ScrollArea ref={scrollAreaRef} className="w-full flex-1 px-2">
             <div className="flex flex-col gap-2 pr-4">
-              {(isLoading || !locationData) && (
+              {isLoading && !error && (
                 <div className="flex flex-col gap-2">
                   <CarWashSkeleton />
                   <CarWashSkeleton />
@@ -267,8 +269,7 @@ function HomeContent() {
                   <CarWashSkeleton />
                 </div>
               )}
-              {!isLoading &&
-                (
+              {!isLoading && (filters.userLat !== 0 && filters.userLng !== 0) && (
                   <>
                     {hiddenOffer && <CarOfferCard onClick={() => handleOfferClick()} data={hiddenOffer} />}
                     {carWashes?.map((carWash) => (
@@ -310,10 +311,10 @@ function HomeContent() {
         <div className="flex-1 flex items-center justify-center">
           <RadarMap
             onlyPin={false}
-            loading={locationData === null}
+            loading={isLoading}
             presentCenter={{
-              longitude: filters.userLng,
-              latitude: filters.userLat,
+              longitude: filters.userLng || -98.5795,
+              latitude: filters.userLat || 39.8283,
             }}
             userId={user?.id}
             publishableKey={RADAR_KEY || ""}
