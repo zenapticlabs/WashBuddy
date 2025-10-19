@@ -5,7 +5,6 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { CarWashResponse } from "@/types/CarServices";
 import { Button } from "../ui/button";
 import { Search } from "lucide-react";
-import { Skeleton } from "../ui/skeleton";
 interface RadarMapProps {
   showMap?: boolean;
   publishableKey: string;
@@ -39,6 +38,7 @@ export function RadarMap({
   const mapRef = useRef<maplibregl.Map | null>(null);
   const markersRef = useRef<maplibregl.Marker[]>([]);
   const [showSearchButton, setShowSearchButton] = useState<boolean>(false);
+  const [isInitialLoad, setIsInitialLoad] = useState<boolean>(true);
 
   const getLngLat = (location: [number, number]): [number, number] => {
     return [location[0], location[1]] as [number, number];
@@ -67,7 +67,6 @@ export function RadarMap({
 
   // Initialize map only once
   useEffect(() => {
-    if (loading) return;
     Radar.initialize(publishableKey);
 
     const map = new maplibregl.Map({
@@ -83,10 +82,7 @@ export function RadarMap({
 
     map.on("load", () => {
       onMapReady?.(map);
-      // Fit to markers after map loads
-      if (carWashes?.length) {
-        fitToMarkers();
-      }
+      setIsInitialLoad(false);
       // Only track location if not in onlyPin mode
       if (!onlyPin) {
         trackWithRateLimit();
@@ -145,7 +141,38 @@ export function RadarMap({
       map.remove();
       mapRef.current = null;
     };
-  }, [publishableKey, userId, loading]); // Only depend on publishableKey and userId
+  }, [publishableKey, userId]); // Only depend on publishableKey and userId
+
+  // Handle presentCenter changes without reinitializing the map
+  useEffect(() => {
+    if (!mapRef.current) return;
+    
+    // Check if we have real user location (not fallback coordinates)
+    const isRealUserLocation = presentCenter && 
+      presentCenter.longitude !== 0 && 
+      presentCenter.latitude !== 0 &&
+      !(presentCenter.longitude === -98.5795 && presentCenter.latitude === 39.8283); // Not USA fallback
+    
+    if (isRealUserLocation) {
+      // Only move the map if it's not the initial load
+      if (!isInitialLoad) {
+        mapRef.current.flyTo({
+          center: [presentCenter.longitude, presentCenter.latitude],
+          zoom: 15,
+          essential: true,
+        });
+      }
+    } else {
+      // If no valid location or using fallback, ensure we're showing the USA view
+      if (!isInitialLoad) {
+        mapRef.current.flyTo({
+          center: [-98.5795, 39.8283],
+          zoom: 4,
+          essential: true,
+        });
+      }
+    }
+  }, [presentCenter, isInitialLoad]);
 
   // Handle car wash markers in a separate effect
   useEffect(() => {
@@ -226,11 +253,18 @@ export function RadarMap({
       markersRef.current.push(marker);
     });
 
-    // Fit to markers after adding them
-    if (carWashes?.length) {
+    // Check if we have real user location (not fallback coordinates)
+    const isRealUserLocation = presentCenter && 
+      presentCenter.longitude !== 0 && 
+      presentCenter.latitude !== 0 &&
+      !(presentCenter.longitude === -98.5795 && presentCenter.latitude === 39.8283); // Not USA fallback
+
+    // Fit to markers after adding them, but only if not loading and not initial load
+    // and only if we have a real user location (not fallback coordinates)
+    if (carWashes?.length && !loading && !isInitialLoad && isRealUserLocation) {
       fitToMarkers();
     }
-  }, [carWashes]);
+  }, [carWashes, loading, isInitialLoad, presentCenter]);
 
   // Example: Get center coordinates
   const getMapCenter = () => {
@@ -342,22 +376,28 @@ export function RadarMap({
       id="radar-map"
       className="w-full h-full min-h-[400px] rounded-lg overflow-hidden relative"
     >
-      {loading ? (
-        <Skeleton className="w-full h-full min-h-[400px] rounded-lg" />
-      ) : (
-        !onlyPin && (
-          <Button
-            variant="default"
-            className={`absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-blue-500 text-white rounded-full shadow-lg transition-all duration-300 ${showSearchButton
-              ? "opacity-100 transform translate-y-0"
-              : "opacity-0 transform -translate-y-4 pointer-events-none"
-              }`}
-            onClick={handleSearchArea}
-          >
-            <Search size={20} className="mr-2" />
-            Search this area
-          </Button>
-        )
+      {!onlyPin && (
+        <Button
+          variant="default"
+          className={`absolute top-4 left-1/2 -translate-x-1/2 z-10 bg-blue-500 text-white rounded-full shadow-lg transition-all duration-300 ${showSearchButton
+            ? "opacity-100 transform translate-y-0"
+            : "opacity-0 transform -translate-y-4 pointer-events-none"
+            }`}
+          onClick={handleSearchArea}
+        >
+          <Search size={20} className="mr-2" />
+          Search this area
+        </Button>
+      )}
+      {loading && isInitialLoad && (
+        <div className="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center z-20">
+          <div className="bg-white rounded-lg p-4 shadow-lg">
+            <div className="flex items-center gap-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+              <span className="text-sm text-gray-700">Loading...</span>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
