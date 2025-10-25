@@ -11,6 +11,8 @@ function AutoCompleteSearch() {
   const [recentSearches, setRecentSearches] = useState([]);
   const [debounceTimeout, setDebounceTimeout] = useState(null);
 
+  console.log(mainSiteURL);
+
   useEffect(() => {
     rencentSeachesSetter();
   }, []);
