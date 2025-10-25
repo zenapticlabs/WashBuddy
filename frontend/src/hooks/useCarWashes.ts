@@ -115,13 +115,15 @@ export function useCarWashes(filters: FilterState) {
       // Fetch offers
       const offerResult = await getOffers(modifiedFilters);
       console.log("offerResult", offerResult);
-      setOffers(offerResult.data);
+      // Offers API returns data directly as array, not paginated
+      const offers = offerResult.data || [];
+      setOffers(offers);
 
       // Match offers with packages
       modifiedCarWashes = modifiedCarWashes.map(carWash => ({
         ...carWash,
         packages: carWash.packages.map(pkg => {
-          const matchingOffer = offerResult.data.find(
+          const matchingOffer = offers.find(
             (offer: ICarOffer) =>
               offer.package_id === pkg.id &&
               offer.car_wash_id === carWash.id
@@ -145,7 +147,7 @@ export function useCarWashes(filters: FilterState) {
       setCurrentPage(carWashResult.data[0].links.currentPage);
 
       // Filter and sort hidden offers
-      const hOffers = offerResult.data[0].results.filter((offer: ICarOffer) => {
+      const hOffers = offers.filter((offer: ICarOffer) => {
         if (offer.offer_type !== "GEOGRAPHICAL") {
           return false;
         }
