@@ -174,8 +174,8 @@ function RedemptionContent() {
                             <p className="text-neutral-600">
                                 If your code doesn't work or you have any questions, email us at:
                                 <br />
-                                <a href="mailto:help@washbuddy.app" className="text-blue-500 hover:text-blue-600">
-                                    📧 help@washbuddy.app
+                                <a href="mailto:support@washbuddy.com" className="text-blue-500 hover:text-blue-600">
+                                    📧 support@washbuddy.com
                                 </a>
                             </p>
                         </div>
