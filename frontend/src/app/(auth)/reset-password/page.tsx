@@ -153,10 +153,6 @@ function ResetPasswordContent() {
     }
   };
 
-  const resetForm = () => {
-    setSuccess(false);
-  };
-
   const firstPage = () => {
     return (
       <form onSubmit={handleSubmit(handlePasswordUpdate)} className="flex flex-col gap-6">
@@ -274,14 +270,6 @@ function ResetPasswordContent() {
             Sign In
           </Button>
         </div>
-          
-        <Button
-          variant="outline"
-          className="w-full"
-          onClick={resetForm}
-        >
-          Reset Another Password
-        </Button>
       </div>
     );
   };
