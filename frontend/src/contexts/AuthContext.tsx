@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { User } from "@supabase/supabase-js";
-import { getUserStats } from "@/services/AuthService";
+import { getUserStats, resetPassword as resetPasswordService, signUpWithOTP } from "@/services/AuthService";
 import { usePostHog } from 'posthog-js/react';
 
 
@@ -23,6 +23,7 @@ type AuthContextType = {
   ) => Promise<{ error: Error | null }>;
   verifyOtp: (email: string, token: string) => Promise<{ error: Error | null }>;
   signInWithGoogle: () => Promise<{ error: Error | null }>;
+  resetPassword: (email: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
 };
 
@@ -94,19 +95,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     lastName: string
   ) => {
     try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            firstName,
-            lastName,
-          },
-        },
-      });
-      return { error };
-    } catch (error) {
-      return { error: error as Error };
+      await signUpWithOTP(email, password, firstName, lastName);
+      return { error: null };
+    } catch (error: any) {
+      // For axios errors, we need to extract the response data
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        const customError = new Error(error.response.data?.message || error.message);
+        (customError as any).status = error.response.status;
+        (customError as any).code = error.response.data?.code;
+        (customError as any).response = error.response;
+        return { error: customError };
+      } else if (error.request) {
+        // The request was made but no response was received
+        return { error: new Error("Network error. Please check your connection.") };
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        return { error: new Error(error.message) };
+      }
     }
   };
 
@@ -167,6 +174,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await supabase.auth.signOut();
   };
 
+  const resetPassword = async (email: string) => {
+    try {
+      await resetPasswordService(email);
+      return { error: null };
+    } catch (error: any) {
+      return { error: error as Error };
+    }
+  };
+
   const value = {
     user,
     loading,
@@ -175,6 +191,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signinWithPassword,
     verifyOtp,
     signInWithGoogle,
+    resetPassword,
     signOut,
   };
 

@@ -44,3 +44,13 @@ export const getUserStats = async () => {
         throw error;
     }
 };
+
+export const resetPassword = async (email: string) => {
+    try {
+        const response = await axios.post(`${API_URL}/api/v1/accounts/resetPassword/`, { email });
+        return response.data;
+    } catch (error) {
+        console.error("Error during password reset:", error);
+        throw error;
+    }
+};

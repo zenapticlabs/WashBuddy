@@ -29,6 +29,7 @@ function LoginContent() {
   // Get email and step from URL query parameters
   const email = searchParams.get('email') || '';
   const urlStep = searchParams.get('step');
+  const fromSignup = searchParams.get('from') === 'signup';
 
   // Initialize step from URL if available, otherwise default to 1
   const [step, setStep] = useState(urlStep ? parseInt(urlStep) : 1);
@@ -170,7 +171,7 @@ function LoginContent() {
 
   const firstPage = () => {
     return (
-      <>
+      <div className="flex flex-col gap-8">
         <div className="flex items-center gap-2">
           <Image src={logo} alt="logo" width={42} height={42} color="#ff0000" />
           <span className="hidden lg:block text-headline-4 font-bold pl-1">
@@ -246,13 +247,19 @@ function LoginContent() {
           </Link>
           .
         </div>
-        <div className="text-body-2 text-neutral-900">
-          Don&apos;t have an account?{" "}
-          <Link href="/signup" className="text-blue-500 underline">
+        <div className="flex flex-col gap-2">
+          <div className="text-body-2 text-neutral-900 text-center">
+            Don&apos;t have an account?
+          </div>
+          <Button
+            variant="outline"
+            className="w-full border-blue-500 text-black hover:bg-blue-50"
+            onClick={() => router.push('/signup')}
+          >
             Sign up
-          </Link>
+          </Button>
         </div>
-      </>
+      </div>
     );
   };
   const secondPage = () => {
@@ -291,6 +298,15 @@ function LoginContent() {
           {emailError && (
             <span className="text-sm text-red-500">{emailError}</span>
           )}
+          
+          {fromSignup && email && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <p className="text-sm text-blue-800">
+                <strong>Welcome back!</strong> We found an existing account with this email address. 
+                Please sign in to continue.
+              </p>
+            </div>
+          )}
         </div>
         <Button
           className="w-full"
@@ -312,6 +328,16 @@ function LoginContent() {
           <ChevronLeftIcon className="w-4 h-4" />
           Back
         </div>
+        
+        {fromSignup && (
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2">
+            <p className="text-sm text-blue-800">
+              <strong>Account already exists!</strong> We found an account with this email address. 
+              Please sign in with your password or use the email verification code.
+            </p>
+          </div>
+        )}
+        
         <div className="text-headline-3 text-neutral-900">
           How would you like to sign in?
         </div>
@@ -422,9 +448,9 @@ function LoginContent() {
     }
   };
   return (
-    <div className="w-full bg-[#00000066] flex justify-center md:py-20 min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex justify-center md:py-20">
       <Toaster position="top-center" />
-      <div className="w-full md:w-[480px] h-screen md:h-fit bg-white md:rounded-lg p-6 flex flex-col gap-6 relative">
+      <div className="w-full md:w-[480px] h-screen md:h-fit bg-white md:rounded-lg shadow-xl p-6 flex flex-col gap-6 relative">
         {renderContent()}
         {loading && (
           <div className="absolute bottom-0 left-0 right-0 top-0 rounded-lg flex justify-center items-center bg-black/10">
@@ -439,8 +465,8 @@ function LoginContent() {
 // Loading fallback component
 function LoginLoading() {
   return (
-    <div className="w-full bg-[#00000066] flex justify-center md:py-20 min-h-screen">
-      <div className="w-full md:w-[480px] h-screen md:h-fit bg-white md:rounded-lg p-6 flex justify-center items-center">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex justify-center md:py-20">
+      <div className="w-full md:w-[480px] h-screen md:h-fit bg-white md:rounded-lg shadow-xl p-6 flex justify-center items-center">
         <Loader2 className="w-8 h-8 animate-spin text-black" />
       </div>
     </div>

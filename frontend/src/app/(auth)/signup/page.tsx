@@ -82,6 +82,7 @@ function SignupContent() {
     useAuth();
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [loading, setLoading] = useState(false);
+  const [emailExistsError, setEmailExistsError] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   
@@ -179,6 +180,7 @@ function SignupContent() {
 
   const onSubmit = async (data: SignupFormValues) => {
     setLoading(true);
+    setEmailExistsError(false);
     try {
       const { error } = await signUpWithOtp(
         data.email,
@@ -187,15 +189,28 @@ function SignupContent() {
         data.lastName
       );
       if (error) {
-        toast.error("Failed to create account");
+        // Check if it's an email already exists error
+        if ((error as any).status === 409 || (error as any).code === "EMAIL_EXISTS" || error.message.includes("already exists")) {
+          setEmailExistsError(true);
+          toast.error("An account with this email already exists. Redirecting to login...");
+          // Redirect to login page with the email pre-filled
+          setTimeout(() => {
+            router.push(`/login?email=${encodeURIComponent(data.email)}&step=3&from=signup`);
+          }, 2000);
+          return;
+        }
+        toast.error(error.message || "Failed to create account");
         return;
       }
 
       goToStep(3, data.email);
       toast.success("Account created! Please verify your email.");
-    } catch (err) {
+    } catch (err: any) {
       console.error("Signup error:", err);
-      toast.error("Failed to create account");
+      
+      // This catch block should rarely be hit now since AuthContext handles axios errors
+      // But keeping it as a fallback for unexpected errors
+      toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -218,7 +233,7 @@ function SignupContent() {
 
   const firstPage = () => {
     return (
-      <>
+      <div className="flex flex-col gap-8">
         <div className="flex items-center gap-2">
           <Image src={logo} alt="logo" width={42} height={42} color="#ff0000" />
           <span className="hidden lg:block text-headline-4 font-bold pl-1">
@@ -294,13 +309,19 @@ function SignupContent() {
           </Link>
           .
         </div>
-        <div className="text-body-2 text-center">
-          Already have an account?{" "}
-          <Link href="/login" className="text-blue-500">
+        <div className="flex flex-col gap-2">
+          <div className="text-body-2 text-neutral-900 text-center">
+            Already have an account?
+          </div>
+          <Button
+            variant="outline"
+            className="w-full border-blue-500 text-black hover:bg-blue-50"
+            onClick={() => router.push('/login')}
+          >
             Log in
-          </Link>
+          </Button>
         </div>
-      </>
+      </div>
     );
   };
 
@@ -319,6 +340,15 @@ function SignupContent() {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+          {emailExistsError && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-2">
+              <p className="text-sm text-blue-800">
+                <strong>Account already exists!</strong> We found an account with this email address. 
+                You'll be redirected to the login page in a moment.
+              </p>
+            </div>
+          )}
+          
           {formConfig.map((field) => (
             <div key={field.label} className="flex flex-col gap-1">
               <label className="text-body-2 text-neutral-700">
@@ -349,11 +379,17 @@ function SignupContent() {
           </Button>
         </form>
 
-        <div className="text-body-2 text-center">
-          Already have an account?{" "}
-          <Link href="/login" className="text-blue-500">
+        <div className="flex flex-col gap-2">
+          <div className="text-body-2 text-neutral-900 text-center">
+            Already have an account?
+          </div>
+          <Button
+            variant="outline"
+            className="w-full border-blue-500 text-black hover:bg-blue-50"
+            onClick={() => router.push('/login')}
+          >
             Log in
-          </Link>
+          </Button>
         </div>
       </div>
     );
@@ -411,9 +447,9 @@ function SignupContent() {
   };
 
   return (
-    <div className="w-full bg-[#00000066] flex justify-center md:py-20 min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex justify-center md:py-20">
       <Toaster position="top-center" />
-      <div className="w-full md:w-[480px] h-screen md:h-fit bg-white md:rounded-lg p-6 flex flex-col gap-6 relative">
+      <div className="w-full md:w-[480px] h-screen md:h-fit bg-white md:rounded-lg shadow-xl p-6 flex flex-col gap-6 relative">
         {renderContent()}
       </div>
     </div>
@@ -423,8 +459,8 @@ function SignupContent() {
 // Loading fallback component
 function SignupLoading() {
   return (
-    <div className="w-full bg-[#00000066] flex justify-center md:py-20 min-h-screen">
-      <div className="w-full md:w-[480px] h-screen md:h-fit bg-white md:rounded-lg p-6 flex justify-center items-center">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex justify-center md:py-20">
+      <div className="w-full md:w-[480px] h-screen md:h-fit bg-white md:rounded-lg shadow-xl p-6 flex justify-center items-center">
         <Loader2 className="w-8 h-8 animate-spin text-black" />
       </div>
     </div>
