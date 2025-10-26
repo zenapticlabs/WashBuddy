@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.conf import settings
 from .models import UserProfile
-from .serializers import SignInSerializer, SignUpSerializer, VerifyOtpSerializer
+from .serializers import SignInSerializer, SignUpSerializer, VerifyOtpSerializer, ResetPasswordSerializer
 from django.db import transaction
 from django.contrib.auth.models import User
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiResponse, OpenApiExample
@@ -90,14 +90,30 @@ class SignUpView(APIView):
                 'lastName': serializer.validated_data.get('last_name', '')
             }
             
+            # Check if user already exists in Django
+            if User.objects.filter(email=email).exists():
+                return Response({
+                    "error": "User with this email already exists",
+                    "code": "EMAIL_EXISTS",
+                    "message": "An account with this email already exists. Please sign in instead."
+                }, status=status.HTTP_409_CONFLICT)
+            
             # Sign up user in Supabase
-            supabase_client.auth.sign_up({
+            response = supabase_client.auth.sign_up({
                 "email": email,
                 "password": password,
                 "options": {
                     "data": metadata
                 }
             })
+            
+            # Check if the user was actually created (not already existing)
+            if response.user and len(response.user.identities) == 0:
+                return Response({
+                    "error": "User with this email already exists",
+                    "code": "EMAIL_EXISTS", 
+                    "message": "An account with this email already exists. Please sign in instead."
+                }, status=status.HTTP_409_CONFLICT)
             
             user, _ = User.objects.get_or_create(
                 email=email,
@@ -424,3 +440,86 @@ class UserStatsView(APIView):
         }
         
         return Response(stats, status=status.HTTP_200_OK)
+
+
+class ResetPasswordView(APIView):
+
+    @extend_schema(
+        request=ResetPasswordSerializer,
+        responses={
+            200: OpenApiResponse(
+                description='Password reset email sent successfully',
+                examples=[
+                    OpenApiExample(
+                        'Success',
+                        value={
+                            'message': 'Password reset email sent successfully'
+                        }
+                    )
+                ]
+            ),
+            400: OpenApiResponse(
+                description='Bad Request',
+                examples=[
+                    OpenApiExample(
+                        'Validation Error',
+                        value={
+                            'email': ['This field is required.']
+                        }
+                    )
+                ]
+            ),
+            500: OpenApiResponse(
+                description='Internal Server Error',
+                examples=[
+                    OpenApiExample(
+                        'Error',
+                        value={
+                            'error': 'Error sending password reset email'
+                        }
+                    )
+                ]
+            )
+        },
+        examples=[
+            OpenApiExample(
+                'Reset Password Request',
+                value={
+                    'email': 'user@example.com'
+                },
+                request_only=True
+            )
+        ],
+        description='''
+        Password reset endpoint that sends a password reset email:
+        - Sends password reset email via Supabase
+        - Handles invalid email addresses
+        - Returns success message regardless of email existence for security
+        ''',
+        summary='Send password reset email'
+    )
+    @transaction.atomic
+    def post(self, request):
+        serializer = ResetPasswordSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            # Initialize Supabase client
+            supabase_client = SupabaseSingleton.get_instance(settings.SUPABASE_URL, settings.SUPABASE_SERVICE_ROLE_KEY)
+            
+            # Send password reset email
+            email = serializer.validated_data['email']
+            response = supabase_client.auth.reset_password_for_email(email, {
+                "redirect_to": f"{settings.FRONTEND_BASE_URL}/reset-password",
+            })
+            
+            return Response({
+                "message": "Password reset email sent successfully"
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

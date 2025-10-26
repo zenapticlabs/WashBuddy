@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 class SignUpSerializer(serializers.Serializer):
     email = serializers.EmailField()
-    password = serializers.CharField(min_length=6)
+    password = serializers.CharField(min_length=8)
 
 
 class SignInSerializer(serializers.Serializer):
@@ -12,3 +12,7 @@ class SignInSerializer(serializers.Serializer):
 class VerifyOtpSerializer(serializers.Serializer):
     email = serializers.EmailField()
     token = serializers.CharField()
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField()
