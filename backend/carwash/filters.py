@@ -1,11 +1,19 @@
 from rest_framework import filters
 import django_filters
 from .models import CarWash, CarWashReview, CarWashCode, Offer
-from django.contrib.gis.geos import Point
-from django.contrib.gis.db.models.functions import Distance
-from django.db.models import Sum, Value, DecimalField, FloatField, Q
+from django.db.models import (
+    Value,
+    DecimalField,
+    FloatField,
+    Q,
+    Exists,
+    OuterRef,
+    Case,
+    When,
+    Min,
+)
 from django.db.models.functions import Coalesce
-from django.db.models import Min, DecimalField, Value
+from django.utils import timezone
 
 
 class DynamicSearchFilter(filters.SearchFilter):
@@ -25,7 +33,11 @@ class CustomOrderingCarWashFilter(django_filters.OrderingFilter):
         custom_ordering = {
             "price_high_to_low": ["-min_price", "car_wash_name"],
             "price_low_to_high": ["min_price", "car_wash_name"],
-            "recommended": ["-reviews_average"],
+            "recommended": [
+                "-has_offer_or_bounty",
+                "-reviews_average",
+                "distance",
+            ],
             "distance_near_to_far": ["distance"],
         }
 
@@ -33,6 +45,43 @@ class CustomOrderingCarWashFilter(django_filters.OrderingFilter):
             qs = qs.annotate(
                 min_price=Coalesce(
                     Min("packages__price"), Value(0, output_field=DecimalField())
+                )
+            )
+        elif value[0] == "recommended":
+            # Annotate with whether carwash has active offers (TIME_DEPENDENT or ONE_TIME) or active bounty
+            # This will prioritize carwashes with offers at the top
+            # First, annotate if carwash has active offers (excluding GEOGRAPHICAL)
+            now = timezone.now().time()
+            qs = qs.annotate(
+                has_active_offer=Exists(
+                    Offer.objects.filter(
+                        package__car_wash=OuterRef("pk"),
+                        status="ACTIVE",
+                    ).filter(
+                        # ONE_TIME offers are always valid if status is ACTIVE
+                        Q(offer_type="ONE_TIME")
+                        # TIME_DEPENDENT offers must be within their time window
+                        | Q(
+                            offer_type="TIME_DEPENDENT",
+                            start_time__lte=now,
+                            end_time__gte=now,
+                        )
+                    )
+                )
+            )
+
+            # Combine offer and bounty into a single boolean field for sorting
+            qs = qs.annotate(
+                has_offer_or_bounty=Case(
+                    When(
+                        has_active_offer=True,
+                        then=Value(1, output_field=DecimalField()),
+                    ),
+                    When(
+                        active_bounty=True, then=Value(1, output_field=DecimalField())
+                    ),
+                    default=Value(0, output_field=DecimalField()),
+                    output_field=DecimalField(),
                 )
             )
 

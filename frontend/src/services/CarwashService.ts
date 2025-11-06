@@ -32,8 +32,17 @@ export const getCarwashes = async (filters: Record<string, any> = {}) => {
 
     // Add filters to the query string
     Object.entries(filters).forEach(([key, value]) => {
-      if (value) {
-        params.append(key, value.toString());
+      if (value !== undefined && value !== null) {
+        if (Array.isArray(value)) {
+          // Handle arrays by appending each item
+          value.forEach((item) => {
+            if (item !== undefined && item !== null) {
+              params.append(key, item.toString());
+            }
+          });
+        } else {
+          params.append(key, value.toString());
+        }
       }
     });
     const response = await axios.get(`${API_URL}/api/v1/carwash/search`, {
