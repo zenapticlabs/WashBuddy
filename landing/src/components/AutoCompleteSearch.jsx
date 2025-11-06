@@ -10,6 +10,8 @@ function AutoCompleteSearch() {
   const [selectedLocation, setSelectedLocation] = useState({});
   const [recentSearches, setRecentSearches] = useState([]);
   const [debounceTimeout, setDebounceTimeout] = useState(null);
+  const [showMessage, setShowMessage] = useState(false);
+  const [lastSelectedQuery, setLastSelectedQuery] = useState("");
 
   console.log(mainSiteURL);
 
@@ -26,9 +28,41 @@ function AutoCompleteSearch() {
     setRecentSearches(searches?.length ? searches : []);
   };
 
+  const isAddressValid = () => {
+    return (
+      selectedLocation?.geometry?.coordinates &&
+      selectedLocation.geometry.coordinates.length === 2 &&
+      selectedLocation.geometry.coordinates[0] != null &&
+      selectedLocation.geometry.coordinates[1] != null
+    );
+  };
+
+  const handleSearchClick = (e) => {
+    if (!isAddressValid()) {
+      e.preventDefault();
+      setShowMessage(true);
+      setTimeout(() => {
+        setShowMessage(false);
+      }, 3000);
+      return false;
+    }
+    handleSearchButton();
+  };
+
   const handleInputChange = (e) => {
     const value = e.target.value;
     setQuery(value);
+
+    // Clear selectedLocation if user is typing something different from the last selected query
+    // This ensures the user must explicitly select from suggestions
+    if (selectedLocation && Object.keys(selectedLocation).length > 0) {
+      // If the current input doesn't match the last selected query, clear the selection
+      if (value !== lastSelectedQuery) {
+        setSelectedLocation({});
+        setShowMessage(false);
+        setLastSelectedQuery("");
+      }
+    }
 
     if (debounceTimeout) {
       clearTimeout(debounceTimeout);
@@ -40,6 +74,10 @@ function AutoCompleteSearch() {
       } else {
         setSuggestions([]);
         setShow(false);
+        // Clear selection if input is cleared
+        if (value.length === 0) {
+          setSelectedLocation({});
+        }
       }
     }, 100);
 
@@ -91,6 +129,20 @@ function AutoCompleteSearch() {
 
           const data = await response.json();
           const address = data.addresses[0] || {};
+          
+          // Set selectedLocation with the address and coordinates
+          const locationWithCoordinates = {
+            ...address,
+            geometry: {
+              type: "Point",
+              coordinates: [longitude, latitude],
+            },
+            latitude: latitude,
+            longitude: longitude,
+          };
+          setSelectedLocation(locationWithCoordinates);
+          setShowMessage(false);
+          
           const reverseGeoCodeString = [
             address?.addressLabel,
             address?.city,
@@ -101,6 +153,7 @@ function AutoCompleteSearch() {
             .filter(Boolean)
             .join(" ");
           setQuery(reverseGeoCodeString);
+          setLastSelectedQuery(reverseGeoCodeString);
           fetchSuggestions(reverseGeoCodeString);
         } catch (error) {
           console.error("Error sending data to Radar API:", error);
@@ -123,8 +176,10 @@ function AutoCompleteSearch() {
       .join(" ");
     setQuery(placeNameString);
     setSelectedLocation(suggestion);
+    setLastSelectedQuery(placeNameString);
     setSuggestions([]);
     setShow(false);
+    setShowMessage(false);
   };
 
   const handleSearchButton = () => {
@@ -166,6 +221,8 @@ function AutoCompleteSearch() {
       .join(" ");
     setQuery(displayText);
     setSelectedLocation(recentLocation);
+    setLastSelectedQuery(displayText);
+    setShowMessage(false);
   };
 
   return (
@@ -211,23 +268,35 @@ function AutoCompleteSearch() {
               </ul>
             )}
           </div>
-          <a
-            href={`${mainSiteURL}?userLat=${selectedLocation.geometry?.coordinates[1]}&userLng=${selectedLocation.geometry?.coordinates[0]}`}
-            class="h-[44px] min-w-[44px] w-[44px] border-2 border-[#189DEF80] rounded-full flex items-center justify-center cursor-pointer"
-            target="blank"
-          >
-            <img
-              src="/search_icon.svg"
-              format="svg"
-              alt={""}
-              className="w-[16.27px] h-[16.27px] cursor-pointer"
-              onClick={() => {
-                if (query.length >= 2) {
-                  handleSearchButton();
-                }
-              }}
-            />
-          </a>
+          <div className="relative">
+            <a
+              href={
+                isAddressValid()
+                  ? `${mainSiteURL}?userLat=${selectedLocation.geometry.coordinates[1]}&userLng=${selectedLocation.geometry.coordinates[0]}`
+                  : "#"
+              }
+              className={`h-[44px] min-w-[44px] w-[44px] border-2 border-[#189DEF80] rounded-full flex items-center justify-center ${
+                isAddressValid()
+                  ? "cursor-pointer hover:opacity-80"
+                  : "cursor-not-allowed opacity-50"
+              }`}
+              target="blank"
+              onClick={handleSearchClick}
+            >
+              <img
+                src="/search_icon.svg"
+                format="svg"
+                alt={""}
+                className="w-[16.27px] h-[16.27px]"
+              />
+            </a>
+            {showMessage && (
+              <div className="absolute right-0 top-full mt-2 bg-neutral-800 text-white text-sm px-3 py-2 rounded-lg shadow-lg z-50 whitespace-nowrap">
+                Please select an address from the suggestions or use "Detect Location"
+                <div className="absolute right-4 -top-1 w-2 h-2 bg-neutral-800 transform rotate-45"></div>
+              </div>
+            )}
+          </div>
         </div>
 
         <button
